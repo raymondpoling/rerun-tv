@@ -139,3 +139,83 @@
   ;           {:type "playlist" :name "cobalt" :length 24}
   ;           {:type "playlist" :nam "cobalt" :length 24}]}))))
             )
+
+(deftest make-multi
+  (testing "Make a good multi"
+    (is (= (->Multi (->Playlist "cobalt" 27) 0 3)
+        (make-sched-type-from-json
+          {:type "multi" :playlist {:type "playlist" :name "cobalt" :length 27}
+            :start 0 :step 3}))))
+  (testing "Throws error if missing playlist"
+    (is (thrown-with-msg? Exception #"^Invalid multi missing playlist: .*"
+        (make-sched-type-from-json
+          {:type "multi" :play {:type "playlist" :name "cobalt" :length 24}
+          :start 0 :step 3}))))
+  (testing "Throws error if missing start"
+    (is (thrown-with-msg? Exception #"^Invalid multi playlist no start: .*"
+        (make-sched-type-from-json
+          {:type "multi" :playlist :cat :step 3}))))
+  (testing "Throws error if missing step"
+    (is (thrown-with-msg? Exception #"^Invalid multi playlist no step: .*"
+        (make-sched-type-from-json
+          {:type "multi" :playlist :cat :start 0})))))
+
+(deftest make-complex
+  (testing "Make a good complex"
+    (is (= (->Complex [(->Playlist "cobalt" 27) (->Playlist "crabs" 12)]))
+        (make-sched-type-from-json
+          {:type "complex" :playlists [
+            {:type "playlist" :name "cobalt" :length 27}
+            {:type "playlist" :name "crabs" :length 12}]})))
+  (testing "Throws error if missing playlists"
+    (is (thrown-with-msg? Exception #"^Invalid complex missing playlists: .*"
+        (make-sched-type-from-json
+          {:type "complex" :play [{:type "playlist" :name "cobalt" :length 24}]}))))
+  (testing "Throws error if no elements"
+    (is (thrown-with-msg? Exception #"^Invalid complex playlists empty: .*"
+        (make-sched-type-from-json
+          {:type "complex" :playlists []}))))
+  (testing "Throws error if not seq"
+    (is (thrown-with-msg? Exception #"^Invalid complex playlists not a seq: .*"
+        (make-sched-type-from-json
+          {:type "complex" :playlists :cat}))))
+  ;; following test doesn't run
+  ; (testing "Throws error if not super playlist"
+  ;   (is (thrown-with-msg? Exception #"^Invalid playlist missing name: .*"
+  ;       (make-sched-type-from-json
+  ;         {:type "merge" :playlists [
+  ;           {:type "playlist" :name "cobalt" :length 24}
+  ;           {:type "playlist" :nam "cobalt" :length 24}]}))))
+            )
+
+(deftest make-schedule
+  (testing "Make a good schedule"
+    (is (= (->Schedule "test" [(->Playlist "cobalt" 27) (->Playlist "crabs" 12)]))
+        (make-schedule-from-json
+          {:name "test" :playlists [
+            {:type "playlist" :name "cobalt" :length 27}
+            {:type "playlist" :name "crabs" :length 12}]})))
+  (testing "Throws error if missing playlists"
+    (is (thrown-with-msg? Exception #"^Invalid schedule missing playlists: .*"
+        (make-schedule-from-json
+          {:name "test" :play [{:type "playlist" :name "cobalt" :length 24}]}))))
+  (testing "Throws error if no elements"
+    (is (thrown-with-msg? Exception #"^Invalid schedule playlists empty: .*"
+        (make-schedule-from-json
+          {:name "test" :playlists []}))))
+  (testing "Throws error if not seq"
+    (is (thrown-with-msg? Exception #"^Invalid schedule playlists not a seq: .*"
+        (make-schedule-from-json
+          {:name "test" :playlists :cat}))))
+  (testing "Throws error if no name"
+    (is (thrown-with-msg? Exception #"^Invalid schedule missing name: .*"
+        (make-schedule-from-json
+          {:nam "test" :playlists :cat}))))
+  ;; following test doesn't run
+  ; (testing "Throws error if not super playlist"
+  ;   (is (thrown-with-msg? Exception #"^Invalid playlist missing name: .*"
+  ;       (make-sched-type-from-json
+  ;         {:type "merge" :playlists [
+  ;           {:type "playlist" :name "cobalt" :length 24}
+  ;           {:type "playlist" :nam "cobalt" :length 24}]}))))
+          )

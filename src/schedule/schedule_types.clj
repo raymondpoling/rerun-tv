@@ -3,6 +3,8 @@
 
 (defrecord Item [name index])
 
+(defrecord Schedule [name playlists])
+
 (defprotocol ScheduleType
 	(length [self])
 	(index [self idx]))
@@ -49,9 +51,6 @@
 
 (defmulti make-sched-type-from-json :type)
 
-(defn make-schedule-from-json [name playlists]
-	(map playlists make-sched-type-from-json))
-
 (defmethod make-sched-type-from-json "playlist" [item]
 	(if (nil? (:name item))
 		(throw (ex-info (str "Invalid playlist missing name: " item)
@@ -72,3 +71,42 @@
 		(throw (ex-info (str "Invalid merge playlists empty: " item)
 			{:type :missing-playlists, :cause :validity})))
 	(->Merge (map make-sched-type-from-json (:playlists item))))
+
+(defmethod make-sched-type-from-json "multi" [item]
+	(if (nil? (:playlist item))
+		(throw (ex-info (str "Invalid multi missing playlist: " item)
+			{:type :missing-playlist, :cause :validity})))
+	(if (nil? (:start item))
+		(throw (ex-info (str "Invalid multi playlist no start: " item)
+				{:type :no-start, :cause :validity})))
+	(if (nil? (:step item))
+		(throw (ex-info (str "Invalid multi playlist no step: " item)
+				{:type :no-step, :cause :validity})))
+	(->Multi (make-sched-type-from-json (:playlist item)) (:start item) (:step item)))
+
+(defmethod make-sched-type-from-json "complex" [item]
+	(if (nil? (:playlists item))
+		(throw (ex-info (str "Invalid complex missing playlists: " item)
+			{:type :missing-playlists, :cause :validity})))
+	(if (not (coll? (:playlists item)))
+		(throw (ex-info (str "Invalid complex playlists not a seq: " item)
+				{:type :not-a-seq, :cause :validity})))
+	(if (= 0 (count (:playlists item)))
+		(throw (ex-info (str "Invalid complex playlists empty: " item)
+			{:type :missing-playlists, :cause :validity})))
+	(->Complex (map make-sched-type-from-json (:playlists item))))
+
+(defn make-schedule-from-json [schedule]
+	(if (nil? (:playlists schedule))
+		(throw (ex-info (str "Invalid schedule missing playlists: " schedule)
+			{:type :missing-playlists, :cause :validity})))
+	(if (nil? (:name schedule))
+		(throw (ex-info (str "Invalid schedule missing name: " schedule)
+			{:type :missing-playlists, :cause :validity})))
+	(if (not (coll? (:playlists schedule)))
+		(throw (ex-info (str "Invalid schedule playlists not a seq: " schedule)
+				{:type :not-a-seq, :cause :validity})))
+	(if (= 0 (count (:playlists schedule)))
+		(throw (ex-info (str "Invalid schedule playlists empty: " schedule)
+			{:type :missing-playlists, :cause :validity})))
+	(->Schedule (:name schedule) (map (:playlists schedule) make-sched-type-from-json)))

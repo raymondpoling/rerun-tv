@@ -102,7 +102,7 @@
 
 (deftest make-playlist
   (testing "Make a good playlist"
-    (is (= (->Playlist "cobalt" 27)
+    (is (= (assoc (->Playlist "cobalt" 27) :type "playlist")
             (make-sched-type-from-json
               {:type "playlist" :name "cobalt" :length 27}))))
   (testing "Throws error if missing name"
@@ -142,7 +142,7 @@
 
 (deftest make-multi
   (testing "Make a good multi"
-    (is (= (->Multi (->Playlist "cobalt" 27) 0 3)
+    (is (= (assoc (->Multi (assoc (->Playlist "cobalt" 27) :type "playlist") 0 3) :type "multi")
         (make-sched-type-from-json
           {:type "multi" :playlist {:type "playlist" :name "cobalt" :length 27}
             :start 0 :step 3}))))
@@ -178,15 +178,7 @@
   (testing "Throws error if not seq"
     (is (thrown-with-msg? Exception #"^Invalid complex playlists not a seq: .*"
         (make-sched-type-from-json
-          {:type "complex" :playlists :cat}))))
-  ;; following test doesn't run
-  ; (testing "Throws error if not super playlist"
-  ;   (is (thrown-with-msg? Exception #"^Invalid playlist missing name: .*"
-  ;       (make-sched-type-from-json
-  ;         {:type "merge" :playlists [
-  ;           {:type "playlist" :name "cobalt" :length 24}
-  ;           {:type "playlist" :nam "cobalt" :length 24}]}))))
-            )
+          {:type "complex" :playlists :cat})))))
 
 (deftest make-schedule
   (testing "Make a good schedule"
@@ -210,12 +202,4 @@
   (testing "Throws error if no name"
     (is (thrown-with-msg? Exception #"^Invalid schedule missing name: .*"
         (make-schedule-from-json
-          {:nam "test" :playlists :cat}))))
-  ;; following test doesn't run
-  ; (testing "Throws error if not super playlist"
-  ;   (is (thrown-with-msg? Exception #"^Invalid playlist missing name: .*"
-  ;       (make-sched-type-from-json
-  ;         {:type "merge" :playlists [
-  ;           {:type "playlist" :name "cobalt" :length 24}
-  ;           {:type "playlist" :nam "cobalt" :length 24}]}))))
-          )
+          {:nam "test" :playlists :cat})))))

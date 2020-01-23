@@ -44,9 +44,9 @@
 
 (defrecord Schedule [name playlists])
 
-(defn frame [schedule]
+(defn frame [schedule idx]
 	(let [playlists (:playlists schedule)]
-	(* (count playlists) (lcmv (map length playlists)))))
+		(doall (map #(index % idx) playlists))))
 
 
 (defmulti make-sched-type-from-json :type)
@@ -58,7 +58,7 @@
 	(if (nil? (:length item))
 		(throw (ex-info (str "Invalid playlist missing length: " item)
 			{:type :missing-length, :cause :validity})))
-	(->Playlist (:name item) (:length item)))
+	(assoc (->Playlist (:name item) (:length item)) :type "playlist"))
 
 (defmethod make-sched-type-from-json "merge" [item]
 	(if (nil? (:playlists item))
@@ -70,7 +70,7 @@
 	(if (= 0 (count (:playlists item)))
 		(throw (ex-info (str "Invalid merge playlists empty: " item)
 			{:type :missing-playlists, :cause :validity})))
-	(->Merge (map make-sched-type-from-json (:playlists item))))
+	(assoc (->Merge (doall (map make-sched-type-from-json (:playlists item)))) :type "merge"))
 
 (defmethod make-sched-type-from-json "multi" [item]
 	(if (nil? (:playlist item))
@@ -82,7 +82,7 @@
 	(if (nil? (:step item))
 		(throw (ex-info (str "Invalid multi playlist no step: " item)
 				{:type :no-step, :cause :validity})))
-	(->Multi (make-sched-type-from-json (:playlist item)) (:start item) (:step item)))
+	(assoc (->Multi (make-sched-type-from-json (:playlist item)) (:start item) (:step item)) :type "multi"))
 
 (defmethod make-sched-type-from-json "complex" [item]
 	(if (nil? (:playlists item))
@@ -94,7 +94,7 @@
 	(if (= 0 (count (:playlists item)))
 		(throw (ex-info (str "Invalid complex playlists empty: " item)
 			{:type :missing-playlists, :cause :validity})))
-	(->Complex (map make-sched-type-from-json (:playlists item))))
+	(assoc (->Complex (doall (map make-sched-type-from-json (:playlists item)))) :type "complex"))
 
 (defn make-schedule-from-json [schedule]
 	(if (nil? (:playlists schedule))
@@ -109,4 +109,4 @@
 	(if (= 0 (count (:playlists schedule)))
 		(throw (ex-info (str "Invalid schedule playlists empty: " schedule)
 			{:type :missing-playlists, :cause :validity})))
-	(->Schedule (:name schedule) (map (:playlists schedule) make-sched-type-from-json)))
+	(->Schedule (:name schedule) (doall (map make-sched-type-from-json (:playlists schedule)))))

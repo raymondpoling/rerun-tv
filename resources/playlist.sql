@@ -1,16 +1,16 @@
 #CREATE SCHEMA playlist;
 
+DROP TABLE IF EXISTS playlist.playlist;
+
 DROP TABLE IF EXISTS playlist.name;
 
 #DROP INDEX by_names ON playlist.name;
-
-DROP TABLE IF EXISTS playlist.playlist;
 
 #DROP INDEX find_item ON playlist.playlist;
 
 CREATE TABLE playlist.name (
   id SERIAL,
-  name VARCHAR(12),
+  name VARCHAR(30),
   PRIMARY KEY (id)
 ) ENGINE INNODB;
 

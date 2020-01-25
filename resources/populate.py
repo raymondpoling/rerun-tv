@@ -47,9 +47,14 @@ def walking(rootdir):
         insert_name(series)
         episodes = []
         all_seasons = [f for f in listdir(join(rootdir,series)) if isdir(join(rootdir, series, f))]
-        for season in all_seasons:
-            episodes = episodes + [join(rootdir,series,season,f) for f in listdir(join(rootdir,series,season)) if isfile(join(rootdir,series,season,f))]
-        episodes.sort()
-        insert_playlist(series,episodes)
+        if len(all_seasons) == 0:
+            episodes = [join(rootdir,series,f) for f in listdir(join(rootdir,series)) if isfile(join(rootdir,series,f))]
+            episodes.sort()
+            insert_playlist(series,episodes)
+        else:
+            for season in all_seasons:
+                episodes = episodes + [join(rootdir,series,season,f) for f in listdir(join(rootdir,series,season)) if isfile(join(rootdir,series,season,f))]
+            episodes.sort()
+            insert_playlist(series,episodes)
 
 walking("/home/ruguer/Videos/")

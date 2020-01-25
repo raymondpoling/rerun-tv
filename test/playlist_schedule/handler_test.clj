@@ -20,9 +20,9 @@
   (testing "finding schedule"
     (let [response (app (mock/request :get "/test-found"))]
       (is (= (:status response) 200))
-      (is (= (:body response) (str "{\"name\":\"test-found\","
-                               "\"playlists\":[{\"name\":\"cats\",\"length\":12,\"type\":\"playlist\"},"
-                              "{\"name\":\"dogs\",\"length\":13,\"type\":\"playlist\"}]}")))))
+      (is (= (:body response) (str "{\"name\":\"test-found\",\"playlists\""
+                                    ":[{\"name\":\"cats\",\"type\":\"playlist\",\"length\":12}"
+                                    ",{\"name\":\"dogs\",\"type\":\"playlist\",\"length\":13}]}")))))
   (testing "getting a frame"
     (let [response (app (mock/request :get "/test-found/33"))]
       (is (= (:status response) 200))
@@ -38,6 +38,10 @@
     (let [response (app (mock/request :get "/test-found/33"))]
       (is (= (:status response) 200))
       (is (= (:body response) "[{\"name\":\"cats\",\"index\":3},{\"name\":\"dogs\",\"index\":16}]"))))
+  (testing "deleting playlist"
+    (let [response (app (mock/request :delete "/test-found"))]
+      (is (= (:status response) 200))
+      (is (= (:body response) "{\"status\":\"ok\"}"))))
   (testing "getting not-found route"
-    (let [response (app (mock/request :get "/test-not-found"))]
+    (let [response (app (mock/request :get "/test-found"))]
       (is (= (:status response) 404)))))

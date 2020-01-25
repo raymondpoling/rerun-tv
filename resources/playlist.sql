@@ -10,7 +10,7 @@ DROP TABLE IF EXISTS playlist.name;
 
 CREATE TABLE playlist.name (
   id SERIAL,
-  name VARCHAR(30),
+  name VARCHAR(50),
   PRIMARY KEY (id)
 ) ENGINE INNODB;
 

@@ -1,4 +1,6 @@
 import mysql.connector
+from os import listdir
+from os.path import isfile, join, isdir
 
 series_prefix = "series_"
 
@@ -32,6 +34,22 @@ def insert_playlist(name,list_of_items):
     mydb.commit()
 
 # Quick check below
-insert_name("testing")
+#insert_name("testing")
 
-insert_playlist("testing",["a","b","c"])
+#insert_playlist("testing",["a","b","c"])
+
+def walking(rootdir):
+    listing = listdir(rootdir)
+    listing.remove("movies")
+    subdirs = [f for f in listing if isdir(join(rootdir, f))]
+    for series in subdirs:
+        print "Inserting name: " + series + "\n"
+        insert_name(series)
+        episodes = []
+        all_seasons = [f for f in listdir(join(rootdir,series)) if isdir(join(rootdir, series, f))]
+        for season in all_seasons:
+            episodes = episodes + [join(rootdir,series,season,f) for f in listdir(join(rootdir,series,season)) if isfile(join(rootdir,series,season,f))]
+        episodes.sort()
+        insert_playlist(series,episodes)
+
+walking("/home/ruguer/Videos/")

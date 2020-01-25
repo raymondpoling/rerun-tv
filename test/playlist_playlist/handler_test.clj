@@ -19,7 +19,7 @@
                             (mock/json-body {:name "new-playlist"
                             :playlist (reverse (map str (map char (range 97 123))))})))]
       (is (= (:status response) 412))
-      (is (= (:body response) "{\"status\":\"ok\"}"))))
+      (is (= (:body response) "{\"status\":\"invalid\"}"))))
   (testing "find element in playlist to ensure not overwritten"
     (let [response (app (mock/request :get "/new-playlist/12"))]
       (is (= (:status response) 200))
@@ -39,5 +39,5 @@
       (is (= (:status response) 200))
       (is (= (:body response) "{\"status\":\"ok\"}"))))
   (testing "not-found route"
-    (let [response (app (mock/request :get "/new-playlist"))]
+    (let [response (app (mock/request :get "/new-playlist/12"))]
       (is (= (:status response) 404)))))

@@ -7,9 +7,11 @@
                :user nil
                :password nil}))
 
-(defn initialize [name password]
-  (swap! database assoc :user name)
-  (swap! database assoc :password password))
+(defn initialize
+  ([name password]
+    (swap! database merge {:user name :password password}))
+  ([name password host port]
+    (swap! database merge {:user name :password password :host host :port port})))
 
 (defn find-schedule [name]
   (let [sched
@@ -27,6 +29,3 @@
 
 (defn delete-schedule [name]
   (j/delete! @database "schedule.schedule" ["name = ?" name]))
-
-;"{\"name\":\"test-found\",\"playlists\":[{\"name\":\"cats\",\"type\":\"playlist\",\"length\":15},{\"name\":\"dogs\",\"type\":\"playlist\",\"length\":17}]}"
-;"{\"name\":\"test-found\",\"playlists\":[{\"name\":\"cats\",\"length\":12,\"type\":\"playlist\"},{\"name\":\"dogs\",\"length\":13,\"type\":\"playlist\"}]}"

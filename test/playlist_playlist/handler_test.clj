@@ -1,9 +1,11 @@
 (ns playlist-playlist.handler-test
   (:require [clojure.test :refer :all]
             [ring.mock.request :as mock]
-            [playlist-playlist.handler :refer :all]))
+            [playlist-playlist.handler :refer :all]
+            [db.db :refer [initialize]]))
 
 (deftest test-app
+  (initialize "playlist_user" "playlist")
   (testing "create new playlist"
     (let [response (app (-> (mock/request :post "/new-playlist")
                             (mock/json-body {:name "new-playlist"

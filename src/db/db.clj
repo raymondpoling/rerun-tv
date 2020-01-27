@@ -6,9 +6,11 @@
                :user nil
                :password nil}))
 
-(defn initialize [name password]
-  (swap! database assoc :user name)
-  (swap! database assoc :password password))
+               (defn initialize
+                 ([name password]
+                   (swap! database merge {:user name :password password}))
+                 ([name password host port]
+                   (swap! database merge {:user name :password password :host host :port port})))
 
 (defn insert-series [name]
   (j/insert! @database "playlist.name" {:name name}))

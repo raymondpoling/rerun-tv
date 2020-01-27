@@ -4,7 +4,9 @@
             [compojure.route :as route]
             [ring.util.response :refer [response not-found header status]]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
-            [db.db :refer :all]))
+            [db.db :refer :all]
+            [org.httpkit.server :refer [run-server]])
+  (:gen-class))
 
 (defroutes app-routes
   (POST "/:name" [name]
@@ -33,7 +35,6 @@
     (find-item name idx))
   (route/not-found "Not Found"))
 
-(initialize "playlist_user" "playlist")
 
 (def app
   (wrap-defaults
@@ -42,3 +43,13 @@
        (json/wrap-json-response)
        (json/wrap-json-body {:keywords? true}))
       (assoc-in site-defaults [:security :anti-forgery] false)))
+
+(defn -main []
+  (let [user (or (System/getenv "DB_USER") "playlist_user")
+        password (or (System/getenv "DB_PASSWORD") "")
+        host (or (System/getenv "DB_HOST") "localhost")
+        port (Integer/parseInt (or (System/getenv "DB_PORT") "3306"))]
+        (initialize user password host port))
+  (let [port (Integer/parseInt (or (System/getenv "PORT") "4001"))]
+    (run-server app {:port port})
+    (println (str "Listening on port " port))))

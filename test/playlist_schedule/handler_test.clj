@@ -1,9 +1,11 @@
 (ns playlist-schedule.handler-test
   (:require [clojure.test :refer :all]
             [ring.mock.request :as mock]
-            [playlist-schedule.handler :refer :all]))
+            [playlist-schedule.handler :refer :all]
+            [db.db :refer [initialize]]))
 
 (deftest test-app
+  (initialize "schedule_user" "schedule")
   (testing "reject a bad schedule"
     (let [response (app (-> (mock/request :post "/test-bad")
                             (mock/json-body {"name" "test-bad"

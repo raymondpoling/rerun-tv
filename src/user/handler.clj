@@ -29,6 +29,10 @@
       (if (nil? value)
         (make-response 404 {:status "not found"})
         (make-response 200 {:idx value}))))
+  (PUT "/:user/:schedule/:index" [user schedule index]
+    (if (update-user-schedule-index user schedule index)
+      (make-response 200 {:status :ok})
+      (make-response 400 {:status :failed})))
   (route/not-found "Not Found"))
 
 (def app

@@ -38,6 +38,14 @@
     (let [response (app (mock/request :get "/test_user/test_schedule"))]
       (is (= (:status response) 200))
       (is (= (:body response) "{\"idx\":2}"))))
+  (testing "set first schedule 1"
+    (let [response (app (mock/request :put "/test_user/test_schedule/1"))]
+      (is (= (:status response) 200))
+      (is (= (:body response) "{\"status\":\"ok\"}"))))
+  (testing "find first schedule 1"
+    (let [response (app (mock/request :get "/test_user/test_schedule"))]
+      (is (= (:status response) 200))
+      (is (= (:body response) "{\"idx\":1}"))))
   (testing "delete test user"
     (let [response (app (mock/request :delete "/test_user"))]
       (is (= (:status response) 200))

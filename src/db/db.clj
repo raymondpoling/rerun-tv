@@ -40,3 +40,9 @@
                         "(SELECT id FROM user.user "
                         "WHERE username = ?)") schedule username])
         value)))))
+
+(defn update-user-schedule-index [username schedule index]
+  (= 1 (first (j/update! @database "user.index" {:idx index}
+            [(str "schedule = ? AND user_id = "
+                  "(SELECT id FROM user.user "
+                  "WHERE username = ?)") schedule username]))))

@@ -9,6 +9,8 @@
   (:gen-class))
 
 (defroutes app-routes
+  (GET "/" []
+    (response (get-all-playlists)))
   (POST "/:name" [name]
     (fn [request]
       (try

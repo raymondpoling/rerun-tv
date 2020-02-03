@@ -45,3 +45,9 @@
     ["SELECT object FROM playlist.playlist WHERE idx = ? AND name_key = (SELECT id FROM playlist.name WHERE name = ?)" index name]
     )]
     (:object (first out))))
+
+(defn get-all-playlists []
+  (j/query @database
+    ["SELECT name.name AS name, count(name.name) AS length FROM name
+      JOIN playlist WHERE name.id = playlist.name_key
+      GROUP BY name.name"]))

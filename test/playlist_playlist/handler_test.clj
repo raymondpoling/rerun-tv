@@ -36,6 +36,10 @@
     (let [response (app (mock/request :get "/new-playlist/12"))]
       (is (= (:status response) 200))
       (is (= (:body response) "n"))))
+  (testing "get a list of playlists"
+    (let [response (app (mock/request :get "/"))]
+      (is (= (:status response) 200))
+      (is (>= (count (:body response)) 1))))
   (testing "delete a playlist"
     (let [response (app (mock/request :delete "/new-playlist"))]
       (is (= (:status response) 200))

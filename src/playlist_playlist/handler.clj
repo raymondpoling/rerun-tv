@@ -20,6 +20,9 @@
       (response {:status "ok"}))
       (catch java.sql.SQLIntegrityConstraintViolationException e
         (-> (response {:status "invalid"})
+          (status 412)))
+      (catch java.sql.SQLException e
+        (-> (response {:status "invalid"})
           (status 412))))))
   (PUT "/:name" [name]
     (fn [request]
@@ -28,6 +31,9 @@
         (replace-playlist name (:playlist data))
       (response {:status "ok"}))
       (catch java.sql.SQLIntegrityConstraintViolationException e
+        (-> (response {:status "invalid"})
+          (status 412)))
+      (catch java.sql.SQLException e
         (-> (response {:status "invalid"})
           (status 412))))))
   (DELETE "/:name" [name]

@@ -6,11 +6,11 @@
                :user nil
                :password nil}))
 
-               (defn initialize
-                 ([name password]
-                   (swap! database merge {:user name :password password}))
-                 ([name password host port]
-                   (swap! database merge {:user name :password password :host host :port port})))
+(defn initialize
+ ([]
+   (swap! database (fn [_ s] s) {:dbtype "hsql" :dbname "playlist"}))
+ ([name password host port]
+   (swap! database merge {:user name :password password :host host :port port})))
 
 (defn insert-series [name]
   (j/insert! @database "playlist.name" {:name name}))
@@ -48,6 +48,6 @@
 
 (defn get-all-playlists []
   (j/query @database
-    ["SELECT name.name AS name, count(name.name) AS length FROM name
-      JOIN playlist WHERE name.id = playlist.name_key
+    ["SELECT name.name AS name, count(name.name) AS length FROM playlist.name
+      JOIN playlist.playlist ON name.id = playlist.name_key
       GROUP BY name.name"]))

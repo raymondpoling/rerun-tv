@@ -5,7 +5,7 @@
             [db.db :refer [initialize]]))
 
 (deftest test-app
-  (initialize "playlist_user" "playlist")
+  (initialize)
   (testing "create new playlist"
     (let [response (app (-> (mock/request :post "/new-playlist")
                             (mock/json-body {:name "new-playlist"

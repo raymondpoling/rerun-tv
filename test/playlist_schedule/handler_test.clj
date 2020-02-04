@@ -5,7 +5,7 @@
             [db.db :refer [initialize]]))
 
 (deftest test-app
-  (initialize "schedule_user" "schedule")
+  (initialize)
   (testing "reject a bad schedule"
     (let [response (app (-> (mock/request :post "/test-bad")
                             (mock/json-body {"name" "test-bad"
@@ -23,8 +23,8 @@
     (let [response (app (mock/request :get "/test-found"))]
       (is (= (:status response) 200))
       (is (= (:body response) (str "{\"name\":\"test-found\",\"playlists\""
-                                    ":[{\"name\":\"cats\",\"type\":\"playlist\",\"length\":12}"
-                                    ",{\"name\":\"dogs\",\"type\":\"playlist\",\"length\":13}]}")))))
+                                    ":[{\"name\":\"cats\",\"length\":12,\"type\":\"playlist\"}"
+                                    ",{\"name\":\"dogs\",\"length\":13,\"type\":\"playlist\"}]}")))))
   (testing "getting a frame"
     (let [response (app (mock/request :get "/test-found/33"))]
       (is (= (:status response) 200))

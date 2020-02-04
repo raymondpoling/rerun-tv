@@ -16,6 +16,6 @@
   {:dev {:dependencies [[javax.servlet/servlet-api "2.5"]
                         [ring/ring-mock "0.4.0"]
                         [proto-repl "0.3.1"]
-                        [hsqldb/hsqldb "1.8.0.10"]]}}
+                        [org.hsqldb/hsqldb "2.5.0"]]}}
   :main playlist-playlist.handler
   :aot [playlist-playlist.handler])

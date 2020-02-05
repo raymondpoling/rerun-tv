@@ -15,6 +15,7 @@
   :profiles
   {:dev {:dependencies [[javax.servlet/servlet-api "2.5"]
                         [ring/ring-mock "0.3.2"]
-                        [proto-repl "0.3.1"]]}}
+                        [proto-repl "0.3.1"]
+                        [org.hsqldb/hsqldb "2.5.0"]]}}
   :main user.handler
   :aot [user.handler])

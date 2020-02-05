@@ -7,10 +7,11 @@
                :password nil}))
 
 (defn initialize
- ([name password]
-   (swap! database merge {:user name :password password}))
- ([name password host port]
-   (swap! database merge {:user name :password password :host host :port port})))
+  ([]
+    (swap! database (fn [_ s] s) {:dbtype "hsql" :dbname "playlist"}))
+  ([name password host port]
+    (swap! database merge {:user name :password password :host host :port port})))
+
 
 (defn insert-user [username]
   (j/insert! @database "user.user" {:username username}))

@@ -5,7 +5,7 @@
             [user.handler :refer :all]))
 
 (deftest test-app
-  (initialize "user_user" "user")
+  (initialize)
   (testing "user not found"
     (let [response (app (mock/request :get "/test_user/test_schedule"))]
       (is (= (:status response) 404))

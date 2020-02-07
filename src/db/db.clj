@@ -5,7 +5,7 @@
     [cheshire.core :refer :all]))
 
 (def database (atom {:dbtype "mysql"
-               :dbname "schedule"
+               :dbname "meta"
                :user nil
                :password nil}))
 

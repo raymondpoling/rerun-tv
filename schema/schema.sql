@@ -1,8 +1,8 @@
-DROP IF EXISTS TABLE meta.season_title;
+DROP  TABLE meta.season_title;
 
-DROP IF EXISTS TABLE meta.files;
+DROP  TABLE meta.files;
 
-DROP IF EXISTS TABLE meta.series;
+DROP  TABLE meta.series;
 
 CREATE TABLE meta.series (
   id SERIAL,
@@ -35,6 +35,6 @@ CREATE TABLE meta.files (
   FOREIGN KEY (series_id) REFERENCES meta.series(id) ON DELETE CASCADE
 ) ENGINE INNODB;
 
-CREATE UNIQUE INDEX by_catalog_id ON meta.files(catalog_id);
+-- CREATE UNIQUE INDEX by_catalog_id ON meta.files(catalog_id);
 
 CREATE UNIQUE INDEX by_series_season_episode ON meta.files(series_id,season,episode);

@@ -14,8 +14,8 @@ ENV DB_PORT 3306
 ENV DB_PASSWORD $DB_PASSWORD
 
 
-ENV PORT 4004
+ENV PORT 4005
 
-EXPOSE 4004
+EXPOSE 4005
 
 CMD ["java", "-jar", "file-locator-0.1.0-SNAPSHOT-standalone.jar"]

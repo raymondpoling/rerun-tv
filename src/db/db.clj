@@ -14,22 +14,26 @@
  ([name password host port]
    (swap! database merge {:user name :password password :host host :port port})))
 
+(defn get-id [record]
+ (or (:generated_key record)
+     (:id record)))
+
 (defn find-or-insert-host [host]
-  (let [id (:id (first (j/query @database ["SELECT id FROM file_locator.hosts WHERE host = ?" host])))]
+  (let [id (get-id (first (j/query @database ["SELECT id FROM file_locator.hosts WHERE host = ?" host])))]
     (if (nil? id)
-        (:id (first (j/insert! @database "file_locator.hosts" {:host host})))
+        (get-id (first (j/insert! @database "file_locator.hosts" {:host host})))
         id)))
 
 (defn find-or-insert-protocol [protocol]
-  (let [id (:id (first (j/query @database ["SELECT id FROM file_locator.protocols WHERE protocol = ?" protocol])))]
+  (let [id (get-id (first (j/query @database ["SELECT id FROM file_locator.protocols WHERE protocol = ?" protocol])))]
     (if (nil? id)
-        (:id (first (j/insert! @database "file_locator.protocols" {:protocol protocol})))
+        (get-id (first (j/insert! @database "file_locator.protocols" {:protocol protocol})))
         id)))
 
 (defn find-or-insert-catalog-id [catalog-id]
-  (let [id (:id (first (j/query @database ["SELECT id FROM file_locator.catalog_ids WHERE catalog_id = ?" catalog-id])))]
+  (let [id (get-id (first (j/query @database ["SELECT id FROM file_locator.catalog_ids WHERE catalog_id = ?" catalog-id])))]
     (if (nil? id)
-        (:id (first (j/insert! @database "file_locator.catalog_ids" {:catalog_id catalog-id})))
+        (get-id (first (j/insert! @database "file_locator.catalog_ids" {:catalog_id catalog-id})))
         id)))
 
 (defn insert-url [protocol_id host_id catalog_id path]

@@ -18,7 +18,6 @@
 (defroutes app-routes
   (GET "/:protocol/:host/:catalog_id" [protocol host catalog_id]
     (let [url (fetch-url protocol host catalog_id)]
-      (println "fetched: " url)
       (make-response 200 {:status :ok :url (make-url {:protocol protocol :host host :url url})})))
   (POST "/:protocol/:host/:catalog_id" [protocol host catalog_id]
     (fn [request]
@@ -26,7 +25,6 @@
             host-id (find-or-insert-host host)
             catalog-id (find-or-insert-catalog-id catalog_id)
             protocol-id (find-or-insert-protocol protocol)]
-        (println "request: " (:body request))
         (insert-url protocol-id host-id catalog-id path)
         (make-response 200 {:status :ok}))))
   (route/not-found {:status :not_found}))

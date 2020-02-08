@@ -1,4 +1,4 @@
-CREATE SCHEMA file_locator;
+-- CREATE SCHEMA file_locator;
 
 CREATE TABLE file_locator.hosts (
   id SERIAL PRIMARY KEY,

@@ -33,7 +33,6 @@
         id)))
 
 (defn insert-url [protocol_id host_id catalog_id path]
-  (println "ids! " protocol_id " " host_id " " catalog_id " " path)
   (j/insert! @database "file_locator.urls" {:protocol_id protocol_id :host_id host_id :catalog_id catalog_id :path path}))
 
 (defn fetch-url [protocol host catalog_id]

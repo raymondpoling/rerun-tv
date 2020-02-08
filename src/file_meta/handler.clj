@@ -57,16 +57,28 @@
             (catch java.sql.SQLException e
               (println e)
               (make-response 500 {:status :failure}))))))
-
+  (GET "/series/:name" [name]
+    (fn [request]
+      (let [catalog_ids? (or (:catalog_id_only (:params request)))
+            records (find-by-series name)
+            fields (clojure.string/split (or (:fields (:params request)) "") #",")
+            out_records (if (= fields (list "")) records (map #(select-keys % (map keyword fields)) records))
+            catalog_ids (map (fn [t] (make-catalog-id (:catalog_prefix t) (str (:season t)) (str (:episode t)))) records)
+            to_return (if catalog_ids nil {:records (map #(dissoc % :catalog_prefix) out_records)})]
+            (if (nil? records)
+              (make-response 404 {:status :not_found})
+              (make-response 200 (merge to_return {:status :ok :catalog_ids catalog_ids} ))))))
   (GET "/series/:name/:season/:episode" [name season episode]
     (fn [request]
-      (let [record (first (find-by-series-season-episode name season episode))
+      (let [catalog_ids? (or (:catalog_id_only (:params request)))
+            record (first (find-by-series-season-episode name season episode))
             catalog_id (make-catalog-id (:catalog_prefix record) season episode)
             fields (clojure.string/split (or (:fields (:params request)) "") #",")
-            out_record (if (= fields (list "")) record (select-keys record (map keyword fields)))]
+            out_record (if (= fields (list "")) record (select-keys record (map keyword fields)))
+            to_return (if catalog_ids? nil {:records [(dissoc out_record :catalog_prefix)]})]
             (if (nil? record)
               (make-response 404 {:status :not_found})
-              (make-response 200 {:status :ok :catalog_ids [catalog_id] :records [(dissoc out_record :catalog_prefix)]})))))
+              (make-response 200 (merge to_return {:status :ok :catalog_ids [catalog_id]}))))))
   (DELETE "/series/:name/:season/:episode" [name season episode]
     (let [catalog_id (delete-record name (Integer/parseInt season) (Integer/parseInt episode))]
     (make-response 200 {:status :ok :catalog_ids [(make-catalog-id catalog_id season episode)]})))

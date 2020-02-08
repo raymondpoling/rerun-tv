@@ -63,3 +63,12 @@
   (let [id (find-series series-name)]
     (j/delete! @database "meta.files" ["series_id = ? AND season = ? AND episode = ?" (:id id) season episode])
     (:catalog_prefix id)))
+
+(defn find-by-series [series-name]
+  (j/query @database ["SELECT catalog_prefix, season, episode
+    FROM meta.series
+    JOIN meta.files
+    ON series.id = files.series_id
+    WHERE series.name = ?
+    GROUP BY catalog_prefix, season, episode
+    ORDER BY catalog_prefix, season, episode" series-name]))

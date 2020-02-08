@@ -16,6 +16,10 @@
       (is (= (:status response) 200))
       (is (= (parse-string (:body response)) {"status" "ok","catalog_ids" ["TESTS0101001"],"records"
                               [{"episode_name" nil, "summary" nil "season" 1 "episode" 1 "series" "test-series"}]}))))
+  (testing "find a single record's catalog id only"
+    (let [response (app (mock/request :get "/series/test-series/1/1?catalog_id_only=true"))]
+      (is (= (:status response) 200))
+      (is (= (parse-string (:body response)) {"status" "ok","catalog_ids" ["TESTS0101001"]}))))
   (testing "create a stub record"
     (let [response (app (mock/request :post "/series/test-series/1/2"))]
       (is (= (:status response) 200))
@@ -24,6 +28,11 @@
     (let [response (app (mock/request :post "/series/test-series/1/3"))]
       (is (= (:status response) 200))
       (is (= (:body response) "{\"status\":\"ok\",\"catalog_ids\":[\"TESTS0101003\"]}"))))
+  (testing "find all stub records catalog_ids"
+    (let [response (app (mock/request :get "/series/test-series?catalog_id_only=true"))]
+      (is (= (:status response) 200))
+      (is (= (parse-string (:body response)) {"status" "ok",
+        "catalog_ids" ["TESTS0101001","TESTS0101002","TESTS0101003"]}))))
   (testing "update the stub record"
     (let [response (app (-> (mock/request :put "/series/test-series/1/1")
                             (mock/json-body {"episode_name" "The Cat Returns" "summary" (str "Wonderful "

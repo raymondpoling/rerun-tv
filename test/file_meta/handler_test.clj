@@ -11,6 +11,11 @@
     (let [response (app (mock/request :post "/series/test-series/1/1"))]
       (is (= (:status response) 200))
       (is (= (:body response) "{\"status\":\"ok\",\"catalog_ids\":[\"TESTS0101001\"]}"))))
+  (testing "find a single record"
+    (let [response (app (mock/request :get "/series/test-series/1/1"))]
+      (is (= (:status response) 200))
+      (is (= (parse-string (:body response)) {"status" "ok","catalog_ids" ["TESTS0101001"],"records"
+                              [{"episode_name" nil, "summary" nil "season" 1 "episode" 1 "series" "test-series"}]}))))
   (testing "create a stub record"
     (let [response (app (mock/request :post "/series/test-series/1/2"))]
       (is (= (:status response) 200))

@@ -27,9 +27,9 @@ CREATE UNIQUE INDEX subtitles ON meta.season_title(series_id, season);
 CREATE TABLE meta.files (
   id SERIAL,
   -- catalog_id CHAR(12),
-  series_id BIGINT(20) UNSIGNED,
-  season INTEGER UNSIGNED,
-  episode INTEGER UNSIGNED,
+  series_id BIGINT(20) UNSIGNED NOT NULL,
+  season INTEGER UNSIGNED NOT NULL,
+  episode INTEGER UNSIGNED NOT NULL,
   episode_name VARCHAR(50),
   summary TEXT,
   FOREIGN KEY (series_id) REFERENCES meta.series(id) ON DELETE CASCADE

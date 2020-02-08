@@ -19,12 +19,16 @@
     (Integer/parseInt season)
     (Integer/parseInt episode)))
 
+(defn id [record]
+  (or (:generated_key record)
+      (:id record)))
+
 (defroutes app-routes
   (POST "/series/:name/:season/:episode" [name season episode]
     (let [series_record? (find-series name)
-          series (if (nil? (:id series_record?)) (insert-series name) series_record?)]
+          series (if (nil? (id series_record?)) (insert-series name) series_record?)]
           (try
-            (insert-record (:id series) {:season season :episode episode})
+            (insert-record (id series) {:season season :episode episode})
             (make-response 200 {:status :ok :catalog_ids
               [(make-catalog-id (:catalog_prefix series) season episode)]})
             (catch java.sql.SQLException e
@@ -33,10 +37,10 @@
   (PUT "/series/:name/:season/:episode" [name season episode]
     (fn [request]
       (let [series_record? (find-series name)
-            series (if (nil? (:id series_record?)) (insert-series name) series_record?)]
+            series (if (nil? (id series_record?)) (insert-series name) series_record?)]
 
             (try
-              (update-record (:id series) season episode (:body request))
+              (update-record (id series) season episode (:body request))
               (make-response 200 {:status :ok :catalog_ids
                 [(make-catalog-id (:catalog_prefix series) season episode)]})
             (catch java.sql.SQLException e
@@ -45,9 +49,9 @@
   (PUT "/series/:name" [name]
     (fn [request]
       (let [series_record? (find-series name)
-            series (if (nil? (:id series_record?)) (insert-series name) series_record?)]
+            series (if (nil? (id series_record?)) (insert-series name) series_record?)]
             (try
-              (doall (map (fn [t] (update-record (:id series) (:season t) (:episode t) t)) (:body request)))
+              (doall (map (fn [t] (update-record (id series) (:season t) (:episode t) t)) (:body request)))
               (make-response 200 {:status :ok :catalog_ids
                 (map (fn [t] (make-catalog-id (:catalog_prefix series) (str (:season t)) (str (:episode t)))) (:body request))})
             (catch java.sql.SQLException e

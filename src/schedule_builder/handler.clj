@@ -15,36 +15,43 @@
       (status st)
       (header "content-type" "application/json")))
 
-(def ^:dynamic *playlist-host* "")
-(def ^:dynamic *schedule-host* "")
+(defn make-host [prefix default-port]
+  (let [upcase-prefix (clojure.string/upper-case prefix)
+        host (or (System/getenv (str upcase-prefix "_HOST"))
+                  prefix)
+        port (or (System/getenv (str upcase-prefix "_PORT")) default-port)]
+  (str host ":" port)))
+
+(def hosts {:playlist (make-host "playlist" 4001)
+            :schedule (make-host "schedule" 4000)})
 
 (defroutes app-routes
   (GET "/playlists" []
-    (make-response 200 (get-playlists *playlist-host*)))
+    (make-response 200 (get-playlists (:playlist hosts))))
   (GET "/playlists/:playlist" [playlist]
-    (make-response 200 (get-playlist *playlist-host* playlist)))
+    (make-response 200 (get-playlist (:playlist hosts) playlist)))
   (PUT "/schedule/store/:schedule" [schedule]
     (fn [request]
-      (let [playlists-map (get-playlists-map *playlist-host*)
+      (let [playlists-map (get-playlists-map (:playlist hosts))
             validate (validate-schedule playlists-map (:body request))]
         (if (= (:status validate) :ok)
-          (make-response 200 (:body (put-schedule *schedule-host* schedule (:body request))))
+          (make-response 200 (:body (put-schedule (:schedule hosts) schedule (:body request))))
           (make-response 200 validate)))))
   (POST "/schedule/store/:schedule" [schedule]
     (fn [request]
-      (let [playlists-map (get-playlists-map *playlist-host*)
+      (let [playlists-map (get-playlists-map (:playlist hosts))
             validate (validate-schedule playlists-map (:body request))]
         (if (= (:status validate) :ok)
-          (make-response 200 (:body (post-schedule *schedule-host* schedule (:body request))))
+          (make-response 200 (:body (post-schedule (:schedule hosts) schedule (:body request))))
           (make-response 200 validate)))))
   (GET "/schedule/validate" []
     (fn [request]
-      (let [playlists-map (get-playlists-map *playlist-host*)
+      (let [playlists-map (get-playlists-map (:playlist hosts))
             validate (validate-schedule playlists-map (:body request))]
       validate)))
   (GET "/schedule/validate/:schedule" [schedule]
-    (let [schedule (get-schedule *schedule-host* schedule)
-          playlists-map (get-playlists-map *playlist-host*)
+    (let [schedule (get-schedule (:schedule hosts) schedule)
+          playlists-map (get-playlists-map (:playlist hosts))
           validate (validate-schedule playlists-map schedule)]
           (println "schedule " schedule)
           (println "playlist-map " playlists-map)
@@ -61,12 +68,6 @@
       (assoc-in site-defaults [:security :anti-forgery] false)))
 
 (defn -main []
-  (let [playlist-host (or (System/getenv "PLAYLIST_HOST") "playlist")
-        schedule-host (or (System/getenv "SCHEDULE_HOST") "schedule")
-        playlist-port (or (System/getenv "PLAYLIST_PORT") "4001")
-        schedule-port (or (System/getenv "SCHEDULE_PORT") "4000")]
   (let [port (Integer/parseInt (or (System/getenv "PORT") "4003"))]
-    (alter-var-root #'*playlist-host* (constantly (str playlist-host ":" playlist-port)))
-    (alter-var-root #'*schedule-host* (constantly (str schedule-host ":" schedule-port)))
     (run-server app {:port port})
-    (println (str "Listening on port " port)))))
+    (println (str "Listening on port " port))))

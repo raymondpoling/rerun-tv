@@ -7,7 +7,7 @@
     (let [testing {:name "something" :playlists [{:type "playlist" :name "yap" :length 12}]}
           playlist-map {"yap" 12}
           expected {:status :ok}
-          actual (validate-schedule playlist-map testing)]
+          actual (validate-schedule playlist-map "something" testing)]
       (is (= expected actual))))
 
   (testing "full playlist passing"
@@ -25,7 +25,7 @@
                               {:type "playlist" :name "f" :length 20}]}
           playlist-map {"a" 13 "b" 14 "c" 12 "d" 16 "e" 18 "f" 20}
           expected {:status :ok}
-          actual (validate-schedule playlist-map testing)]
+          actual (validate-schedule playlist-map "something" testing)]
       (is (= expected actual))))
 
   (testing "full playlist failing"
@@ -43,6 +43,6 @@
                               {:type "playlist" :name "f" :length 14}]}
           playlist-map {"a" 13 "b" 14 "c" 12 "d" 16 "e" 18 "f" 20}
           expected {:status :invalid :message "failed validations: [a, c, f]"}
-          actual (validate-schedule playlist-map testing)]
+          actual (validate-schedule playlist-map "something" testing)]
       (is (= (:status expected) (:status actual)))
       (is (= (:message expected) (:message actual))))))

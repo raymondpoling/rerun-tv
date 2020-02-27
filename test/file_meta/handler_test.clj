@@ -53,16 +53,20 @@
       (is (= (:status response) 200))
       (is (= (parse-string (:body response)) {"status" "ok","catalog_ids" ["TESTS0101001"],"records"
                               [{"episode_name" "The Cat Returns", "summary" (str "Wonderful "
-      "story of cats being cats and everyone loving them. Hooray!") "season" 1 "episode" 1 "series" "test-series"}]}))))
+                              "story of cats being cats and everyone loving them. Hooray!") "season" 1 "episode" 1 "series" "test-series"}]}))))
   (testing "find specific fields of a second record"
     (let [response (app (mock/request :get "/series/test-series/1/2?fields=summary"))]
       (is (= (:status response) 200))
       (is (= (parse-string (:body response)) {"status" "ok","catalog_ids"["TESTS0101002"],"records"
-      [{"summary" "Wonderful story of cats being cats and everyone loving them. Hooray! For the second time"}]}))))
+        [{"summary" "Wonderful story of cats being cats and everyone loving them. Hooray! For the second time"}]}))))
   (testing "verify catalog ids are created correctly for subsequent records"
     (let [response (app (mock/request :post "/series/test-serials/1/1"))]
       (is (= (:status response) 200))
       (is (= (:body response) "{\"status\":\"ok\",\"catalog_ids\":[\"TESTS0201001\"]}"))))
+  (testing "get list of available series"
+    (let [response (app (mock/request :get "/series"))]
+      (is (= (:status response) 200))
+      (is (= (parse-string (:body response)) {"status" "ok", "results" ["test-serials", "test-series"]}))))
   (testing "delete a record"
     (let [response (app (mock/request :delete "/series/test-series/1/2"))]
       (is (= (:status response) 200))
@@ -71,13 +75,13 @@
     (let [response (app (mock/request :get "/catalog-id/TESTS0101001"))]
       (is (= (:status response) 200))
       (is (= (parse-string (:body response)) {"status" "ok","catalog_ids" ["TESTS0101001"], "records" [
-      {"episode_name" "The Cat Returns","summary" (str "Wonderful "
-      "story of cats being cats and everyone loving them. Hooray!"),"episode" 1, "season" 1, "series" "test-series"}]}))))
+        {"episode_name" "The Cat Returns","summary" (str "Wonderful "
+        "story of cats being cats and everyone loving them. Hooray!"),"episode" 1, "season" 1, "series" "test-series"}]}))))
   (testing "find specific fields of a second record by catalog_id"
     (let [response (app (mock/request :get "/catalog-id/TESTS0101003?fields=summary"))]
       (is (= (:status response) 200))
       (is (= (parse-string (:body response)) {"status" "ok","catalog_ids"["TESTS0101003"],"records"
-      [{"summary" "Wonderful story of cats being cats and everyone loving them. Hooray! Got tired of this"}]}))))
+        [{"summary" "Wonderful story of cats being cats and everyone loving them. Hooray! Got tired of this"}]}))))
   (testing "not-found route"
     (let [response (app (mock/request :get "/invalid"))]
       (is (= (:status response) 404))))

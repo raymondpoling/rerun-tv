@@ -72,3 +72,6 @@
     WHERE series.name = ?
     GROUP BY catalog_prefix, season, episode
     ORDER BY catalog_prefix, season, episode" series-name]))
+
+(defn find-all-series []
+  (j/query @database ["SELECT name FROM meta.series GROUP BY name ORDER BY name"]))

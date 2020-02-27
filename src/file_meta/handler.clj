@@ -92,7 +92,10 @@
                 (make-response 404 {:status :not_found})
                 (make-response 200 {:status :ok :catalog_ids [catalog_id] :records [(dissoc out_record :catalog_prefix)]}))))
         (make-response 404 {:status :not_found})))
-
+    (GET "/series" []
+      (let [series (find-all-series)]
+        (println "series " series)
+        (make-response 200 {:status :ok :results (map #(:name %) series)})))
   (route/not-found "Not Found"))
 
 (def app

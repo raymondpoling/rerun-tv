@@ -86,4 +86,4 @@
 (defn -main []
   (let [port (Integer/parseInt (or (System/getenv "PORT") "4003"))]
     (run-server app {:port port})
-    (println (str "Listening on port " port))))
+    (logging/info (str "Listening on port " port))))

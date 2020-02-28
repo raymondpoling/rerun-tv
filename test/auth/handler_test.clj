@@ -1,7 +1,8 @@
 (ns auth.handler-test
   (:require [clojure.test :refer :all]
             [ring.mock.request :as mock]
-            [db.db :refer [initialize]]
+            [db.db :refer [initialize database]]
+            [clojure.java.jdbc :as j]
             [auth.handler :refer :all]
             [cheshire.core :refer :all]))
 
@@ -44,9 +45,14 @@
       (is (= (:status response) 200))
       (is (= (parse-string (:body response)) {"status" "ok"}))))
 
-  (testing "validate a user"
-    (let [response (app (-> (mock/request :post "/validate/test-user")
+  (testing "validate a user" ; do not like, but necessary to prove 256 being used. Ideally, we are salting a hash though.
+    (let [pass (:password (first (j/query @database ["SELECT * FROM auth.authorize WHERE auth.authorize.user = 'test-user'"])))
+          response (app (-> (mock/request :post "/validate/test-user")
                             (mock/json-body {:password "changed"})))]
+      (is (some? pass))
+      (is (not (empty? pass)))
+      (is (= (count pass) 64))
+      (is (not (= pass "changed")))
       (is (= (:status response) 200))
       (is (= (parse-string (:body response)) {"status" "ok"}))))
 

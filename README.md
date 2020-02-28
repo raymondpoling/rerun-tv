@@ -1,6 +1,15 @@
-# m3u
+# format
 
-FIXME
+Formats the output in preferred format. Currently only m3us, but expect to do
+zip files or tars with playlist and files together, and maybe other formats.
+
+## Exposed Interface
+
+- GET /:user/:schedule-name
+  For a given :user, return the current playlist for :schedule-name (uses the user
+    API for determining current schedule index and auto-increment it).
+  * An m3u file with the name:
+  :schedule-name - :index.m3u
 
 ## Prerequisites
 

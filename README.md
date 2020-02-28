@@ -46,7 +46,8 @@ in a playlist. Duplicated elements with information on:
 - GET /:name/:index
   Returns a JSON array of reference ids (catalog ids in this implementation) of
   the rendered playlist for the schedule at this index.
-  * ["TEST101001","TEST201001",...] is a preformatted playlist.
+  * [{"name":"playlist_name1","index":3},{"name":"playlist_name2","index":17},...]
+   is a preformatted playlist.
 - PUT /:name
   Takes a schedule JSON as specified under POSt /:name, and is used to replace
   an existing schedule. Used for updating an existing schedule.

@@ -1,5 +1,6 @@
 (ns remote-call.fetch-records
   (:require
+    [clojure.tools.logging :as logger]
     [remote-call.locator :refer [get-file-url]]
     [remote-call.playlist :refer [get-catalog-id]]
     [remote-call.schedule :refer [get-schedule]]
@@ -24,5 +25,10 @@
                       (get-file-url locator-host item)) catalog_ids)
         meta (map
                 (fn [item]
-                  (get-meta meta-host item ["season", "episode_name", "series", "episode"])) catalog_ids)]
-  (reverse (my-merge locations meta []))))
+                  (get-meta meta-host item ["season", "episode_name", "series", "episode"])) catalog_ids)
+        failures (filter #(= "failure" (:status %)) (flatten [playlist catalog_ids locations meta]))]
+  (if (empty? failures)
+    (reverse (my-merge locations meta []))
+    (do
+      (logger/error "failures are: " failures)
+      (first failures)))))

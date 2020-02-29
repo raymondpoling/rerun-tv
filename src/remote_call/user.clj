@@ -1,4 +1,4 @@
-(ns remote-call.playlist
+(ns remote-call.user
   (:require [diehard.core :as dh]
             [diehard.circuit-breaker :refer [state]]
             [cheshire.core :refer :all]
@@ -8,8 +8,9 @@
 (dh/defcircuitbreaker ckt-brkr {:failure-threshold-ratio [8 10]
                               :delay-ms 1000})
 
-(defn get-catalog-id [host name index]
-  (clc/log-on-error {:status "failure" :message "playlist service not available"}
+(defn get-index [host user schedule-name]
+  (clc/log-on-error {:status "failure" :message "user service not available"}
       (dh/with-circuit-breaker ckt-brkr
-        (:body (client/get
-          (str "http://" host "/" name "/" index))))))
+        (:idx (parse-string (:body (client/get
+                          (str "http://" host "/" user "/" schedule-name))
+                          {:as :json}) true)))))

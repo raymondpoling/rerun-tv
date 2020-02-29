@@ -8,11 +8,15 @@
                  [ring/ring-json "0.5.0"]
                  [diehard "0.9.1"]
                  [clj-http "3.10.0"]
+                 [common-lib "0.1.0-SNAPSHOT"]
+                 [org.clojure/tools.logging "0.6.0"]
+                 [ch.qos.logback/logback-classic "1.2.3"]
                  [http-kit "2.1.16"]]
   :plugins [[lein-ring "0.12.5"]]
   :ring {:handler format.handler/app}
   :profiles
   {:dev {:dependencies [[javax.servlet/servlet-api "2.5"]
-                        [ring/ring-mock "0.3.2"]]}}
+                        [ring/ring-mock "0.3.2"]
+                        [clj-http-fake "1.0.3"]]}}
   :main format.handler
   :aot [format.handler])

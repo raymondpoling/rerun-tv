@@ -36,7 +36,7 @@
           records (fetch schedule-host playlist-host locator-host meta-host user index schedule-name)
           failure (filter #(= "failure" (:status %)) [index records])]
       (logger/error "Failures? " failure)
-      (logger/debug user schedule-name index "records: " (generate-string [index records]))
+      (logger/debug user schedule-name index "records: " (str [index records]))
       (if (empty? failure)
         (make-m3u-response 200 schedule-name index (m3u schedule-name index records))
         (clc/make-response 502 (first failure)))))

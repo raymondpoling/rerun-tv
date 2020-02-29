@@ -9,7 +9,7 @@
                               :delay-ms 1000})
 
 (defn get-catalog-id [host name index]
-  (clc/log-on-error {:status "failure" :message "playlist service not available"}
+  (clc/log-on-error nil
       (dh/with-circuit-breaker ckt-brkr
         (:body (client/get
           (str "http://" host "/" name "/" index))))))

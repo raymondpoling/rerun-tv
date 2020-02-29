@@ -51,7 +51,7 @@
               expected {"status" "failure" "message" "schedule service not available"}]
           (is (= (:status response) 502))
           (is (= (parse-string (:body response)) expected)))))
-
+    ;
     (testing "propogate an error if user service fails"
       (with-fake-routes-in-isolation (merge route-maps {"http://user:4002/test-user/test-schedule"
                                       (fn [result] {:status 500 :headers {}

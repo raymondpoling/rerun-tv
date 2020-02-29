@@ -9,6 +9,6 @@
                               :delay-ms 1000})
 
 (defn get-schedule [host schedule-name index]
-  (clc/log-on-error {:status "failure" :message "schedule service not available"}
+  (clc/log-on-error nil
       (dh/with-circuit-breaker ckt-brkr
         (:body (client/get (str "http://" host "/" schedule-name "/" index) {:as :json})))))

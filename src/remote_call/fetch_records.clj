@@ -14,21 +14,24 @@
       (drop 1 b)
       (cons (merge {:url (first a)} (first b)) acc))))
 
+;; This should be cleaned up.
 (defn fetch [schedule-host playlist-host locator-host meta-host user index schedule-name]
-  (let [playlist (get-schedule schedule-host schedule-name index)
-        catalog_ids (map
+  (if-let [playlist (get-schedule schedule-host schedule-name index)]
+        (let [catalog_ids (map
                       (fn [item]
                         (get-catalog-id playlist-host (:name item) (:index item)))
-                          playlist)
-        locations (map
+                          playlist)]
+                          (if (some nil? catalog_ids)
+                            {:status "failure" :message "playlist service not available"}
+          (let [locations (map
+                      (fn [item]
+                        (get-file-url locator-host item)) catalog_ids)]
+                        (if (some nil? locations)
+                          {:status "failure" :message "locator service not available"}
+            (let [meta (map
                     (fn [item]
-                      (get-file-url locator-host item)) catalog_ids)
-        meta (map
-                (fn [item]
-                  (get-meta meta-host item ["season", "episode_name", "series", "episode"])) catalog_ids)
-        failures (filter #(= "failure" (:status %)) (flatten [playlist catalog_ids locations meta]))]
-  (if (empty? failures)
-    (reverse (my-merge locations meta []))
-    (do
-      (logger/error "failures are: " failures)
-      (first failures)))))
+                      (get-meta meta-host item ["season", "episode_name", "series", "episode"])) catalog_ids)]
+                      (if (some nil? meta)
+                        {:status "failure" :message "meta service not available"}
+                          (reverse (my-merge locations meta []))))))))
+        {:status "failure" :message "schedule service not available"}))

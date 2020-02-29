@@ -9,7 +9,7 @@
                               :delay-ms 1000})
 
 (defn get-meta [host catalog-id fields]
-  (clc/log-on-error {:status "failure" :message "meta service not available"}
+  (clc/log-on-error nil
       (dh/with-circuit-breaker ckt-brkr
         (first (:records (parse-string (:body (client/get
           (str "http://" host "/catalog-id/" catalog-id "?fields=" (clojure.string/join "," fields))) {:as :json}) true))))))

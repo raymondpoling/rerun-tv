@@ -2,16 +2,17 @@
   (:require [compojure.core :refer :all]
             [compojure.route :as route]
             [ring.middleware.json :as json]
-            [ring.util.response :refer [response not-found header status]]
+            [ring.util.response :refer [not-found]]
             [db.db :refer :all]
+            [clojure.tools.logging :as logger]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
+            [common-lib.core :as clc]
             [org.httpkit.server :refer [run-server]])
   (:gen-class))
 
-(defn make-response [st resp]
-  (-> (response resp)
-      (status st)
-      (header "content-type" "application/json")))
+(defn invalid-credentials [user]
+  (logger/warn (str "bad login for user '" user "'"))
+  (clc/make-response 400 {:status :invalid-credentials}))
 
 (defroutes app-routes
   (POST "/new/:user" [user]
@@ -20,16 +21,17 @@
             valid? (not (nil? password))]
           (try
             (new-user user password)
-            (make-response 200 {:status :ok})
+            (clc/make-response 200 {:status :ok})
           (catch java.sql.SQLException e
-            (make-response 400 {:status :could-not-create}))))))
+            (logger/error (str "could not create user '" user "': " (.getMessage e)))
+            (clc/make-response 400 {:status :could-not-create}))))))
   (POST "/validate/:user" [user]
     (fn [request]
       (let [password (:password (:body request))
             valid? (verify-password user password)]
             (if valid?
-              (make-response 200 {:status :ok})
-              (make-response 400 {:status :invalid-credentials})))))
+              (clc/make-response 200 {:status :ok})
+              (invalid-credentials user)))))
   (POST "/update/:user" [user]
     (fn [request]
       (let [password (:old-password (:body request))
@@ -38,10 +40,10 @@
             (if valid?
               (do
                 (change-password user new-password)
-                (make-response 200 {:status :ok}))
-              (make-response 400 {:status :invalid-credentials})))))
+                (clc/make-response 200 {:status :ok}))
+              (invalid-credentials user)))))
 
-  (route/not-found (make-response 404 {:status :not-found})))
+  (route/not-found (clc/make-response 404 {:status :not-found})))
 
 (def app
   (wrap-defaults

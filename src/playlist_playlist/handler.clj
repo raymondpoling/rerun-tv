@@ -42,12 +42,14 @@
     (delete-series name)
     (logger/warn (str "playlist '" name "' deleted"))
     (clc/make-response 200 {:status "ok"}))
-  ; (GET "/:name" [name]
-  ;   (clc/make-response 200 {:status "ok", :name name, :playlists (find-playlist name)}))
+  (GET "/:name" [name]
+    (if-let [item (find-playlist name)]
+      (clc/make-response 200 {:status "ok", :playlist item})
+      nil)) ; let not-found catch it
   (GET "/:name/:idx" [name idx]
     (if-let [item (find-item name idx)]
       (clc/make-response 200 {:status "ok", :playlist item})
-      nil))
+      nil)) ; let not-found catch it
   (route/not-found (clc/make-response 404 {:status :not-found})))
 
 

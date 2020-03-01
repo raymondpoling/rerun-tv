@@ -46,6 +46,15 @@
     )]
     (:object (first out))))
 
+(defn find-playlist [name]
+  (let [out (j/query @database
+    ["SELECT name.name AS name, count(name.name) AS length FROM playlist.name
+      JOIN playlist.playlist ON name.id = playlist.name_key
+      WHERE name.name = ?
+      GROUP BY name.name" name]
+    )]
+    (first out)))
+
 (defn get-all-playlists []
   (j/query @database
     ["SELECT name.name AS name, count(name.name) AS length FROM playlist.name

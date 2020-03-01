@@ -34,26 +34,25 @@ in a playlist. Duplicated elements with information on:
   same name as the schedule in the URL and ... is formatted list of items as per
   the summary above.
   * {"status":"ok"} The new schedule stored correctly.
-  * {"message":":name is already defined."} with a 400 status code means an
+  * {"status":"failed","message":":name is already defined."} with a 400 status code means an
   attempt to overwrite an existing schedule was attempted.
-  * {"message":"..."} with a 412 status code means an unspecified error occurred,
-  and ... is the error message. [should be removed]
+  * {"status":"failed","message":"..."} with a 412 status code means an unspecified error occurred,
+  and ... is the error message.
 - GET /:name
   Returns the schedule JSON document associated with the name if it exists.
-  * {"name"::name, "playlists": [...]} is the requested schedule JSON document.
-  * "Not found :name" means the schedule does not exist. [needs to be made
-  compliant]
+  * {"status":"ok", "schedule": {"name"::name, "playlists": [...]}} is the requested schedule JSON document.
+  * {"status":"not-found"} means the schedule does not exist.
 - GET /:name/:index
   Returns a JSON array of reference ids (catalog ids in this implementation) of
   the rendered playlist for the schedule at this index.
-  * [{"name":"playlist_name1","index":3},{"name":"playlist_name2","index":17},...]
-   is a preformatted playlist.
+  * {"status":"ok", "items":[{"name":"playlist_name1","index":3},{"name":"playlist_name2","index":17},...]}
+   is a playlist derived from the schedule before being formatted.
 - PUT /:name
-  Takes a schedule JSON as specified under POSt /:name, and is used to replace
+  Takes a schedule JSON as specified under POST /:name, and is used to replace
   an existing schedule. Used for updating an existing schedule.
   * {"status":"ok"} if the document is updated correctly.
-  * {"message":"..."} with a 412 status code means an unspecified error occurred,
-  and ... is the error message. [should be removed]
+  * {"status":"failed","message":"..."} with a 412 status code means an unspecified error occurred,
+  and ... is possibly more information.
 - DELETE /:name
   Deletes an exiting schedule with the given :name.
   * {"status":"ok"} if the schedule is deleted.

@@ -11,8 +11,8 @@ has the following guaranteed features:
 - GET /
   Returns a list of all playlist names in the database, and how many items are
   in the playlist.
-  * [{"name":"playlist1","length":27},...] respresents a successful response and
-  all items.
+  * {"status": "ok", "playlists":[{"name":"playlist1","length":27},...]
+  respresents a successful response and all items.
 - POST /:name
   With a JSON body in the format of {"playlist":["item1","item2",...]}
   will create a new playlist with the given :name, and the listed items (catalog
@@ -32,7 +32,14 @@ has the following guaranteed features:
   * {"status":"ok"} means the operation completed successfully.
 - GET /:name/:index
   Returns the playlist item from the named playlist at the given index.
-  * "item1" is the catalog id of the returned item. [should be standardized]
+  * {"status":"ok", "item":"item1"} is the catalog id of the returned item.
+  * {"status":"not-found"} If the playlist is not found.
+- GET /:name
+  Returns the given playlist in schedule ready format.
+  * {"status":"ok", "playist":{"name"::name, "length": :len}} where :name is the
+  name of the playlist from the request, and :len is the number of items in the
+  playlist.
+  * {"status":"not-found"} If the playlist is not found.
 
 ## Prerequisites
 

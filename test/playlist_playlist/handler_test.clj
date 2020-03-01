@@ -16,7 +16,7 @@
   (testing "find element in playlist"
     (let [response (app (mock/request :get "/new-playlist/12"))]
       (is (= (:status response) 200))
-      (is (= (parse-string (:body response)) {"status" "ok" "playlist" "m"}))))
+      (is (= (parse-string (:body response)) {"status" "ok" "item" "m"}))))
   (testing "reject overwriting playlist"
     (let [response (app (-> (mock/request :post "/new-playlist")
                             (mock/json-body {:name "new-playlist"
@@ -37,7 +37,7 @@
   (testing "find element in playlist to ensure not overwritten"
     (let [response (app (mock/request :get "/new-playlist/12"))]
       (is (= (:status response) 200))
-      (is (= (parse-string (:body response)) {"status" "ok" "playlist" "m"}))))
+      (is (= (parse-string (:body response)) {"status" "ok" "item" "m"}))))
   (testing "replace playlist"
     (let [response (app (-> (mock/request :put "/new-playlist")
                             (mock/json-body {:name "new-playlist"
@@ -47,7 +47,7 @@
   (testing "find element in updated playlist"
     (let [response (app (mock/request :get "/new-playlist/12"))]
       (is (= (:status response) 200))
-      (is (= (parse-string (:body response)) {"status" "ok" "playlist" "n"}))))
+      (is (= (parse-string (:body response)) {"status" "ok" "item" "n"}))))
   (testing "get a list of playlists"
     (let [response (app (mock/request :get "/"))]
       (is (= (:status response) 200))

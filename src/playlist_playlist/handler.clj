@@ -48,7 +48,7 @@
       nil)) ; let not-found catch it
   (GET "/:name/:idx" [name idx]
     (if-let [item (find-item name idx)]
-      (clc/make-response 200 {:status "ok", :playlist item})
+      (clc/make-response 200 {:status "ok", :item item})
       nil)) ; let not-found catch it
   (route/not-found (clc/make-response 404 {:status :not-found})))
 

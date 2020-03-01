@@ -5,6 +5,7 @@
             [ring.middleware.json :as json]
             [db.db :refer :all]
             [common-lib.core :as clc]
+            [clojure.tools.logging :as logger]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
             [org.httpkit.server :refer [run-server]])
   (:gen-class))
@@ -13,28 +14,28 @@
   (POST "/:user" [user]
     (let [created? (insert-user user)]
       (if (nil? created?)
-        (clc/make-response 400 {:status :failed})
+        (do
+          (logger/warn (str "could not create user '" user "'"))
+          (clc/make-response 400 {:status :failed}))
         (clc/make-response 200 {:status "ok"}))))
   (DELETE "/:user" [user]
     (if (not (nil? (delete-user user)))
       (clc/make-response 200 {:status "ok"})
-      (clc/make-response 400 {:status :failed})))
+      (do
+        (logger/warn (str "could not delete user '" user "'"))
+        (clc/make-response 400 {:status :failed}))))
   (GET "/:user/:schedule" [user schedule preview]
-    (fn [request]
-      (if preview
-        (let [value (get-index user schedule)]
-          (if (nil? value)
-              (clc/make-response 404 {:status :not-found})
-              (clc/make-response 200 {:status :ok :idx value})))
-        (let [value (get-and-update user schedule)]
-          (if (nil? value)
-            (clc/make-response 404 {:status :not-found})
-            (clc/make-response 200 {:status :ok :idx value}))))))
+    (let [value (get-and-update user schedule preview)]
+      (if (nil? value)
+          (do
+            (logger/warn (str "user/schedule not found '" user "/" schedule "'"))
+            (clc/make-response 404 {:status :not-found}))
+          (clc/make-response 200 {:status :ok :idx value}))))
   (PUT "/:user/:schedule/:index" [user schedule index]
     (if (update-user-schedule-index user schedule index)
       (clc/make-response 200 {:status :ok})
       (clc/make-response 400 {:status :failed})))
-  (route/not-found "Not Found"))
+  (route/not-found (clc/make-response 404 {:status :not-found})))
 
 (def app
   (wrap-defaults

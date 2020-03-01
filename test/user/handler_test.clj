@@ -55,6 +55,13 @@
       (is (= (parse-string (:body response1)) {"status" "ok","idx" 1}))
       (is (= (:status response2) 200))
       (is (= (parse-string (:body response2)) {"status" "ok","idx" 1}))))
+  (testing "preview unknown schedule produces 0"
+    (let [response1 (app (mock/request :get "/test_user/unknown_schedule?preview=true"))
+          response2 (app (mock/request :get "/test_user/unknown_schedule?preview=true"))]
+      (is (= (:status response1) 200))
+      (is (= (parse-string (:body response1)) {"status" "ok","idx" 0}))
+      (is (= (:status response2) 200))
+      (is (= (parse-string (:body response2)) {"status" "ok","idx" 0}))))
   (testing "delete test user"
     (let [response (app (mock/request :delete "/test_user"))]
       (is (= (:status response) 200))

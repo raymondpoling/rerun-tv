@@ -5,29 +5,33 @@
               [ring.util.response :refer [response not-found header status]]
               [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
               [db.db :refer :all]
+              [common-lib.core :as clc]
+              [clojure.tools.logging :as logger]
               [file-locator.url :refer [make-url]]
               [org.httpkit.server :refer [run-server]])
     (:gen-class))
 
-(defn make-response [st resp]
-  (-> (response resp)
-      (status st)
-      (header "content-type" "application/json")))
-
-
 (defroutes app-routes
   (GET "/:protocol/:host/:catalog_id" [protocol host catalog_id]
-    (let [url (fetch-url protocol host catalog_id)]
-      (make-response 200 {:status :ok :url (make-url {:protocol protocol :host host :url url})})))
+    (try
+      (let [url (fetch-url protocol host catalog_id)]
+        (clc/make-response 200 {:status :ok :url (make-url {:protocol protocol :host host :url url})}))
+      (catch Exception e
+        (logger/error (str "could not get url for protocol/host/catalog_id '" protocol "/" host "/" catalog_id ": " (.getMessage e)))
+        (clc/make-response 500 {:status :failed}))))
   (POST "/:protocol/:host/:catalog_id" [protocol host catalog_id]
     (fn [request]
-      (let [path (:path (:body request))
-            host-id (find-or-insert-host host)
-            catalog-id (find-or-insert-catalog-id catalog_id)
-            protocol-id (find-or-insert-protocol protocol)]
-        (insert-url protocol-id host-id catalog-id path)
-        (make-response 200 {:status :ok}))))
-  (route/not-found {:status :not_found}))
+      (try
+        (let [path (:path (:body request))
+              host-id (find-or-insert-host host)
+              catalog-id (find-or-insert-catalog-id catalog_id)
+              protocol-id (find-or-insert-protocol protocol)]
+          (insert-url protocol-id host-id catalog-id path)
+          (clc/make-response 200 {:status :ok}))
+      (catch Exception e
+        (logger/error (str "could not post url for protocol/host/catalog_id '" protocol "/" host "/" catalog_id ": " (.getMessage e)))
+        (clc/make-response 500 {:status :failed})))))
+  (route/not-found {:status :not-found}))
 
 (def app
   (wrap-defaults

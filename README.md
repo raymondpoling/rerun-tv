@@ -7,19 +7,23 @@ added later, but authentication is NOT part of this API.
 ## Exposed Interface
 
 - POST /:user
-  Creates a new user with name :user, and returns {"status":"ok"} if it completes
-  correctly, but returns {"status":"failed"} if the user cannot be created.
+  Creates a new user with name :user, and returns
+  * {"status":"ok"} if it completes correctly
+  * {"status":"failed"} if the user cannot be created.
 - DELETE /:user
-  Deletes a user with name :user, and all related metadata. Returns {"status":"ok"}
-  if it completes correctly, and {"status":"failed"} if otherwise.
+  Deletes a user with name :user, and all related metadata.
+  * {"status":"ok"} if it completes correctly
+  * {"status":"failed"} if otherwise.
 - GET /:user/:schedule
   Returns the current index for the given schedule, and automatically advances
-  the index. Format of the result is {"idx":integer} for a successful result,
-  and {"status":"not found"} on error, though if the schedule was never viewed
-  it will automatically start from index 0.
+  the index. Format of the result is
+  * {"status":"ok", "idx":integer} for a successful result
+  * {"status":"not-found"} on error, though if the schedule was never viewed
+  it will automatically start from index 0 (thus not-found should be unusual).
 - PUT /:user/:schedule/:index
-  Allows for setting the current index, overwriting the stored value. Returned
-  values are {"status":"ok"} on success, and {"status":"failed"} on failure.
+  Allows for setting the current index, overwriting the stored value.
+  * {"status":"ok"} on success
+  * {"status":"failed"} on failure.
 
 ## Prerequisites
 

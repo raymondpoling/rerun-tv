@@ -4,44 +4,51 @@
             [compojure.route :as route]
             [ring.util.response :refer [response not-found header status]]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
+            [common-lib.core :as clc]
+            [clojure.tools.logging :as logger]
             [db.db :refer :all]
             [org.httpkit.server :refer [run-server]])
   (:gen-class))
 
+(defn invalid-request [operation playlist e]
+  (logger/error (str "error processing request for '" operation " " playlist "': " (.getMessage e)))
+  (clc/make-response 412 {:status "invalid"}))
+
 (defroutes app-routes
   (GET "/" []
-    (response (get-all-playlists)))
+    (clc/make-response 200 {:status :ok, :playlists (get-all-playlists)}))
   (POST "/:name" [name]
     (fn [request]
       (try
-      (let [data (:body request)]
-        (insert-series name)
-        (insert-playlist name (:playlist data))
-      (response {:status "ok"}))
+        (let [data (:body request)]
+          (insert-series name)
+          (insert-playlist name (:playlist data))
+          (clc/make-response 200 {:status "ok"}))
       (catch java.sql.SQLIntegrityConstraintViolationException e
-        (-> (response {:status "invalid"})
-          (status 412)))
+        (invalid-request "POST" name e))
       (catch java.sql.SQLException e
-        (-> (response {:status "invalid"})
-          (status 412))))))
+        (invalid-request "POST" name e)))))
   (PUT "/:name" [name]
     (fn [request]
       (try
-      (let [data (:body request)]
-        (replace-playlist name (:playlist data))
-      (response {:status "ok"}))
-      (catch java.sql.SQLIntegrityConstraintViolationException e
-        (-> (response {:status "invalid"})
-          (status 412)))
-      (catch java.sql.SQLException e
-        (-> (response {:status "invalid"})
-          (status 412))))))
+        (let [data (:body request)]
+          (replace-playlist name (:playlist data))
+          (clc/make-response 200 {:status "ok"}))
+        (catch java.sql.SQLIntegrityConstraintViolationException e
+          (invalid-request "PUT" name e))
+        (catch java.sql.SQLException e
+          (invalid-request "PUT " name e)))))
   (DELETE "/:name" [name]
     (delete-series name)
-    (response {:status "ok"}))
+    (logger/warn (str "playlist '" name "' deleted"))
+    (clc/make-response 200 {:status "ok"}))
+  ; (GET "/:name" [name]
+  ;   (clc/make-response 200 {:status "ok", :name name, :playlists (find-playlist name)}))
   (GET "/:name/:idx" [name idx]
-    (find-item name idx))
-  (route/not-found "Not Found"))
+    (if-let [item (find-item name idx)]
+      (clc/make-response 200 {:status "ok", :playlist item})
+      nil))
+  (route/not-found (clc/make-response 404 {:status :not-found})))
 
 
 (def app

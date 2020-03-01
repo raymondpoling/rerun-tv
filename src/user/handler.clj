@@ -4,35 +4,36 @@
             [ring.util.response :refer [response not-found header status]]
             [ring.middleware.json :as json]
             [db.db :refer :all]
+            [common-lib.core :as clc]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
             [org.httpkit.server :refer [run-server]])
   (:gen-class))
-
-(defn make-response [st resp]
-  (-> (response resp)
-      (status st)
-      (header "content-type" "application/json")))
-
 
 (defroutes app-routes
   (POST "/:user" [user]
     (let [created? (insert-user user)]
       (if (nil? created?)
-        (make-response 400 {:status :failed})
-        (make-response 200 {:status "ok"}))))
+        (clc/make-response 400 {:status :failed})
+        (clc/make-response 200 {:status "ok"}))))
   (DELETE "/:user" [user]
     (if (not (nil? (delete-user user)))
-      (make-response 200 {:status "ok"})
-      (make-response 400 {:status :failed})))
-  (GET "/:user/:schedule" [user schedule]
-    (let [value (get-and-update user schedule)]
-      (if (nil? value)
-        (make-response 404 {:status "not found"})
-        (make-response 200 {:idx value}))))
+      (clc/make-response 200 {:status "ok"})
+      (clc/make-response 400 {:status :failed})))
+  (GET "/:user/:schedule" [user schedule preview]
+    (fn [request]
+      (if preview
+        (let [value (get-index user schedule)]
+          (if (nil? value)
+              (clc/make-response 404 {:status :not-found})
+              (clc/make-response 200 {:status :ok :idx value})))
+        (let [value (get-and-update user schedule)]
+          (if (nil? value)
+            (clc/make-response 404 {:status :not-found})
+            (clc/make-response 200 {:status :ok :idx value}))))))
   (PUT "/:user/:schedule/:index" [user schedule index]
     (if (update-user-schedule-index user schedule index)
-      (make-response 200 {:status :ok})
-      (make-response 400 {:status :failed})))
+      (clc/make-response 200 {:status :ok})
+      (clc/make-response 400 {:status :failed})))
   (route/not-found "Not Found"))
 
 (def app

@@ -10,11 +10,13 @@ GET /:protocol/:host/:catalog_id
   Returns a url for the given :catalog_id, based on requested :host and :protocol.
   * {"status":"ok","url":"some url"} where some url is a url/uri for the file
   referenced by the catalog_id.
+  * {"status":"failed"} with status code 500 if cannot find url.
 POST /:protocol/:host/:catalog_id
   With a JSON body in format of {"path":path} where path is the path to the
   file resource (if protocol://host/path/to/resource is an example URL,
     /path/to/resource would be the path in the above example).
   * {"status":"ok"} means the given URL/URI has been stored.
+  * {"status":"failed"} with status code 500 if cannot find the url.
 
 ## Prerequisites
 

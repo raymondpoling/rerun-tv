@@ -24,7 +24,7 @@
     (logging/debug "playlists: " playlists)
     (if (= (:status playlists) :failure)
       playlists
-      (into {} (map (fn [t] [(:name t) (:length t)]) playlists)))))
+      (into {} (map (fn [t] [(:name t) (:length t)]) (:playlists playlists))))))
 
 
 (defn get-playlist [host playlist-name]

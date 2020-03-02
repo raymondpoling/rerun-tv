@@ -9,12 +9,15 @@
   (testing "get all playlists"
     (with-fake-routes-in-isolation {"http://playlist:4001/"
                                   (fn [request] {:status 200 :headers {}
-                                    :body (generate-string {:status :ok :results ["series_a", "series_b"]})})}
+                                    :body (generate-string {:status :ok
+                                      :playlists [{"name" "series_a" "length" 12},
+                                                {"name" "series_b" "length" 23}]})})}
     (let [response (app (mock/request :get "/playlists"))]
       (is (= (:status response) 200))
       (is (= (parse-string (:body response))
               {"status" "ok"
-               "results" ["series_a", "series_b"]})))))
+               "playlists" [{"name" "series_a" "length" 12},
+                            {"name" "series_b" "length" 23}]})))))
   (testing "failed to get all playlists"
     (with-fake-routes-in-isolation {"http://playlist:4001/"
                                     (fn [request] {:status 500 :headers {}})}
@@ -26,12 +29,12 @@
   (testing "found playlist"
     (with-fake-routes-in-isolation {"http://playlist:4001/series_test1"
                                     (fn [request] {:status 200 :headers {}
-                                      :body (generate-string {:status :ok :results ["a","b","c"]})})}
+                                      :body (generate-string {:status :ok :items ["a","b","c"]})})}
     (let [response (app (mock/request :get "/playlists/series_test1"))]
       (is (= (:status response) 200))
       (is (= (parse-string (:body response))
               {"status" "ok"
-                "results" ["a","b","c"]})))))
+                "items" ["a","b","c"]})))))
   (testing "playlist not found"
     (with-fake-routes-in-isolation {"http://playlist:4001/series_test1"
                                     (fn [request] {:status 404 :headers {}
@@ -56,7 +59,7 @@
                                     {:put (fn [req] {:status 200 :headers {} :body (generate-string {:status :ok})})}
                                     "http://playlist:4001/"
                                       (fn [request] {:status 200 :headers ()
-                                                    :body (generate-string [{:name "series_test1", :length 27}])})}
+                                                    :body (generate-string {:status :ok :playlists [{:name "series_test1", :length 27}]})})}
     (let [response (app (-> (mock/request :put "/schedule/store/schedule1")
                             (mock/json-body {:name "schedule1" :playlists [{:type "playlist" :name "series_test1" :length 27}]})))]
       (is (= (:status response) 200))
@@ -67,7 +70,7 @@
                                     {:put (fn [req] {:status 200 :headers {} :body (generate-string {:status :ok})})}
                                     "http://playlist:4001/"
                                       (fn [request] {:status 200 :headers ()
-                                                    :body (generate-string [{:name "series_test1", :length 27}])})}
+                                                    :body (generate-string {:status :ok :playlists [{:name "series_test1", :length 27}]})})}
     (let [response (app (-> (mock/request :put "/schedule/store/schedule1")
                             (mock/json-body {:name "schedule1"})))]
       (is (= (:status response) 200))
@@ -78,7 +81,7 @@
                                     {:put (fn [req] {:status 200 :headers {} :body (generate-string {:status :ok})})}
                                     "http://playlist:4001/"
                                       (fn [request] {:status 200 :headers ()
-                                                    :body (generate-string [{:name "series_test1", :length 27}])})}
+                                                    :body (generate-string {:status :ok :playlists [{:name "series_test1", :length 27}]})})}
     (let [response (app (-> (mock/request :put "/schedule/store/schedule1")
                             (mock/json-body {:name "schedule2" :playlists [{:type "playlist" :name "series_test1" :length 27}]})))]
       (is (= (:status response) 200))
@@ -89,7 +92,7 @@
                                     {:put (fn [req] {:status 200 :headers {} :body (generate-string {:status :ok})})}
                                     "http://playlist:4001/"
                                       (fn [request] {:status 200 :headers ()
-                                                    :body (generate-string [{:name "series_test1", :length 27}])})}
+                                                    :body (generate-string {:status :ok :playlists [{:name "series_test1", :length 27}]})})}
     (let [response (app (mock/request :put "/schedule/store/schedule1"))]
       (is (= (:status response) 200))
       (is (= (parse-string (:body response))
@@ -99,7 +102,7 @@
                                     {:post (fn [req] {:status 200 :headers {} :body (generate-string {:status :ok})})}
                                     "http://playlist:4001/"
                                       (fn [request] {:status 200 :headers ()
-                                                    :body (generate-string {:status :ok :results [{:name "series_test2", :length 27}]})})}
+                                                    :body (generate-string {:status :ok :playlists [{:name "series_test2", :length 27}]})})}
     (let [response (app (-> (mock/request :post "/schedule/store/schedule1")
                             (mock/json-body {:name "schedule1" :playlists [{:type "playlist" :name "series_test1" :length 12}]})))]
       (is (= (:status response) 200))
@@ -110,7 +113,7 @@
                                     {:post (fn [req] {:status 200 :headers {} :body (generate-string {:status :ok})})}
                                     "http://playlist:4001/"
                                       (fn [request] {:status 500 :headers ()
-                                                    :body (generate-string {:status :failure})})}
+                                                    :body (generate-string {:status :invalid})})}
     (let [response (app (-> (mock/request :post "/schedule/store/schedule1")
                             (mock/json-body {:name "schedule1" :playlists [{:type "playlist" :name "series_test1" :length 12}]})))]
       (is (= (:status response) 200))
@@ -121,7 +124,7 @@
                                     {:post (fn [req] {:status 400 :headers {} :body (generate-string {:status :invalid})})}
                                     "http://playlist:4001/"
                                       (fn [request] {:status 200 :headers ()
-                                                    :body (generate-string [{:name "series_test1", :length 27}])})}
+                                                    :body (generate-string {:status :ok :playlists [{:name "series_test1", :length 27}]})})}
     (let [response (app (-> (mock/request :post "/schedule/store/schedule1")
                             (mock/json-body {:name "schedule1" :playlists [{:type "playlist" :name "series_test1" :length 27}]})))]
       (is (= (:status response) 200))
@@ -134,7 +137,7 @@
                                     {:put (fn [req] {:status 200 :headers {} :body (generate-string {:status :ok})})}
                                     "http://playlist:4001/"
                                       (fn [request] {:status 200 :headers ()
-                                                    :body (generate-string [{:name "series_test1", :length 27}])})}
+                                                    :body (generate-string {:status :ok :playlists [{:name "series_test1", :length 27}]})})}
     (let [response (app (-> (mock/request :put "/schedule/store/schedule1")
                             (mock/json-body {:name "schedule1" :playlists [{:type "playlist" :name "series_test1" :length 27}]})))]
       (is (= (:status response) 200))
@@ -145,7 +148,7 @@
                                     {:put (fn [req] {:status 200 :headers {} :body (generate-string {:status :ok})})}
                                     "http://playlist:4001/"
                                       (fn [request] {:status 200 :headers ()
-                                                    :body (generate-string [{:name "series_test1", :length 27}])})}
+                                                    :body (generate-string {:status :ok :playlists [{:name "series_test1", :length 27}]})})}
     (let [response (app (-> (mock/request :put "/schedule/store/schedule1")
                             (mock/json-body {:name "schedule1"})))]
       (is (= (:status response) 200))
@@ -156,7 +159,7 @@
                                     {:put (fn [req] {:status 200 :headers {} :body (generate-string {:status :ok})})}
                                     "http://playlist:4001/"
                                       (fn [request] {:status 200 :headers ()
-                                                    :body (generate-string [{:name "series_test1", :length 27}])})}
+                                                    :body (generate-string {:status :ok :playlists [{:name "series_test1", :length 27}]})})}
     (let [response (app (-> (mock/request :put "/schedule/store/schedule1")
                             (mock/json-body {:name "schedule2" :playlists [{:type "playlist" :name "series_test1" :length 27}]})))]
       (is (= (:status response) 200))
@@ -167,7 +170,7 @@
                                     {:put (fn [req] {:status 200 :headers {} :body (generate-string {:status :ok})})}
                                     "http://playlist:4001/"
                                       (fn [request] {:status 200 :headers ()
-                                                    :body (generate-string [{:name "series_test1", :length 27}])})}
+                                                    :body (generate-string {:status :ok :playlists [{:name "series_test1", :length 27}]})})}
     (let [response (app (mock/request :put "/schedule/store/schedule1"))]
       (is (= (:status response) 200))
       (is (= (parse-string (:body response))
@@ -177,7 +180,7 @@
                                     {:put (fn [req] {:status 200 :headers {} :body (generate-string {:status :ok})})}
                                     "http://playlist:4001/"
                                       (fn [request] {:status 200 :headers ()
-                                                    :body (generate-string {:status :ok :results [{:name "series_test2", :length 27}]})})}
+                                                    :body (generate-string {:status :ok :playlists [{:name "series_test2", :length 27}]})})}
     (let [response (app (-> (mock/request :put "/schedule/store/schedule1")
                             (mock/json-body {:name "schedule1" :playlists [{:type "playlist" :name "series_test1" :length 12}]})))]
       (is (= (:status response) 200))
@@ -199,7 +202,7 @@
                                     {:put (fn [req] {:status 400 :headers {} :body (generate-string {:status :invalid})})}
                                     "http://playlist:4001/"
                                       (fn [request] {:status 200 :headers ()
-                                                    :body (generate-string [{:name "series_test1", :length 27}])})}
+                                                    :body (generate-string {:status :ok :playlists [{:name "series_test1", :length 27}]})})}
     (let [response (app (-> (mock/request :put "/schedule/store/schedule1")
                             (mock/json-body {:name "schedule1" :playlists [{:type "playlist" :name "series_test1" :length 27}]})))]
       (is (= (:status response) 200))
@@ -210,7 +213,7 @@
   (testing "validate a valid schedule"
     (with-fake-routes-in-isolation {"http://playlist:4001/"
                                       (fn [request] {:status 200 :headers ()
-                                                    :body (generate-string [{:name "series_test1", :length 27}])})}
+                                                    :body (generate-string {:status :ok :playlists [{:name "series_test1", :length 27}]})})}
     (let [response (app (-> (mock/request :get "/schedule/validate")
                             (mock/json-body {:name "schedule1" :playlists [{:type "playlist" :name "series_test1" :length 27}]})))]
       (is (= (:status response) 200))
@@ -220,7 +223,7 @@
   (testing "when schedule missing, invalid"
     (with-fake-routes-in-isolation {"http://playlist:4001/"
                                       (fn [request] {:status 200 :headers ()
-                                                    :body (generate-string [{:name "series_test1", :length 27}])})}
+                                                    :body (generate-string {:status :ok :playlists [{:name "series_test1", :length 27}]})})}
     (let [response (app (mock/request :get "/schedule/validate"))]
       (is (= (:status response) 200))
       (is (= (parse-string (:body response))
@@ -228,7 +231,7 @@
   (testing "when playlists missing, invalid"
     (with-fake-routes-in-isolation {"http://playlist:4001/"
                                       (fn [request] {:status 200 :headers ()
-                                                    :body (generate-string [{:name "series_test1", :length 27}])})}
+                                                    :body (generate-string {:status :ok :playlists [{:name "series_test1", :length 27}]})})}
     (let [response (app (-> (mock/request :get "/schedule/validate")
                             (mock/json-body {:name "schedule1"})))]
       (is (= (:status response) 200))
@@ -237,7 +240,7 @@
   (testing "when name missing, invalid"
     (with-fake-routes-in-isolation {"http://playlist:4001/"
                                       (fn [request] {:status 200 :headers ()
-                                                    :body (generate-string [{:name "series_test1", :length 27}])})}
+                                                    :body (generate-string {:status :ok :playlists [{:name "series_test1", :length 27}]})})}
     (let [response (app (-> (mock/request :get "/schedule/validate")
                             (mock/json-body {:playlists [{:type "playlist" :name "series_test1" :length 27}]})))]
       (is (= (:status response) 200))
@@ -251,7 +254,7 @@
                                                       :body (generate-string {:name "test1" :playlists [{:type "playlist" :length 27 :name "series_test1"}]})})
                                     "http://playlist:4001/"
                                       (fn [request] {:status 200 :headers ()
-                                                    :body (generate-string [{:name "series_test1", :length 27}])})}
+                                                    :body (generate-string {:status :ok :playlists [{:name "series_test1", :length 27}]})})}
     (let [response (app (mock/request :get "/schedule/validate/test1"))]
       (is (= (:status response) 200))
       (is (= (parse-string (:body response))
@@ -263,7 +266,7 @@
                                                       :body (generate-string {})})
                                     "http://playlist:4001/"
                                       (fn [request] {:status 200 :headers ()
-                                                    :body (generate-string [{:name "series_test1", :length 27}])})}
+                                                    :body (generate-string {:status :ok :playlists [{:name "series_test1", :length 27}]})})}
     (let [response (app (mock/request :get "/schedule/validate/test2"))]
       (is (= (:status response) 200))
       (is (= (parse-string (:body response))
@@ -274,7 +277,7 @@
                                                       :body (generate-string {:name "test3" })})
                                     "http://playlist:4001/"
                                       (fn [request] {:status 200 :headers ()
-                                                    :body (generate-string [{:name "series_test1", :length 27}])})}
+                                                    :body (generate-string {:status :ok :playlists [{:name "series_test1", :length 27}]})})}
     (let [response (app (mock/request :get "/schedule/validate/test3"))]
       (is (= (:status response) 200))
       (is (= (parse-string (:body response))
@@ -285,7 +288,7 @@
                                                       :body (generate-string { :playlists [{:type "playlist" :length 27 :name "series_test1"}]})})
                                     "http://playlist:4001/"
                                       (fn [request] {:status 200 :headers ()
-                                                    :body (generate-string [{:name "series_test1", :length 27}])})}
+                                                    :body (generate-string {:status :ok :playlists [{:name "series_test1", :length 27}]})})}
     (let [response (app (mock/request :get "/schedule/validate/test4"))]
       (is (= (:status response) 200))
       (is (= (parse-string (:body response))
@@ -296,7 +299,7 @@
                                                       :body (generate-string {:name "test5" :playlists [{:type "playlist" :length 27 :name "series_test1"}]})})
                                     "http://playlist:4001/"
                                       (fn [request] {:status 200 :headers ()
-                                                    :body (generate-string [{:name "series_test1", :length 27}])})}
+                                                    :body (generate-string {:status :ok :playlists [{:name "series_test1", :length 27}]})})}
     (let [response (app (mock/request :get "/schedule/validate/test4"))]
       (is (= (:status response) 200))
       (is (= (parse-string (:body response))

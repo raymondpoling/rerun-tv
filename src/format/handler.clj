@@ -41,7 +41,8 @@
         (make-m3u-response 200 schedule-name index (m3u schedule-name index records))
         (clc/make-response 502 (first failure)))))
 
-  (route/not-found "Not Found"))
+  (route/not-found
+    (clc/make-response 404 {:status :not-found})))
 
 (def app
   (wrap-defaults

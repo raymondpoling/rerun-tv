@@ -6,7 +6,7 @@ FROM java:openjdk-8-jre
 MAINTAINER Ray Poling <ruguerv@gmail.com>
 ENV REFRESHED_AT 2014-11-25
 
-COPY target/playlist-playlist-0.1.0-standalone.jar playlist-playlist-0.1.0-standalone.jar
+COPY target/playlist-playlist-0.1.0-SNAPSHOT-standalone.jar playlist-playlist-0.1.0-SNAPSHOT-standalone.jar
 
 ENV DB_USER playlist_user
 ENV DB_HOST CrystalBall
@@ -18,4 +18,4 @@ ENV PORT 4001
 
 EXPOSE 4001
 
-CMD ["java", "-jar", "playlist-playlist-0.1.0-standalone.jar"]
+CMD ["java", "-jar", "playlist-playlist-0.1.0-SNAPSHOT-standalone.jar"]

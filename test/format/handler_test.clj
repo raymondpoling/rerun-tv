@@ -20,16 +20,16 @@
                                   :body "SERIE0201005"})
                                   "http://locator:4006/file/CrystalBall/SERIE0101005"
                                   (fn [result] {:status 200 :headers {}
-                                    :body (generate-string {:url "file://home/Video/Series 1/series 1 D1-5.mkv"})})
+                                    :body (generate-string {:status :ok :url "file://home/Video/Series 1/series 1 D1-5.mkv"})})
                                   "http://locator:4006/file/CrystalBall/SERIE0201005"
                                   (fn [result] {:status 200 :headers {}
-                                    :body (generate-string {:url "file://home/Video/Series 2/series 2 D2-2.mkv"})})
+                                    :body (generate-string {:status :ok :url "file://home/Video/Series 2/series 2 D2-2.mkv"})})
                                   "http://meta:4004/catalog-id/SERIE0101005?fields=season,episode_name,series,episode"
                                   (fn [result] {:status 200 :headers {}
-                                    :body (generate-string {:records [{:episode 5 :series "Series 1" :season 1}]})})
+                                    :body (generate-string {:status :ok :catalog_ids ["SERIE0101005"] :records [{:episode 5 :series "Series 1" :season 1}]})})
                                   "http://meta:4004/catalog-id/SERIE0201005?fields=season,episode_name,series,episode"
                                   (fn [result] {:status 200 :headers {}
-                                    :body (generate-string {:records [{:episode 3 :series "Series 2" :season 1}]})})}]
+                                    :body (generate-string {:status :ok :catalog_ids ["SERIE0201005"] :records [{:episode 3 :series "Series 2" :season 1}]})})}]
     (testing "get an m3u record"
       (with-fake-routes-in-isolation route-maps
         (let [response (app (mock/request :get "/test-user/test-schedule"))
@@ -73,7 +73,7 @@
     (testing "propogate an error if locator service fails"
       (with-fake-routes-in-isolation (merge route-maps {"http://locator:4006/file/CrystalBall/SERIE0101005"
                                               (fn [result] {:status 400 :headers {}
-                                                :body (generate-string {:url "file://home/Video/Series 1/series 1 D1-5.mkv"})})})
+                                                :body (generate-string {:status :ok :url "file://home/Video/Series 1/series 1 D1-5.mkv"})})})
         (let [response (app (mock/request :get "/test-user/test-schedule"))
               expected {"status" "failure" "message" "locator service not available"}]
           (is (= (:status response) 502))
@@ -82,7 +82,7 @@
     (testing "propogate an error if meta service fails"
       (with-fake-routes-in-isolation (merge route-maps {"http://meta:4004/catalog-id/SERIE0101005?fields=season,episode_name,series,episode"
                                         (fn [result] {:status 510 :headers {}
-                                            :body (generate-string {:records [{:episode 5 :series "Series 1" :season 1}]})})})
+                                            :body (generate-string {:status :ok :catalog_ids ["SERIE0101005"] :records [{:episode 5 :series "Series 1" :season 1}]})})})
         (let [response (app (mock/request :get "/test-user/test-schedule"))
               expected {"status" "failure" "message" "meta service not available"}]
           (is (= (:status response) 502))

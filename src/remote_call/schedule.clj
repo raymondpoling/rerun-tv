@@ -11,4 +11,4 @@
 (defn get-schedule [host schedule-name index]
   (clc/log-on-error nil
       (dh/with-circuit-breaker ckt-brkr
-        (:body (client/get (str "http://" host "/" schedule-name "/" index) {:as :json})))))
+        (:items (:body (client/get (str "http://" host "/" schedule-name "/" index) {:as :json}))))))

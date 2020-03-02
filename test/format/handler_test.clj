@@ -8,16 +8,16 @@
 (deftest test-app
   (let [route-maps {"http://schedule:4000/test-schedule/5"
                                   (fn [result] {:status 200 :headers {}
-                                  :body (generate-string [{:name "Series 1" :index 5},{:name "Series 2", :index 3}])})
+                                  :body (generate-string {:status :ok :items [{:name "Series 1" :index 5},{:name "Series 2", :index 3}]})})
                                   "http://user:4002/test-user/test-schedule"
                                   (fn [result] {:status 200 :headers {}
                                   :body (generate-string {:status :ok, :idx 5})})
                                   "http://playlist:4001/Series%201/5"
                                   (fn [result] {:status 200 :headers {}
-                                  :body "SERIE0101005"})
+                                  :body (generate-string {:status :ok :item "SERIE0101005"})})
                                   "http://playlist:4001/Series%202/3"
                                   (fn [result] {:status 200 :headers {}
-                                  :body "SERIE0201005"})
+                                  :body (generate-string {:status :ok :item "SERIE0201005"})})
                                   "http://locator:4006/file/CrystalBall/SERIE0101005"
                                   (fn [result] {:status 200 :headers {}
                                     :body (generate-string {:status :ok :url "file://home/Video/Series 1/series 1 D1-5.mkv"})})

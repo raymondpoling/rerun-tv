@@ -3,12 +3,14 @@
             [diehard.circuit-breaker :refer [state]]
             [cheshire.core :refer :all]
             [common-lib.core :as clc]
+            [clojure.tools.logging :as logger]
             [clj-http.client :as client]))
 
 (dh/defcircuitbreaker ckt-brkr {:failure-threshold-ratio [8 10]
                               :delay-ms 1000})
 
 (defn get-file-url [host catalog-id]
+  (logger/debug (str "Looking for catalog-id: " catalog-id))
   (clc/log-on-error nil
       (dh/with-circuit-breaker ckt-brkr
         (:url (parse-string (:body (client/get

@@ -31,7 +31,11 @@
       (catch Exception e
         (logger/error (str "could not post url for protocol/host/catalog_id '" protocol "/" host "/" catalog_id ": " (.getMessage e)))
         (clc/make-response 500 {:status :failed})))))
-  (route/not-found {:status :not-found}))
+  (route/not-found
+    (fn [request]
+      (do
+        (logger/warn (str "document not found "  request)))
+        (clc/make-response 404 {:status :not-found}))))
 
 (def app
   (wrap-defaults
@@ -49,4 +53,4 @@
         (initialize user password host port))
   (let [port (Integer/parseInt (or (System/getenv "PORT") "4005"))]
     (run-server app {:port port})
-    (println (str "Listening on port " port))))
+    (logger/info (str "Listening on port " port))))

@@ -43,9 +43,9 @@
     (logger/warn (str "playlist '" name "' deleted"))
     (clc/make-response 200 {:status "ok"}))
   (GET "/:name" [name]
-    (if-let [item (find-playlist name)]
-      (clc/make-response 200 {:status "ok", :playlist item})
-      nil)) ; let not-found catch it
+    (if-let [items (not-empty (find-playlist name))]
+        (clc/make-response 200 {:status "ok", :items items})
+        nil)) ; let not-found catch it
   (GET "/:name/:idx" [name idx]
     (if-let [item (find-item name idx)]
       (clc/make-response 200 {:status "ok", :item item})

@@ -59,15 +59,15 @@
           response4 (app (mock/request :get "/not-found"))]
       (is (= (:status response1) 200))
       (is (= (parse-string (:body response1) true)
-              {:status "ok" :playlist {:name "new-playlist" :length 26}}))
+              {:status "ok" :items (reverse (map str (map char (range 97 123))))}))
 
       (is (= (:status response2) 200))
       (is (= (parse-string (:body response2) true)
-              {:status "ok" :playlist {:name "another-new-playlist" :length 8}}))
+              {:status "ok" :items (map str (map char (range 97 105)))}))
 
       (is (= (:status response3) 200))
       (is (= (parse-string (:body response3) true)
-              {:status "ok" :playlist {:name "new-playlist-also" :length 17}}))
+              {:status "ok" :items (map str (map char (range 97 114)))}))
 
       (is (= (:status response4) 404))
       (is (= (parse-string (:body response4) true)

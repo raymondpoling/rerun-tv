@@ -48,12 +48,12 @@
 
 (defn find-playlist [name]
   (let [out (j/query @database
-    ["SELECT name.name AS name, count(name.name) AS length FROM playlist.name
+    ["SELECT playlist.object FROM playlist.name
       JOIN playlist.playlist ON name.id = playlist.name_key
       WHERE name.name = ?
-      GROUP BY name.name" name]
+      ORDER BY playlist.idx" name]
     )]
-    (first out)))
+    (map #(:object %) out)))
 
 (defn get-all-playlists []
   (j/query @database

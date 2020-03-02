@@ -251,7 +251,7 @@
   (testing "validate a valid schedule"
     (with-fake-routes-in-isolation {"http://schedule:4000/test1"
                                       (fn [request] {:status 200 :headers ()
-                                                      :body (generate-string {:name "test1" :playlists [{:type "playlist" :length 27 :name "series_test1"}]})})
+                                                      :body (generate-string {:status :ok :schedule {:name "test1" :playlists [{:type "playlist" :length 27 :name "series_test1"}]}})})
                                     "http://playlist:4001/"
                                       (fn [request] {:status 200 :headers ()
                                                     :body (generate-string {:status :ok :playlists [{:name "series_test1", :length 27}]})})}
@@ -274,7 +274,7 @@
   (testing "when playlists missing, invalid"
     (with-fake-routes-in-isolation {"http://schedule:4000/test3"
                                       (fn [request] {:status 200 :headers ()
-                                                      :body (generate-string {:name "test3" })})
+                                                      :body (generate-string {:status :ok :schedule {:name "test3" }})})
                                     "http://playlist:4001/"
                                       (fn [request] {:status 200 :headers ()
                                                     :body (generate-string {:status :ok :playlists [{:name "series_test1", :length 27}]})})}
@@ -285,7 +285,7 @@
   (testing "when name missing, invalid"
     (with-fake-routes-in-isolation {"http://schedule:4000/test4"
                                       (fn [request] {:status 200 :headers ()
-                                                      :body (generate-string { :playlists [{:type "playlist" :length 27 :name "series_test1"}]})})
+                                                      :body (generate-string {:status :ok :schedule { :playlists [{:type "playlist" :length 27 :name "series_test1"}]}})})
                                     "http://playlist:4001/"
                                       (fn [request] {:status 200 :headers ()
                                                     :body (generate-string {:status :ok :playlists [{:name "series_test1", :length 27}]})})}
@@ -296,7 +296,7 @@
   (testing "when name wrong, invalid"
     (with-fake-routes-in-isolation {"http://schedule:4000/test4"
                                       (fn [request] {:status 200 :headers ()
-                                                      :body (generate-string {:name "test5" :playlists [{:type "playlist" :length 27 :name "series_test1"}]})})
+                                                      :body (generate-string {:status :ok :schedule {:name "test5" :playlists [{:type "playlist" :length 27 :name "series_test1"}]}})})
                                     "http://playlist:4001/"
                                       (fn [request] {:status 200 :headers ()
                                                     :body (generate-string {:status :ok :playlists [{:name "series_test1", :length 27}]})})}

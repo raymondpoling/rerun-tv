@@ -12,7 +12,7 @@
 (defn get-schedule [host schedule-name]
   (log-on-error {:status :failure :message "schedule service not available"}
     (dh/with-circuit-breaker ckt-brkr
-      (:body (client/get (str "http://" host "/" schedule-name) {:as :json})))))
+      (:schedule (:body (client/get (str "http://" host "/" schedule-name) {:as :json}))))))
 
 (defn post-schedule [host schedule-name schedule]
   (log-on-error (do

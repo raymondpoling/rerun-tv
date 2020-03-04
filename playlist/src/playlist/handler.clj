@@ -1,4 +1,4 @@
-(ns playlist-playlist.handler
+(ns playlist.handler
   (:require [ring.middleware.json :as json]
             [compojure.core :refer :all]
             [compojure.route :as route]

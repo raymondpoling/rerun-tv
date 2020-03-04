@@ -1,0 +1,17 @@
+12 characters.
+
+First 5 is upcased first five letters that are not part of: the, of, a, in.
+
+Second 2 are disambiguation numbers (IE, if the first five matches another series,
+then this is used to differentiate). Example:
+House             - HOUSE00
+House on the Hill - HOUSE01
+
+The serial number is first come first serve.
+
+The next 2 numbers are the season number.
+
+The next 3 numbers is the episode number.
+
+So, House on the Hill Season 2 Episode 5 would be:
+HOUSE0102005

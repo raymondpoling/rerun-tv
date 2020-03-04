@@ -9,5 +9,6 @@ pom.xml.asc
 /.lein-*
 /.nrepl-port
 *~
-*.log
 *.lobs
+nohup.out
+*.log

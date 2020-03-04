@@ -25,8 +25,8 @@ CREATE TABLE file_locator.urls (
   protocol_id BIGINT(20) UNSIGNED NOT NULL,
   catalog_id BIGINT(20) UNSIGNED NOT NULL,
   path VARCHAR(256) NOT NULL,
-  FOREIGN KEY (host_id) REFERENCES file_locator.protocols(id),
-  FOREIGN KEY (protocol_id) REFERENCES file_locator.hosts(id),
+  FOREIGN KEY (host_id) REFERENCES file_locator.hosts(id),
+  FOREIGN KEY (protocol_id) REFERENCES file_locator.protocol(id),
   FOREIGN KEY (catalog_id) REFERENCES file_locator.catalog_ids(id)
 ) ENGINE INNODB;
 

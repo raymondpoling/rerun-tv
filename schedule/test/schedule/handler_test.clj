@@ -1,7 +1,7 @@
-(ns playlist-schedule.handler-test
+(ns schedule.handler-test
   (:require [clojure.test :refer :all]
             [ring.mock.request :as mock]
-            [playlist-schedule.handler :refer :all]
+            [schedule.handler :refer :all]
             [cheshire.core :refer :all]
             [db.db :refer [initialize]]))
 

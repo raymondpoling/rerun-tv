@@ -1,4 +1,4 @@
-(defproject playlist-schedule "0.1.0-SNAPSHOT"
+(defproject schedule "0.1.0-SNAPSHOT"
   :description "FIXME: write description"
   :url "http://example.com/FIXME"
   :min-lein-version "2.0.0"
@@ -20,5 +20,5 @@
                         [ring/ring-mock "0.4.0"]
                         [proto-repl "0.3.1"]
                         [org.hsqldb/hsqldb "2.5.0"]]}}
-  :main playlist-schedule.handler
-  :aot [playlist-schedule.handler])
+  :main schedule.handler
+  :aot [schedule.handler])

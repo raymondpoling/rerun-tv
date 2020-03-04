@@ -1,4 +1,4 @@
-(ns playlist-schedule.handler
+(ns schedule.handler
   (:require [schedule.schedule-types :refer [make-schedule-from-json frame]]
             [ring.middleware.json :as json]
             [compojure.core :refer :all]

@@ -46,5 +46,5 @@ settings.
 
 ## License
 
-Copyright © 2020 Raymond Poling
+Copyright © 2020 Raymond M. Poling
 Released under the MIT License: [http://www.opensource.org/licenses/mit-license.php](http://www.opensource.org/licenses/mit-license.php)

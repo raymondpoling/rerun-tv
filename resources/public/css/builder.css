@@ -1,0 +1,68 @@
+textarea {
+  width: 98%;
+  height: 30em;
+  margin: auto;
+  display: block;
+}
+
+.ok {
+  background-color: lightgreen;
+}
+
+.invalid {
+  background-color: red;
+}
+
+.schedule {
+  display: grid;
+  grid-auto-rows: auto;
+}
+
+table {
+    border-collapse: collapse;
+    margin: auto;
+}
+
+td {
+  height: 5em;
+  border: blue dashed 1px;
+  padding-left: 1em;
+  padding-right: 1em;
+}
+
+tr {
+  border: solid black 1px;
+}
+
+.first {
+  width: 7em;
+  text-align: left;
+}
+
+.row {
+  grid-auto-columns: auto;
+}
+
+.playlist {
+  width: 10em;
+  background-color: yellow;
+  border: black 1px solid;
+  text-align: center;
+}
+
+.merge {
+  background-color: pink;
+}
+
+.multi {
+  background-color: lightgreen;
+}
+
+.name {
+  font-weight: bold;
+}
+
+.count {
+  font-size: 0.8em;
+  font-family: sans-serif;
+}

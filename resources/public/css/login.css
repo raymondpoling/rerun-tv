@@ -1,0 +1,17 @@
+.login {
+  width: 10em;
+  margin:auto;
+  text-align: center;
+  border: solid black 1px;
+  background-color: white;
+}
+
+input {
+  margin: auto;
+  text-align: center;
+}
+
+label {
+  margin: auto;
+  text-align: center;
+}

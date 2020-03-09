@@ -1,0 +1,34 @@
+.column {
+  width: 22em;
+  margin: auto;
+}
+
+h2 {
+
+  text-align: center;
+}
+
+.item {
+  width: 20em;
+  height: 2em;
+  padding: 0.5em;
+  margin: 3px auto 3px auto;
+  border: 2px dotted blue;
+  word-wrap: normal;
+  vertical-align: middle;
+  text-align: center;
+  background-color: cyan;
+  border-radius: 0.5em;
+}
+
+.dl-button {
+  width: 5em;
+  height: 2em;
+  padding: 0.5em;
+  margin: auto;
+  border: 2px solid brown;
+  text-align: center;
+  text-decoration: none;
+  background-color: lightgray;
+  border-radius: 0.5em;
+}

@@ -6,7 +6,8 @@
 (def database (atom {:dbtype "mysql"
                :dbname "file_locator"
                :user nil
-               :password nil}))
+               :password nil
+               :serverTimezone "America/New_York"}))
 
 (defn initialize
  ([]

@@ -11,70 +11,75 @@
 (defn pretty-divide [upper lower]
   (format "%.2f" (float (/ upper lower))))
 
+(defn make-row [class length rr & extra]
+  (list :tr {:class class}
+    (vec
+      (concat
+        (list :th {:scope "row" :class "first"} (clojure.string/capitalize class) ": " length [:br] "RR: " rr)
+        (if extra (list [:br] (clojure.string/join " " extra)))))))
+
 (defprotocol ScheduleType
-  (render [self row? small])
+  (render [self row? small divisor])
   (length [self]))
 
 (defrecord Playlist [name length]
   ScheduleType
-  (render [self row? small] (if row?
-    [:tr {:class "playlist"}
-      [:td {:class "first"}
-        "Playlist: " length [:br]
-        "RR: " (pretty-divide length small)]
-      [:td [:span {:class "name"} name] [:br] [:span {:class "count"} "Count: " length]]]
-    (list [:td [:span {:class "name"} name] [:br] [:span {:class "count"} "Count: " length]])))
+  (render [self row? small divisor] (if row?
+    (let [render (render self false small divisor)
+          len (int (Math/floor (/ (first render) divisor)))]
+      [len (vec (concat (make-row "playlist" length (pretty-divide length small)) (second render)))])
+    (let [len (int (Math/floor (/ length divisor)))]
+      [len (list
+        [:td {:colspan len}
+          [:span {:class "name"} name]
+          [:br]
+          [:span {:class "count"} "Count: " length]])])))
   (length [self] length))
 
 (defrecord Merge [playlists]
   ScheduleType
-  (render [self row? small]
+  (render [self row? small divisor]
     (if row?
-      (vec
-        (concat
-          [:tr {:class "merge"}
-            [:td {:class "first"}
-              "Merge: " (length self) [:br]
-              "RR: " (pretty-divide (length self) small)]]
-          (map #(render % false small) playlists)))
-      (concat
-        (list
-          [:td {:class "first"}
-            "Merge: " (length self) [:br]
-            "RR: " (pretty-divide (length self) small)])
-            (map #(render % false small) playlists))))
+      (let [render (map #(render % false small divisor) playlists)
+            len (reduce + (map first render))]
+        [len (vec
+          (concat
+            (make-row "merge" (length self) (pretty-divide (length self) small))
+            (map second render)))])
+      (let [render (map #(render % false small divisor) playlists)]
+        [(reduce + (map first render)) (vec (reduce concat (map second render)))])))
   (length [self] (reduce + (map #(length %) playlists))))
 
 (defrecord Multi [playlist step]
   ScheduleType
-  (render [self row? small]
+  (render [self row? small divisor]
     (if row?
-      (vec
+      (let [render (render playlist false small (* step divisor))
+            len (first render)]
+        [len (vec
+          (concat
+            (make-row "multi" (length self) (pretty-divide (length self) small) "Step:" step)
+          (second render)))])
+      (let [render (render playlist false small (* step divisor))]
+        [(first render)
         (concat
-          [:tr {:class "multi"}
+          (list
             [:td {:class "first"}
               "Multi: " (length self) [:br]
               "Step: " step [:br]
-              "RR: " (pretty-divide (length self) small)]]
-          (render playlist false small)))
-      (concat
-        (list
-          [:td {:class "first"}
-            "Multi: " (length self) [:br]
-            "Step: " step [:br]
-            "RR: " (pretty-divide (length self) small)])
-        (render playlist false small))))
+              "RR: " (pretty-divide (length self) small)])
+              (second render))])))
   (length [self] (float (/ (length playlist) step))))
 
+;; The change means this won't work anymore
+;; colspan can't be counted
 (defn padding [rows]
-  (println  "row counts? " (map count rows) " rows? " rows)
   (if (not= (count rows) 0)
-    (let [longest (apply max (map count rows))]
-      (map #(conj %
-        (map
-          (fn [_] [:td])
-          (range (- longest (count %)))))
-        rows))
+    (let [longest (apply max (map first rows))]
+      [longest (map #(conj (second %)
+        (if (not= 0 (- longest (first %)))
+          [:td {:colspan (- longest (first %)) :class "filler"}]))
+        rows)])
     0))
 
 (defn convert [rows]
@@ -102,11 +107,14 @@
       [:body
         [:div {:id "content"}
           (header "Build a Schedule")
-          [:table {:class "schedule"}
-            [:tr [:th "Type" [:br] "Length" [:br] "RR (Repitition Rate)"]]
-            (if (= 0 small)
-              [:tr [:td {:class "empty"} "Empty"]]
-              (padding (map #(render % true small) converted)))]
+          (let [padded (padding (map #(render % true small 1) converted))]
+            [:table {:class "schedule"}
+              [:thead
+                [:tr [:th {:scope "col" :class "first"} "Type: Length" [:br] "RR (Repitition Rate)"]
+                      [:th {:colspan (first padded)} "Playlists"]]]
+              [:tbody (if (= 0 small)
+                [:tr [:td {:class "empty"} "Empty"]]
+                (second padded))]])
           [:div {:class "playlists"} (playlist-drop-down playlists)]
           [:div [:form {:method "post" :action "schedule-builder.html"}
             [:textarea {:class (:status validate) :name "schedule-body"} (generate-string schedule {:pretty true})]

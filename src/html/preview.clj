@@ -14,10 +14,11 @@
     [:select {:name "schedule"}
       options]
     [:input {:type "hidden" :name "idx" :value idx}]
-    [:input {:type "text" :name "index" :size 5}]
+    [:input {:type "text" :name "index" :size 5 :value idx}]
     [:label {:for "update"} "Update?"]
     [:input {:type "checkbox" :id "update" :value "update" :name "update" :checked (if update "checked")}]
-    [:input {:type "submit" :value "Preview"}]])
+    [:input {:type "submit" :value "Preview"}]
+    [:input {:type "submit" :name "reset" :value "Reset"}]])
 
 (defn preview-column [schedule divs idx update]
   [:div {:class "column"}

@@ -57,12 +57,15 @@
   (schedule-builder schedule playlists validate type)))
 
 (defroutes app-routes
-  (GET "/preview.html" [schedule index idx update]
+  (GET "/preview.html" [schedule index idx update reset]
     (fn [request]
       (let [user (:user (:session request))
             schedule-list (get-schedules (:schedule hosts))
             sched (or schedule (first schedule-list))
-            idx (or (not-empty index) idx (fetch-index (:user hosts) user sched true))
+            idx (or (if reset (fetch-index (:user hosts) user sched true))
+                    (not-empty index)
+                    idx
+                    (fetch-index (:user hosts) user sched true))
             body (get-schedule-items (:schedule hosts) sched idx)]
             (logger/debug (str "with user: " user " index: " idx " and schedule: " sched))
       (response (make-preview-page sched schedule-list idx body update)))))

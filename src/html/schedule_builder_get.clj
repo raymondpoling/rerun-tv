@@ -14,18 +14,17 @@
     [:head
       [:meta {:charset "utf-8"}]
       [:link {:rel "stylesheet" :href "/css/master.css"}]
-      [:link {:rel "stylesheet" :href "/css/builder.css"}]
+      [:link {:rel "stylesheet" :href "/css/builder-select.css"}]
       [:title "ReRun TV - Build a Schedule"]]
     [:body
       [:div {:id "content"}
         (header "Build a Schedule")
-        [:div
-          [:h2 "Update Playlist"]
-          [:form {:method "post" :action "schedule-builder.html"}
-            (vec (concat (list :select {:name "schedule-name"}) (schedule-options schedule-names)))
-            [:input {:type "submit" :name "type" :value "Update"}]]]
-        [:div
-          [:form {:method "post" :action "schedule-builder.html"}
-            [:input {:type "text" :name "schedule-name"}]
-            [:input {:type "submit" :name "type" :value "Create"}]]]
-        [:div {:id "message"} (if message message)]]]))
+        [:form {:method "post" :action "schedule-builder.html" :class "box"}
+          [:h2 {:class "box-center"} "Update Schedule"]
+          (vec (concat (list :select {:name "schedule-name" :class "box-center"}) (schedule-options schedule-names)))
+          [:input {:type "submit" :name "type" :value "Update" :class "box-center"}]]
+        [:form {:method "post" :action "schedule-builder.html" :class "box"}
+          [:h2 {:class "box-center"} "Create Schedule"]
+          [:input {:type "text" :name "schedule-name" :class "box-center"}]
+          [:input {:type "submit" :name "type" :value "Create" :class "box-center"}]]
+        [:div {:id "message" :style (if (not message) "display:none")} (if message message)]]]))

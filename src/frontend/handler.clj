@@ -48,6 +48,7 @@
 (defn sb [schedule-name schedule-body preview type]
   (let [playlists (get-playlists (:playlist hosts))
         sched (parse-string schedule-body true)
+        schedule-name (or (:name sched) schedule-name)
         got-sched (get-schedule (:schedule hosts) schedule-name)
         schedule (if-let [body sched]
           body
@@ -56,6 +57,7 @@
                     (validate-schedule (:builder hosts) schedule)
                     (send-schedule (:builder hosts) type schedule-name schedule))]
         (println "did it validate? " validate)
+        (println "got-sched" got-sched)
     (if (and (= type "Create") got-sched)
       (redirect (str "/schedule-builder.html?message=Schedule with name '" schedule-name "' already exists"))
       (schedule-builder schedule playlists validate type))))

@@ -16,6 +16,7 @@
             [html.login :refer [login]]
             [html.index :refer [make-index]]
             [html.schedule-builder :refer [schedule-builder]]
+            [html.schedule-builder-get :refer [schedule-builder-get]]
             [cheshire.core :refer [parse-string generate-string]]
             [org.httpkit.server :refer [run-server]])
   (:gen-class))
@@ -47,14 +48,17 @@
 (defn sb [schedule-name schedule-body preview type]
   (let [playlists (get-playlists (:playlist hosts))
         sched (parse-string schedule-body true)
+        got-sched (get-schedule (:schedule hosts) schedule-name)
         schedule (if-let [body sched]
           body
-          (if schedule-name (get-schedule (:schedule hosts) schedule-name)))
+          (or got-sched {:name schedule-name, :playlists []}))
         validate (if preview
                     (validate-schedule (:builder hosts) schedule)
                     (send-schedule (:builder hosts) type schedule-name schedule))]
         (println "did it validate? " validate)
-  (schedule-builder schedule playlists validate type)))
+    (if (and (= type "Create") got-sched)
+      (redirect (str "/schedule-builder.html?message=Schedule with name '" schedule-name "' already exists"))
+      (schedule-builder schedule playlists validate type))))
 
 (defroutes app-routes
   (GET "/preview.html" [schedule index idx update reset]
@@ -73,8 +77,9 @@
      (login))
   (GET "/index.html" []
     (make-index))
-  (GET "/schedule-builder.html" [schedule-name schedule-body preview type]
-    (sb schedule-name schedule-body preview type))
+  (GET "/schedule-builder.html" [message]
+    (let [schedule-names (get-schedules (:schedule hosts))]
+      (schedule-builder-get schedule-names message)))
   (POST "/schedule-builder.html" [schedule-name schedule-body preview type]
     (sb schedule-name schedule-body preview type))
   (POST "/login" [username password]

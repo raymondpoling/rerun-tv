@@ -111,7 +111,7 @@
             [:table {:class "schedule"}
               [:thead
                 [:tr [:th {:scope "col" :class "first"} "Type: Length" [:br] "RR (Repitition Rate)"]
-                      [:th {:colspan (first padded)} "Playlists"]]]
+                      [:th {:colspan (if (= 0 small) 1 (first padded))} "Playlists"]]]
               [:tbody (if (= 0 small)
                 [:tr [:td {:class "empty"} "Empty"]]
                 (second padded))]])
@@ -122,12 +122,5 @@
               [:div {:class "ok"} "OK!"]
               [:div {:class "invalid"} (:message validate)])
             [:input {:type "checkbox" :checked "checked" :id "preview" :value "preview" :name "preview"}][:label {:for "preview"} "Preview"]
-            [:input {:type "text" :name "schedule-name" :value (:name schedule)}]
-            [:ul
-             [:li
-              [:label {:for "update"} "Update"]
-              [:input {:type "radio" :name "type" :id "update" :value "Update" :checked (if (= "Update" type) "checked")}]]
-            [:li
-              [:label {:for "create"} "Create"]
-              [:input {:type "radio" :name "type" :id "create" :value "Create" :checked (if (not= "Update" type) "checked")}]]]
+            [:input {:type "hidden" :name "type" :value type}]
             [:input {:type "submit" :value "Submit"}]]]]])))

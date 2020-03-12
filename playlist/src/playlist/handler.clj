@@ -46,11 +46,16 @@
     (if-let [items (not-empty (find-playlist name))]
         (clc/make-response 200 {:status "ok", :items items})
         nil)) ; let not-found catch it
-  (GET "/:name/:idx" [name idx]
+  (GET "/:name{[^/]+}/:idx" [name  idx]
+    (logger/debug (str "looking up '" name "' '" idx "'"))
     (if-let [item (find-item name idx)]
       (clc/make-response 200 {:status "ok", :item item})
-      nil)) ; let not-found catch it
-  (route/not-found (clc/make-response 404 {:status :not-found})))
+      (do (logger/debug "Choosing to let Not found catch " name "/" idx)
+        nil))) ; let not-found catch it
+  (route/not-found
+    (fn [request]
+      (logger/debug "url not found " (:uri request) " full request \n" request)
+      (clc/make-response 404 {:status :not-found}))))
 
 
 (def app

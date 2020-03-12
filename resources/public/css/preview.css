@@ -10,7 +10,7 @@ h2 {
 
 .item {
   width: 20em;
-  height: 2em;
+  /* height: 5em; */
   padding: 0.5em;
   margin: 3px auto 3px auto;
   border: 2px dotted blue;

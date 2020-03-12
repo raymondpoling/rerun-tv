@@ -9,13 +9,18 @@
                               :delay-ms 1000})
 
 (defn get-all-series [host]
-  (clc/log-on-error nil
+  (clc/log-on-error {:status "failed"}
     (:results (:body (client/get (str "http://" host "/series") {:as :json})))))
 
 (defn bulk-update-series [host series update]
-  (clc/log-on-error nil
+  (clc/log-on-error {:status "failed"}
     (let [url (str "http://" host "/series/" series)]
       (println "url: " url)
       (:body (client/put url
               {:as :json
               :body (generate-string update) :headers {:content-type "application/json"}})))))
+
+(defn get-meta-by-catalog-id [host id]
+  (clc/log-on-error {:status "failed" :message "Could not find item in catalog"}
+    (let [url (str "http://" host "/catalog-id/" id "?fields=summary,episode_name,series,season,episode")]
+      (:body (client/get url {:as :json})))))

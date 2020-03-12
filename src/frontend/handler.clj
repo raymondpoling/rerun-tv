@@ -7,8 +7,8 @@
             [remote-call.validate :refer [validate-user]]
             [remote-call.format :refer [fetch-playlist]]
             [remote-call.user :refer [fetch-index]]
-            [remote-call.playlist :refer [get-playlists]]
-            [remote-call.meta :refer [get-all-series bulk-update-series]]
+            [remote-call.playlist :refer [get-playlists fetch-catalog-id]]
+            [remote-call.meta :refer [get-all-series bulk-update-series get-meta-by-catalog-id]]
             [ring.util.response :refer [response not-found header status redirect]]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
             [common-lib.core :as clc]
@@ -75,9 +75,13 @@
                     (not-empty index)
                     idx
                     (fetch-index (:user hosts) user sched true))
-            body (get-schedule-items (:schedule hosts) sched idx)]
+            items (get-schedule-items (:schedule hosts) sched idx)
+            catalog_ids (map #(fetch-catalog-id (:playlist hosts) (:name %) (:index %)) items)
+            meta (flatten (map #(:records (get-meta-by-catalog-id (:meta hosts) (:item %))) catalog_ids))
+            records (map merge meta items)]
             (logger/debug (str "with user: " user " index: " idx " and schedule: " sched))
-      (response (make-preview-page sched schedule-list idx body update)))))
+            (println "records: " records)
+      (response (make-preview-page sched schedule-list idx records update)))))
   (GET "/login.html" []
      (login))
   (GET "/index.html" []

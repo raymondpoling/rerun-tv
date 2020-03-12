@@ -33,7 +33,11 @@
         "Download this List"]]])
 
 (defn make-divs [items]
-  (map #(vector :div {:class "item" } (:name %) [:br] "Index: " (:index %)) items))
+  (map #(vector :div {:class "item" }
+    [:b (:name %)
+    [:br] "Index: " (:index %)]
+    [:br] (:series %) (str " S" (:season %) "E" (:episode %))
+    [:br] [:em (:episode_name %)]) items))
 
 (defn make-preview-page [schedule schedules idx items update]
   (let [options (make-options schedule schedules)

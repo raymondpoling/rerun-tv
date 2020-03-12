@@ -3,7 +3,7 @@
 (def empty-line "")
 
 (defn- extinf [series season episode title]
-  (str "#EXTINF:0, " series " S" season "E" episode (if (some? title) (str ": " title))))
+  (str "#EXTINF:0,, " series " S" season "E" episode (if (some? title) (str ": " title))))
 
 (defn- item-group [group]
   [(extinf (:series group) (:season group) (:episode group) (:episode_name group))

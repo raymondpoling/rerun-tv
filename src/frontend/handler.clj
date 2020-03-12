@@ -8,6 +8,7 @@
             [remote-call.format :refer [fetch-playlist]]
             [remote-call.user :refer [fetch-index]]
             [remote-call.playlist :refer [get-playlists]]
+            [remote-call.meta :refer [get-all-series bulk-update-series]]
             [ring.util.response :refer [response not-found header status redirect]]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
             [common-lib.core :as clc]
@@ -17,6 +18,7 @@
             [html.index :refer [make-index]]
             [html.schedule-builder :refer [schedule-builder]]
             [html.schedule-builder-get :refer [schedule-builder-get]]
+            [html.bulk-update :refer [bulk-update]]
             [cheshire.core :refer [parse-string generate-string]]
             [org.httpkit.server :refer [run-server]])
   (:gen-class))
@@ -27,7 +29,8 @@
                            ["format" 4009]
                            ["user" 4002]
                            ["playlist" 4001]
-                           ["builder" 4003]))
+                           ["builder" 4003]
+                           ["meta" 4004]))
 
 (defn wrap-redirect [function]
   (fn [request]
@@ -106,7 +109,23 @@
                     (header "content-type" (get (:headers resp) "Content-Type"))
                     (header "content-disposition" (get (:headers resp) "Content-Disposition"))))
               (clc/make-response 400 {:status :failure})))))
-
+  (GET "/bulk-update.html" []
+    (let [series (get-all-series (:meta hosts))]
+      (bulk-update series nil)))
+  (POST "/bulk-update.html" [series update]
+    (println "update? " update)
+      (let [lines (clojure.string/split update #"\n")
+            to-map (fn [line]
+                      (let [split-line (clojure.string/split line #"\|")]
+                            {:season (first split-line)
+                              :episode (second split-line)
+                              :episode_name (nth split-line 2)
+                              :summary (nth split-line 3)}))
+            series-list (get-all-series (:meta hosts))
+            maps (map to-map lines)
+            result (bulk-update-series (:meta hosts) series maps)]
+        (println "results - " result)
+        (bulk-update series-list result)))
   (route/files "public")
   (route/not-found "Not Found"))
 

@@ -21,8 +21,8 @@
     [:input {:type "submit" :name "reset" :value "Reset"}]
     [:input {:type "submit" :name "download" :value "Download"}]])
 
-(defn preview-column [schedule divs idx update]
-  [:div {:class "column"}
+(defn preview-column [schedule divs idx & outline]
+  [:div {:class "column" :style (if (first outline) "border:solid black 1px;border-radius: 0.5em")}
     [:h2 schedule ": " idx]
     divs])
 
@@ -33,9 +33,11 @@
     [:br] (:series %) (str " S" (:season %) "E" (:episode %))
     [:br] [:em (:episode_name %)]) items))
 
-(defn make-preview-page [schedule schedules idx items update]
+(defn make-preview-page [schedule schedules idx update previous current next]
   (let [options (make-options schedule schedules)
-        divs (make-divs items)]
+        prev-items (make-divs previous)
+        curr-items (make-divs current)
+        next-items (make-divs next)]
     (html5 {:lang "en" :dir "ltr"}
       [:head
         [:title "Schedule Preview"]
@@ -45,4 +47,6 @@
         [:div {:id "content"}
           (header "Schedule Preview")
           (form schedule options idx update)
-          (preview-column schedule divs idx update)]])))
+          (preview-column schedule prev-items (- idx 1))
+          (preview-column schedule curr-items idx true)
+          (preview-column schedule next-items (+ 1 idx))]])))

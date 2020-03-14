@@ -65,22 +65,24 @@
       (redirect (str "/schedule-builder.html?message=Schedule with name '" schedule-name "' already exists"))
       (schedule-builder schedule playlists validate type))))
 
+(defn fetch-preview-frame [schedule-name index]
+  (let [items (get-schedule-items (:schedule hosts) schedule-name index)
+        catalog_ids (map #(fetch-catalog-id (:playlist hosts) (:name %) (:index %)) items)
+        meta (flatten (map #(:records (get-meta-by-catalog-id (:meta hosts) (:item %))) catalog_ids))]
+        (map merge meta items)))
+
 (defroutes app-routes
   (GET "/preview.html" [schedule index idx update reset download]
     (fn [request]
       (let [user (:user (:session request))
             schedule-list (get-schedules (:schedule hosts))
             sched (or schedule (first schedule-list))
-            idx (or (if reset (fetch-index (:user hosts) user sched true))
-                    (not-empty index)
-                    idx
-                    (fetch-index (:user hosts) user sched true))
-            items (get-schedule-items (:schedule hosts) sched idx)
-            catalog_ids (map #(fetch-catalog-id (:playlist hosts) (:name %) (:index %)) items)
-            meta (flatten (map #(:records (get-meta-by-catalog-id (:meta hosts) (:item %))) catalog_ids))
-            records (map merge meta items)]
+            idx (Integer/parseInt (str
+              (or (if reset (fetch-index (:user hosts) user sched true))
+                (not-empty index)
+                idx
+                (fetch-index (:user hosts) user sched true))))]
             (logger/debug (str "with user: " user " index: " idx " and schedule: " sched))
-            (println "records: " records)
       (if download
         (let [params {:index index :update update}
               resp (fetch-playlist (:format hosts) user sched params)]
@@ -90,7 +92,10 @@
               (status 200)
               (header "content-type" (get (:headers resp) "Content-Type"))
               (header "content-disposition" (get (:headers resp) "Content-Disposition"))))
-        (make-preview-page sched schedule-list idx records update)))))
+        (let [current (fetch-preview-frame sched idx)
+              previous (fetch-preview-frame sched (- idx 1))
+              next (fetch-preview-frame sched (+ idx 1))]
+          (make-preview-page sched schedule-list idx update previous current next))))))
   (GET "/login.html" []
      (login))
   (GET "/index.html" []

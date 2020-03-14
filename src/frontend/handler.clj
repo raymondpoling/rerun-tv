@@ -81,7 +81,7 @@
             records (map merge meta items)]
             (logger/debug (str "with user: " user " index: " idx " and schedule: " sched))
             (println "records: " records)
-      (response (make-preview-page sched schedule-list idx records update)))))
+      (make-preview-page sched schedule-list idx records update))))
   (GET "/login.html" []
      (login))
   (GET "/index.html" []
@@ -99,13 +99,14 @@
   (GET "/logout" []
     (-> (redirect "/login.html")
         (assoc :session {:user nil})))
-  (GET "/format/:name" [name]
+  (GET "/format/:name" [name index update]
     (fn [request]
       (let [username (:user (:session request))
             content-type (:content-type (:header request))]
             (logger/debug (:session request))
             (if (not (nil? username))
-              (let [resp (fetch-playlist (:format hosts) username name)]
+              (let [params {:index index :update update}
+                    resp (fetch-playlist (:format hosts) username name params)]
                 (logger/debug "RESP IS ***" resp "*** RESP IS")
                 (logger/debug "header? " (get (:headers resp) "Content-Type"))
                 (-> (response (:body resp))

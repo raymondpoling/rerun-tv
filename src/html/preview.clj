@@ -18,19 +18,13 @@
     [:label {:for "update"} "Update?"]
     [:input {:type "checkbox" :id "update" :value "update" :name "update" :checked (if update "checked")}]
     [:input {:type "submit" :value "Preview"}]
-    [:input {:type "submit" :name "reset" :value "Reset"}]])
+    [:input {:type "submit" :name "reset" :value "Reset"}]
+    [:input {:type "submit" :name "download" :value "Download"}]])
 
 (defn preview-column [schedule divs idx update]
   [:div {:class "column"}
     [:h2 schedule ": " idx]
-    divs
-    [:br]
-    [:br]
-    [:div {:class "dl-button"}
-      [:a {:href (str "format/" schedule (if-let [idx (str "?index="  idx)]
-                    (str idx (if update (str "&update=update")))
-                    (if update (str "?update=update"))))}
-        "Download this List"]]])
+    divs])
 
 (defn make-divs [items]
   (map #(vector :div {:class "item" }

@@ -66,7 +66,7 @@
       (schedule-builder schedule playlists validate type))))
 
 (defroutes app-routes
-  (GET "/preview.html" [schedule index idx update reset]
+  (GET "/preview.html" [schedule index idx update reset download]
     (fn [request]
       (let [user (:user (:session request))
             schedule-list (get-schedules (:schedule hosts))
@@ -81,7 +81,16 @@
             records (map merge meta items)]
             (logger/debug (str "with user: " user " index: " idx " and schedule: " sched))
             (println "records: " records)
-      (make-preview-page sched schedule-list idx records update))))
+      (if download
+        (let [params {:index index :update update}
+              resp (fetch-playlist (:format hosts) user sched params)]
+          (logger/debug "RESP IS ***" resp "*** RESP IS")
+          (logger/debug "header? " (get (:headers resp) "Content-Type"))
+          (-> (response (:body resp))
+              (status 200)
+              (header "content-type" (get (:headers resp) "Content-Type"))
+              (header "content-disposition" (get (:headers resp) "Content-Disposition"))))
+        (make-preview-page sched schedule-list idx records update)))))
   (GET "/login.html" []
      (login))
   (GET "/index.html" []
@@ -99,21 +108,6 @@
   (GET "/logout" []
     (-> (redirect "/login.html")
         (assoc :session {:user nil})))
-  (GET "/format/:name" [name index update]
-    (fn [request]
-      (let [username (:user (:session request))
-            content-type (:content-type (:header request))]
-            (logger/debug (:session request))
-            (if (not (nil? username))
-              (let [params {:index index :update update}
-                    resp (fetch-playlist (:format hosts) username name params)]
-                (logger/debug "RESP IS ***" resp "*** RESP IS")
-                (logger/debug "header? " (get (:headers resp) "Content-Type"))
-                (-> (response (:body resp))
-                    (status 200)
-                    (header "content-type" (get (:headers resp) "Content-Type"))
-                    (header "content-disposition" (get (:headers resp) "Content-Disposition"))))
-              (clc/make-response 400 {:status :failure})))))
   (GET "/bulk-update.html" []
     (let [series (get-all-series (:meta hosts))]
       (bulk-update series nil)))

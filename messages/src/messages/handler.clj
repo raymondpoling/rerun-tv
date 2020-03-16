@@ -29,7 +29,7 @@
         (logger/debug "responses for start/step [" start "/" step "]: " resp)
         (clc/make-response 200 {:status :ok :events resp}))
       (catch Exception e
-        (logger/error "failed to fetch " (or start (jt/instant))  " step " step " due to \""(.getMessage e)"\"")
+        (logger/error "failed to fetch " start " step " step " due to \""(.getMessage e)"\"")
         (clc/make-response 500 {:status "failed" :message "service failed"}))))
   (route/not-found (clc/make-response 404 {:status :not-found})))
 

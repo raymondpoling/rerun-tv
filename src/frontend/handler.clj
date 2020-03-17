@@ -9,6 +9,7 @@
             [remote-call.user :refer [fetch-index]]
             [remote-call.playlist :refer [get-playlists fetch-catalog-id]]
             [remote-call.meta :refer [get-all-series bulk-update-series get-meta-by-catalog-id]]
+            [remote-call.messages :refer [get-messages add-message]]
             [ring.util.response :refer [response not-found header status redirect]]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
             [common-lib.core :as clc]
@@ -20,6 +21,8 @@
             [html.schedule-builder-get :refer [schedule-builder-get]]
             [html.bulk-update :refer [bulk-update]]
             [cheshire.core :refer [parse-string generate-string]]
+            [hiccup.core :refer [html]]
+            [java-time :as jt]
             [org.httpkit.server :refer [run-server]])
   (:gen-class))
 
@@ -30,7 +33,8 @@
                            ["user" 4002]
                            ["playlist" 4001]
                            ["builder" 4003]
-                           ["meta" 4004]))
+                           ["meta" 4004]
+                           ["messages" 4010]))
 
 (defn wrap-redirect [function]
   (fn [request]
@@ -49,21 +53,29 @@
         (function request)))))
 
 (defn sb [schedule-name schedule-body preview type]
-  (let [playlists (get-playlists (:playlist hosts))
-        sched (parse-string schedule-body true)
-        schedule-name (or (:name sched) schedule-name)
-        got-sched (get-schedule (:schedule hosts) schedule-name)
-        schedule (if-let [body sched]
-          body
-          (or got-sched {:name schedule-name, :playlists []}))
-        validate (if preview
-                    (validate-schedule (:builder hosts) schedule)
-                    (send-schedule (:builder hosts) type schedule-name schedule))]
-        (println "did it validate? " validate)
-        (println "got-sched" got-sched)
-    (if (and (= type "Create") got-sched)
-      (redirect (str "/schedule-builder.html?message=Schedule with name '" schedule-name "' already exists"))
-      (schedule-builder schedule playlists validate type))))
+  (fn [request]
+    (let [playlists (get-playlists (:playlist hosts))
+          sched (parse-string schedule-body true)
+          schedule-name (or (:name sched) schedule-name)
+          got-sched (get-schedule (:schedule hosts) schedule-name)
+          schedule (if-let [body sched]
+            body
+            (or got-sched {:name schedule-name, :playlists []}))
+          validate (if preview
+                      (validate-schedule (:builder hosts) schedule)
+                      (do
+                        (add-message (:messages hosts)
+                                   "System"
+                                   (str "Schedule " schedule-name " " type "d!")
+                                   (str "A schedule has been " (clojure.string/lower-case type) "d by " (:user (:session request)) ", "
+                                        (html [:a {:href (str "/preview.html?schedule=" schedule-name)} " check it out!"])))
+                        (println "Adding event " sched)
+                        (send-schedule (:builder hosts) type schedule-name schedule)))]
+          (println "did it validate? " validate)
+          (println "got-sched" got-sched)
+      (if (and (= type "Create") got-sched)
+        (redirect (str "/schedule-builder.html?message=Schedule with name '" schedule-name "' already exists"))
+        (schedule-builder schedule playlists validate type)))))
 
 (defn fetch-preview-frame [schedule-name index]
   (let [items (get-schedule-items (:schedule hosts) schedule-name index)
@@ -99,7 +111,10 @@
   (GET "/login.html" []
      (login))
   (GET "/index.html" []
-    (make-index))
+    (let [events (get-messages (:messages hosts))
+          adjusted-dates (map #(merge % {:posted (jt/format "YYYY-MM-dd HH:mm:ssz" (jt/with-zone-same-instant (jt/zoned-date-time (:posted %)) (jt/zone-id)))}) (:events events))]
+      (println "events host " (:messages hosts) " events? " adjusted-dates)
+      (make-index adjusted-dates)))
   (GET "/schedule-builder.html" [message]
     (let [schedule-names (get-schedules (:schedule hosts))]
       (schedule-builder-get schedule-names message)))
@@ -117,19 +132,23 @@
     (let [series (get-all-series (:meta hosts))]
       (bulk-update series nil)))
   (POST "/bulk-update.html" [series update]
+    (fn [request]
     (println "update? " update)
-      (let [lines (clojure.string/split update #"\n")
-            to-map (fn [line]
-                      (let [split-line (clojure.string/split line #"\|")]
-                            {:season (first split-line)
-                              :episode (second split-line)
-                              :episode_name (nth split-line 2)
-                              :summary (nth split-line 3)}))
-            series-list (get-all-series (:meta hosts))
-            maps (map to-map lines)
-            result (bulk-update-series (:meta hosts) series maps)]
-        (println "results - " result)
-        (bulk-update series-list result)))
+        (let [lines (clojure.string/split update #"\n")
+              to-map (fn [line]
+                        (let [split-line (clojure.string/split line #"\|")]
+                              {:season (first split-line)
+                                :episode (second split-line)
+                                :episode_name (nth split-line 2)
+                                :summary (nth split-line 3)}))
+              series-list (get-all-series (:meta hosts))
+              maps (map to-map lines)
+              result (bulk-update-series (:meta hosts) series maps)]
+          (println "results - " result)
+          (if (= "ok" (:status result)) (println "message response: "(add-message (:messages hosts) "System"
+              (str (:user (:session request)) " updated " series " with more data!")
+              (html [:ol (map (fn [i] [:li (str "S" (:season i) "E" (:episode i) " " (:episode_name i))]) maps)]))))
+          (bulk-update series-list result))))
   (route/files "public")
   (route/not-found "Not Found"))
 

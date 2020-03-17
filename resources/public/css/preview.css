@@ -14,11 +14,11 @@ h2 {
   /* height: 5em; */
   padding: 0.5em;
   margin: 3px auto 3px auto;
-  border: 2px dotted blue;
+  border: 2px dotted brown;
   word-wrap: normal;
   vertical-align: middle;
   text-align: center;
-  background-color: cyan;
+  background-color: #F0EAD6;
   border-radius: 0.5em;
 }
 

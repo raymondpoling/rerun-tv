@@ -46,16 +46,16 @@ tr {
 }
 
 .playlist {
-  background-color: yellow;
+  background-color: #ffff99;
   border: black 1px solid;
 }
 
 .merge {
-  background-color: pink;
+  background-color: #FFE4E1;
 }
 
 .multi {
-  background-color: lightgreen;
+  background-color: #b3ffb3;
 }
 
 .name {
@@ -68,5 +68,5 @@ tr {
 }
 
 .filler {
-  background-color: darkgray;
+  background-color: lightgray;
 }

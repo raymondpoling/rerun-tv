@@ -17,4 +17,8 @@
     [:body
       [:div {:id "content"}
         (header "ReRun TV")
-        (map make-event events)]]))
+        (map make-event events)
+        (if (= 10 (count events))
+          [:a {:id "previous"
+              :href (str "index.html?start=" (:message_number (last events)))}
+              "Previous"])]]))

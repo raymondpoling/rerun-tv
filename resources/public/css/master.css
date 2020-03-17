@@ -44,3 +44,19 @@ article {
   border-radius: 2em;
   margin: 1em;
 }
+
+#previous {
+  background-color: #F0EAD6;
+  padding: 1em;
+  margin: auto;
+  display: block;
+  text-align: center;
+  border-radius: 2em;
+  font-size: 1.5em;
+  width: 30%;
+}
+
+#previous:hover {
+  color: #F0EAD6;
+  background-color: lightblue;
+}

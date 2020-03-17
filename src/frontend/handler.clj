@@ -110,8 +110,8 @@
           (make-preview-page sched schedule-list idx update previous current next))))))
   (GET "/login.html" []
      (login))
-  (GET "/index.html" []
-    (let [events (get-messages (:messages hosts))
+  (GET "/index.html" [start]
+    (let [events (get-messages (:messages hosts) start)
           adjusted-dates (map #(merge % {:posted (jt/format "YYYY-MM-dd HH:mm:ssz" (jt/with-zone-same-instant (jt/zoned-date-time (:posted %)) (jt/zone-id)))}) (:events events))]
       (println "events host " (:messages hosts) " events? " adjusted-dates)
       (make-index adjusted-dates)))

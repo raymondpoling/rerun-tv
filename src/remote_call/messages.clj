@@ -9,9 +9,10 @@
 (dh/defcircuitbreaker ckt-brkr {:failure-threshold-ratio [8 10]
                               :delay-ms 1000})
 
-(defn get-messages [host]
+(defn get-messages [host start]
   (clc/log-on-error {:status "failed"}
-      (:body (client/get (str "http://" host "/") {:as :json :query-params {:step 10}}))))
+    (let [param-map (if start {:step 10 :start start} {:step 10})]
+      (:body (client/get (str "http://" host "/") {:as :json :query-params param-map})))))
 
 (defn add-message [host user title information]
   (clc/log-on-error {:status "failed"}

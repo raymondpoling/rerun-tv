@@ -12,7 +12,7 @@
 
 (defn initialize
   ([]
-    (swap! database (fn [_ s] s) {:dbtype "hsql" :dbname "meta"}))
+    (swap! database (fn [_ s] s) {:dbtype "h2:mem" :dbname "meta"}))
   ([name password host port]
     (swap! database merge {:user name :password password :host host :port port})))
 
@@ -34,6 +34,10 @@
             AND files.season = ?
             AND files.episode = ?" series_key season episode]))
 
+(defn update-series [series record]
+  (j/update! @database "meta.series"
+    record ["series.name = ?" series]))
+
 (defn insert-record [series_key record]
   (j/insert! @database "meta.files"
     (merge {:series_id series_key} record)))
@@ -42,14 +46,14 @@
   (let [catalog-prefix (subs catalog-id 0 7)
         season (Integer/parseInt (subs catalog-id 7 9))
         episode (Integer/parseInt (subs catalog-id 9 12))]
-  (j/query @database ["SELECT series.name AS series, episode, season, summary, episode_name, catalog_prefix FROM meta.series JOIN meta.files
+  (j/query @database ["SELECT series.name AS series, episode, season, files.summary AS summary, episode_name, catalog_prefix, files.imdbid AS imdbid, files.thumbnail AS thumbnail FROM meta.series JOIN meta.files
     ON series.id = files.series_id
     WHERE series.catalog_prefix = ?
     AND files.season = ?
     AND files.episode = ?" catalog-prefix season episode])))
 
 (defn find-by-series-season-episode [name season episode]
-  (j/query @database ["SELECT series.name AS series, episode, season, summary, episode_name, catalog_prefix FROM meta.series JOIN meta.files
+  (j/query @database ["SELECT series.name AS series, episode, season, files.summary AS summary, episode_name, catalog_prefix, files.imdbid AS imdbid, files.thumbnail AS thumbnail FROM meta.series JOIN meta.files
     ON series.id = files.series_id
     WHERE series.name = ?
     AND files.season = ?
@@ -66,7 +70,7 @@
     (:catalog_prefix id)))
 
 (defn find-by-series [series-name]
-  (j/query @database ["SELECT catalog_prefix, season, episode
+  (j/query @database ["SELECT catalog_prefix, season, episode, series.summary AS summary, series.imdbid AS imdbid, series.thumbnail AS thumbnail
     FROM meta.series
     JOIN meta.files
     ON series.id = files.series_id

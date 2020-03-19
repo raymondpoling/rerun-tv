@@ -102,13 +102,16 @@
       (is (= (parse-string (:body response)) {"status" "ok","catalog_ids"["TESTS0101002"],"records"
         [{"summary" "Wonderful story of cats being cats and everyone loving them. Hooray! For the second time"}]}))))
   (testing "verify catalog ids are created correctly for subsequent records"
-    (let [response (app (mock/request :post "/series/test-serials/1/1"))]
+    (let [response (app (mock/request :post "/series/test-serials/1/1"))
+          response2 (app (mock/request :post "/series/test-serials2/1/1"))]
       (is (= (:status response) 200))
-      (is (= (:body response) "{\"status\":\"ok\",\"catalog_ids\":[\"TESTS0201001\"]}"))))
+      (is (= (:body response) "{\"status\":\"ok\",\"catalog_ids\":[\"TESTS0201001\"]}"))
+      (is (= (:status response2) 200))
+      (is (= (:body response2) "{\"status\":\"ok\",\"catalog_ids\":[\"TESTS0301001\"]}"))))
   (testing "get list of available series"
     (let [response (app (mock/request :get "/series"))]
       (is (= (:status response) 200))
-      (is (= (parse-string (:body response)) {"status" "ok", "results" ["test-serials", "test-series"]}))))
+      (is (= (parse-string (:body response)) {"status" "ok", "results" ["test-serials", "test-serials2", "test-series"]}))))
   (testing "delete a record"
     (let [response (app (mock/request :delete "/series/test-series/1/2"))]
       (is (= (:status response) 200))
@@ -149,6 +152,35 @@
         "records" [{"imdbid" "tt222222"
             "thumbnail" "http://test-series.jpg"
             "summary" "a test series i enjoy"}]}))))
+  (testing "partial bulk update works"
+    (let [response (app (-> (mock/request :put "/series/test-serials")
+                            (mock/json-body {
+                            "records" [{
+                              "episode_name" "The Cat Returns 2"
+                              "summary" "Wonderful story of cats being cats and everyone loving them. Hooray! For the second time"
+                             "episode" 1
+                             "season" 1
+                           }]})))]
+    (is (= (:status response) 200))
+    (is (= (:body response) "{\"status\":\"ok\",\"catalog_ids\":[\"TESTS0201001\"]}"))))
+  (testing "find specific series by name"
+    (let [response (app (mock/request :get "/series/test-serials"))]
+      (is (= (:status response) 200))
+      (is (= (parse-string (:body response)) {"status" "ok", "catalog_ids" ["TESTS0201001"]
+        "records" [{"imdbid" nil
+            "thumbnail" nil
+            "summary" nil}]}))))
+  (testing "find partial specific episode by name"
+    (let [response (app (mock/request :get "/series/test-serials/1/1"))]
+      (is (= (:status response) 200))
+      (is (= (parse-string (:body response)) {"status" "ok", "catalog_ids" ["TESTS0201001"]
+        "records" [{"episode_name" "The Cat Returns 2",
+        "summary" "Wonderful story of cats being cats and everyone loving them. Hooray! For the second time",
+        "episode" 1,
+        "season" 1,
+        "series" "test-serials",
+        "imdbid" nil,
+        "thumbnail" nil}]}))))
   (testing "not-found route1"
     (let [response (app (mock/request :get "/invalid"))]
       (is (= (:status response) 404))))

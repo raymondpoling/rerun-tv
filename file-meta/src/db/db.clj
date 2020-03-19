@@ -22,7 +22,7 @@
 (defn insert-series [series-name]
   (j/with-db-transaction [db @database]
     (let [catalog-prefix (create-id series-name)
-      previous-series (j/query db ["SELECT catalog_prefix FROM meta.series WHERE catalog_prefix LIKE ?" (str catalog-prefix "%")])
+      previous-series (j/query db ["SELECT catalog_prefix FROM meta.series WHERE catalog_prefix LIKE ? ORDER BY catalog_prefix DESC" (str catalog-prefix "%")])
       catalog-id (if (empty? previous-series) (clojure.string/join [catalog-prefix "01"]) (next-id (:catalog_prefix (first previous-series))))]
     (merge {:catalog_prefix catalog-id}
       (first (j/insert! db "meta.series"
@@ -70,13 +70,15 @@
     (:catalog_prefix id)))
 
 (defn find-by-series [series-name]
-  (j/query @database ["SELECT catalog_prefix, season, episode, series.summary AS summary, series.imdbid AS imdbid, series.thumbnail AS thumbnail
+  [(j/query @database ["select series.summary AS summary, series.imdbid AS imdbid, series.thumbnail AS thumbnail
+    FROM meta.series WHERE name = ?" series-name])
+  (j/query @database ["SELECT catalog_prefix, season, episode
     FROM meta.series
     JOIN meta.files
     ON series.id = files.series_id
     WHERE series.name = ?
     GROUP BY catalog_prefix, season, episode
-    ORDER BY catalog_prefix, season, episode" series-name]))
+    ORDER BY catalog_prefix, season, episode" series-name])])
 
 (defn find-all-series []
   (j/query @database ["SELECT name FROM meta.series GROUP BY name ORDER BY name"]))

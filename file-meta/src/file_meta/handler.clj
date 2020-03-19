@@ -62,12 +62,11 @@
               (logger/error e)
               (clc/make-response 500 {:status :failure}))))))
   (GET "/series/:name" [name catalog_id_only fields]
-    (let [records (find-by-series name)
+    (let [top-record (find-by-series name)
+          series (first top-record)
+          records (second top-record)
           catalog_ids (map (fn [t] (make-catalog-id (:catalog_prefix t) (str (:season t)) (str (:episode t)))) records)
-          summary (:summary (first records))
-          imdbid (:imdbid (first records))
-          thumbnail (:thumbnail (first records))
-          to_return (if catalog_id_only nil {:records [{:summary summary :imdbid imdbid :thumbnail thumbnail}]})]
+          to_return (if catalog_id_only nil {:records series})]
           (if (nil? records)
             (clc/make-response 404 {:status :not_found})
             (clc/make-response 200 (merge to_return {:status :ok :catalog_ids catalog_ids} )))))

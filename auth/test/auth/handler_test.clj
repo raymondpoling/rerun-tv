@@ -3,11 +3,13 @@
             [ring.mock.request :as mock]
             [db.db :refer [initialize database]]
             [clojure.java.jdbc :as j]
+            [auth.test-db :refer [create-h2-mem-tables]]
             [auth.handler :refer :all]
             [cheshire.core :refer :all]))
 
 (deftest test-app
   (initialize)
+  (create-h2-mem-tables)
   (testing "create a user"
     (let [response (app (-> (mock/request :post "/new/test-user")
                             (mock/json-body {:password "password"})))]

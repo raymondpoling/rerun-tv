@@ -5,11 +5,12 @@
 (def database (atom {:dbtype "mysql"
                :dbname "auth"
                :user nil
-               :password nil}))
+               :password nil
+               :serverTimezone "America/New_York"}))
 
 (defn initialize
   ([]
-    (swap! database (fn [_ s] s) {:dbtype "hsql" :dbname "auth"}))
+    (swap! database (fn [_ s] s) {:dbtype "h2:mem" :dbname "auth"}))
   ([name password host port]
     (swap! database merge {:user name :password password :host host :port port})))
 

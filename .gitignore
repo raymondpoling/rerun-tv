@@ -17,3 +17,5 @@ nohup.out
 profiles.clj
 .hgignore
 .hg/
+env/
+*.properties

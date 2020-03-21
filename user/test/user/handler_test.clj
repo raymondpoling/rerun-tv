@@ -3,10 +3,12 @@
             [ring.mock.request :as mock]
             [cheshire.core :refer :all]
             [db.db :refer [initialize]]
+            [user.test-db :refer [create-h2-mem-tables]]
             [user.handler :refer :all]))
 
 (deftest test-app
   (initialize)
+  (create-h2-mem-tables)
   (testing "user not found"
     (let [response (app (mock/request :get "/test_user/test_schedule"))]
       (is (= (:status response) 404))

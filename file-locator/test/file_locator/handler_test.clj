@@ -3,10 +3,12 @@
             [ring.mock.request :as mock]
             [cheshire.core :refer :all]
             [db.db :refer [initialize]]
+            [file-locator.test-db :refer [create-h2-mem-tables]]
             [file-locator.handler :refer :all]))
 
 (deftest test-app
   (initialize)
+  (create-h2-mem-tables)
   (testing "post a new url"
     (let [response (app (-> (mock/request :post "/file/host1/TESTM0101001")
                             (mock/json-body {:path "/home/myself/Videos/test-me/Season 1/1-1.mkv"})))]

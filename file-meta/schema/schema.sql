@@ -7,7 +7,10 @@ DROP  TABLE meta.series;
 CREATE TABLE meta.series (
   id SERIAL,
   name VARCHAR(50),
-  catalog_prefix CHAR(7) UNIQUE NOT NULL
+  catalog_prefix CHAR(7) UNIQUE NOT NULL,
+  summary TEXT,
+  thumbnail VARCHAR(255),
+  imdbid CHAR(10)
 ) ENGINE INNODB;
 
 CREATE UNIQUE INDEX by_series_name ON meta.series(name);
@@ -30,8 +33,10 @@ CREATE TABLE meta.files (
   series_id BIGINT(20) UNSIGNED NOT NULL,
   season INTEGER UNSIGNED NOT NULL,
   episode INTEGER UNSIGNED NOT NULL,
-  episode_name VARCHAR(50),
+  episode_name VARCHAR(120),
   summary TEXT,
+  thumbnail VARCHAR(255),
+  imdbid CHAR(10),
   FOREIGN KEY (series_id) REFERENCES meta.series(id) ON DELETE CASCADE
 ) ENGINE INNODB;
 

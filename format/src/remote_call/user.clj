@@ -8,9 +8,16 @@
 (dh/defcircuitbreaker ckt-brkr {:failure-threshold-ratio [8 10]
                               :delay-ms 1000})
 
-(defn get-index [host user schedule-name]
-  (clc/log-on-error {:status "failure" :message "user service not available"}
+(def message {:status "failure" :message "user service not available"})
+
+(defn get-index [host user schedule-name update]
+  (clc/log-on-error message
       (dh/with-circuit-breaker ckt-brkr
         (:idx (parse-string (:body (client/get
                           (str "http://" host "/" user "/" schedule-name))
                           {:as :json}) true)))))
+
+(defn set-index [host user schedule-name idx]
+  (clc/log-on-error message
+    (dh/with-circuit-breaker ckt-brkr
+      (client/put (str "http://" host "/" user "/" schedule-name "/" idx)))))

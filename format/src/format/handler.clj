@@ -3,7 +3,7 @@
             [compojure.route :as route]
             [ring.middleware.json :as json]
             [remote-call.fetch-records :refer [fetch]]
-            [remote-call.user :refer [get-index]]
+            [remote-call.user :refer [get-index set-index]]
             [format.m3u :refer [m3u]]
             [common-lib.core :as clc]
             [ring.util.response :refer [response not-found header status]]
@@ -26,19 +26,23 @@
                            ["meta" 4004]))
 
 (defroutes app-routes
-  (GET "/:user/:schedule-name" [user schedule-name]
+  (GET "/:user/:schedule-name" [user schedule-name index update]
     (let [user-host (:user hosts)
           schedule-host (:schedule hosts)
           playlist-host (:playlist hosts)
           locator-host (:locator hosts)
           meta-host (:meta hosts)
-          index (get-index user-host user schedule-name)
-          records (fetch schedule-host playlist-host locator-host meta-host user index schedule-name)
-          failure (filter #(= "failure" (:status %)) [index records])]
-      (logger/error "Failures? " failure)
-      (logger/debug user schedule-name index "records: " (str [index records]))
+          idx (or (if index (Integer/parseInt index)) (get-index user-host user schedule-name update))
+          records (fetch schedule-host playlist-host locator-host meta-host user idx schedule-name)
+          failure (filter #(= "failure" (:status %)) [idx records])]
+      (logger/info "Failures? " failure)
+      (logger/debug user schedule-name idx index "records: " (str [idx records]))
       (if (empty? failure)
-        (make-m3u-response 200 schedule-name index (m3u schedule-name index records))
+        (let [response (make-m3u-response 200 schedule-name idx (m3u schedule-name idx records))]
+        (logger/debug (str "Update status for idx " idx " is " (type update) " of " update))
+          (if update
+            (set-index user-host user schedule-name (+ 1  idx)))
+          response)
         (clc/make-response 502 (first failure)))))
 
   (route/not-found

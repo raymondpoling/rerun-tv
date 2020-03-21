@@ -3,10 +3,12 @@
             [ring.mock.request :as mock]
             [playlist.handler :refer :all]
             [cheshire.core :refer :all]
+            [playlist.test-db :refer [create-h2-mem-tables]]
             [db.db :refer [initialize]]))
 
 (deftest test-app
   (initialize)
+  (create-h2-mem-tables)
   (testing "create new playlist"
     (let [response (app (-> (mock/request :post "/new-playlist")
                             (mock/json-body {:name "new-playlist"

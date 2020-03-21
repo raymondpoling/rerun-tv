@@ -5,11 +5,12 @@
 (def database (atom {:dbtype "mysql"
                :dbname "schedule"
                :user nil
-               :password nil}))
+               :password nil
+               :serverTimezone "America/New_York"}))
 
 (defn initialize
 ([]
-  (swap! database (fn [_ s] s) {:dbtype "hsql" :dbname "playlist"}))
+  (swap! database (fn [_ s] s) {:dbtype "h2:mem" :dbname "schedule"}))
 ([name password host port]
   (swap! database merge {:user name :password password :host host :port port})))
 
@@ -18,6 +19,12 @@
           (j/query @database
             ["SELECT schedule FROM schedule.schedule WHERE name = ?" name])]
   (parse-string (:schedule (first sched)) true)))
+
+(defn find-schedules []
+  (let [sched
+          (j/query @database
+            ["SELECT name FROM schedule.schedule"])]
+  (map #(:name %) sched)))
 
 (defn insert-schedule [name schedule]
   (j/insert! @database "schedule.schedule"

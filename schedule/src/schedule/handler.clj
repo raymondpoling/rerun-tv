@@ -12,6 +12,13 @@
   (:gen-class))
 
 (defroutes app-routes
+  (GET "/" []
+    (try
+      (let [schedules (find-schedules)]
+        (clc/make-response 200 {:status :ok :schedules schedules}))
+    (catch Exception e
+      (logger/error (str "failed to get schedules: " (.getMessage e)))
+      (clc/make-response 500 {:status :failed}))))
   (POST "/:name" [name]
       (fn [request]
         (try

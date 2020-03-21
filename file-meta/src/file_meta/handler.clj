@@ -54,6 +54,8 @@
             series (if (nil? (id series_record?)) (insert-series name) series_record?)]
             (try
               (doall (map (fn [t] (update-record (id series) (:season t) (:episode t) t)) (:records (:body request))))
+              (logger/debug "Processing: " (:body request))
+              (logger/debug "Records: " (:records (:body request)))
               (let [series? (:series (:body request))]
                 (if series? (update-series name series?)))
               (clc/make-response 200 {:status :ok :catalog_ids

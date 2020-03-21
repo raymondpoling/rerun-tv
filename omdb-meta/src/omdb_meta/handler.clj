@@ -4,7 +4,7 @@
             [remote-call.meta :refer :all]
             [omdb-meta.update :as update]
             [ring.middleware.json :as json]
-            [clojure.tools.logging :as logging]
+            [clojure.tools.logging :as logger]
             [common-lib.core :as clc]
             [ring.util.response :refer [response not-found header status]]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
@@ -38,6 +38,9 @@
             updated-records (map #(update/update-episode % name omdb apikey) (:records (:body request)))
             updated-record {:series updated-series :records updated-records}
             result (:body (update-series (:meta hosts) name updated-record))]
+        (logger/debug "Record to update: " (:records (:body request)))
+        (logger/debug "Updating records: " updated-record)
+        (logger/debug "Result: " result)
         (if (= "ok" (:status result))
           (clc/make-response 200 result)
           (clc/make-response 500 result)))))
@@ -88,4 +91,4 @@
 (defn -main []
   (let [port (Integer/parseInt (or (System/getenv "PORT") "4011"))]
     (run-server app {:port port})
-    (logging/info (str "Listening on port " port))))
+    (logger/info (str "Listening on port " port))))

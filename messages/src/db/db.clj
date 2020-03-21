@@ -10,7 +10,7 @@
 
 (defn initialize
   ([]
-    (swap! database (fn [_ s] s) {:dbtype "hsql" :dbname "messages"}))
+    (swap! database (fn [_ s] s) {:dbtype "h2:mem" :dbname "messages"}))
   ([name password host port]
     (swap! database merge {:user name :password password :host host :port port})))
 
@@ -20,7 +20,6 @@
     {:author author :posted posted :title title :information information}))
 
 (defn get-events [start number]
-  (println "What is start? " start " type " (type start))
   (j/query @database
     (if start
       ["SELECT message_number, author, posted, title, information

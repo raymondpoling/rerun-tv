@@ -145,9 +145,7 @@
                                                 (= "Wonderful story of cats being cats and everyone loving them. Hooray! Got tired of this" (:summary record-2))
                                                 (= "tt6466" (:imdbid record-2)))
                                               {:status 200 :body (generate-string {:status :ok :catalog_ids ["TESTS0101002""TESTS0101003"]})}
-                                              (do
-                                                (println "FAILED TO MATCH!" (generate-string request))
-                                                {:status 500}))))}
+                                              {:status 500})))}
       (let [response (app (-> (mock/request :put "/series/test-series")
                               (mock/json-body {"series" {
                                   "summary" "a test series i enjoy"}

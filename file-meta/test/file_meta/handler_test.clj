@@ -3,12 +3,12 @@
             [ring.mock.request :as mock]
             [file-meta.handler :refer :all]
             [db.db :refer [initialize]]
-            [file-meta.test-db :refer [create-hsqldb-mem-tables]]
+            [file-meta.test-db :refer [create-h2-mem-tables]]
             [cheshire.core :refer :all]))
 
 (deftest test-app
   (initialize)
-  (create-hsqldb-mem-tables)
+  (create-h2-mem-tables)
   (testing "create a stub record"
     (let [response (app (mock/request :post "/series/test-series/1/1"))]
       (is (= (:status response) 200))

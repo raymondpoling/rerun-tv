@@ -4,6 +4,7 @@
             [db.db :refer [initialize database]]
             [clojure.java.jdbc :as j]
             [messages.handler :refer :all]
+            [messages.test-db :refer [create-h2-mem-tables]]
             [java-time :as jt]
             [cheshire.core :refer :all]))
 
@@ -11,6 +12,7 @@
 
 (deftest test-app
   (initialize)
+  (create-h2-mem-tables)
   (testing "create a bunch of logs"
     (let [twenty (range 20)
           response (map #(app (mock/request :post "/"
@@ -25,7 +27,7 @@
   (testing "get the last 10 frames"
     (let [ten (range 10)
           response (app (mock/request :get "/" {:query-params {:null :nil
-                                                               :start "20"
+                                                               :start "21"
                                                                :step "10"}}))
           json-responses (:events (parse-string (:body response) true))]
       (is (= (:status response) 200))
@@ -40,7 +42,6 @@
            response (app (mock/request :get "/" {:query-params {:null :nil
                                                                 :step "10"}}))
            json-responses (:events (parse-string (:body response) true))]
-           (println "json-responses1 " json-responses)
        (is (= (:status response) 200))
        (is (= (map :author json-responses)
               (map #(str "test-" (+ 10 %)) (reverse ten))))

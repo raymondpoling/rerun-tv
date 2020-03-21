@@ -9,7 +9,7 @@
 
 (defn initialize
  ([]
-   (swap! database (fn [_ s] s) {:dbtype "hsql" :dbname "playlist"}))
+   (swap! database (fn [_ s] s) {:dbtype "h2:mem" :dbname "playlist"}))
  ([name password host port]
    (swap! database merge {:user name :password password :host host :port port})))
 
@@ -43,8 +43,13 @@
 
 (defn find-item [name index]
   (let [out (j/query @database
-    ["SELECT object FROM playlist.playlist WHERE idx = ? AND name_key = (SELECT id FROM playlist.name WHERE name = ?)" index name]
-    )]
+    ["SELECT object
+      FROM playlist.playlist
+      WHERE idx = ?
+      AND name_key =
+      (SELECT id
+        FROM playlist.name
+        WHERE name = ?)" index name])]
     (:object (first out))))
 
 (defn find-playlist [name]

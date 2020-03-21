@@ -9,7 +9,7 @@
 
 (defn initialize
   ([]
-    (swap! database (fn [_ s] s) {:dbtype "hsql" :dbname "playlist"}))
+    (swap! database (fn [_ s] s) {:dbtype "h2:mem" :dbname "user2"}))
   ([name password host port]
     (swap! database merge {:user name :password password :host host :port port})))
 

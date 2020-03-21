@@ -4,7 +4,7 @@
     [cheshire.core :refer :all]
     [cheshire.generate :refer [add-encoder encode-str remove-encoder]]))
 
-(defn create-hsqldb-mem-tables []
+(defn create-h2-mem-tables []
   (j/execute! @database ["CREATE SCHEMA META"])
   (j/execute! @database (j/create-table-ddl "meta.series"
     [[:id :SERIAL]

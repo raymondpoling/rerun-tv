@@ -17,6 +17,6 @@
   :profiles
   {:dev {:dependencies [[javax.servlet/servlet-api "2.5"]
                         [ring/ring-mock "0.3.2"]
-                        [org.hsqldb/hsqldb "2.5.0"]]}}
+                        [com.h2database/h2 "1.4.200"]]}}
    :main file-locator.handler
    :aot [file-locator.handler])

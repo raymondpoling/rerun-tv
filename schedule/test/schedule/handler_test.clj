@@ -3,10 +3,12 @@
             [ring.mock.request :as mock]
             [schedule.handler :refer :all]
             [cheshire.core :refer :all]
+            [schedule.test-db :refer [create-h2-mem-tables]]
             [db.db :refer [initialize]]))
 
 (deftest test-app
   (initialize)
+  (create-h2-mem-tables)
   (testing "reject a bad schedule"
     (let [response (app (-> (mock/request :post "/test-bad")
                             (mock/json-body {"name" "test-bad"

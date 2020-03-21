@@ -36,10 +36,10 @@
               expected (str "#EXTM3U\n"
                             "#PLAYLIST: test-schedule - 5\n"
                             "\n"
-                            "#EXTINF:0, Series 1 S1E5\n"
+                            "#EXTINF:0,, Series 1 S1E5\n"
                             "file://home/Video/Series 1/series 1 D1-5.mkv\n"
                             "\n"
-                            "#EXTINF:0, Series 2 S1E3\n"
+                            "#EXTINF:0,, Series 2 S1E3\n"
                             "file://home/Video/Series 2/series 2 D2-2.mkv\n")]
           (is (= (:status response) 200))
           (is (= (:body response) expected)))))

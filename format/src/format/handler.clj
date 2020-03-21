@@ -32,16 +32,16 @@
           playlist-host (:playlist hosts)
           locator-host (:locator hosts)
           meta-host (:meta hosts)
-          idx (or index (get-index user-host user schedule-name update))
+          idx (or (if index (Integer/parseInt index)) (get-index user-host user schedule-name update))
           records (fetch schedule-host playlist-host locator-host meta-host user idx schedule-name)
           failure (filter #(= "failure" (:status %)) [idx records])]
-      (logger/error "Failures? " failure)
+      (logger/info "Failures? " failure)
       (logger/debug user schedule-name idx index "records: " (str [idx records]))
       (if (empty? failure)
         (let [response (make-m3u-response 200 schedule-name idx (m3u schedule-name idx records))]
         (logger/debug (str "Update status for idx " idx " is " (type update) " of " update))
           (if update
-            (set-index user-host user schedule-name (+ 1 (Integer/parseInt idx))))
+            (set-index user-host user schedule-name (+ 1  idx)))
           response)
         (clc/make-response 502 (first failure)))))
 

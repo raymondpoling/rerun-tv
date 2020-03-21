@@ -12,15 +12,8 @@
             [org.httpkit.server :refer [run-server]])
   (:gen-class))
 
-(defn make-host [prefix default-port]
-  (let [upcase-prefix (clojure.string/upper-case prefix)
-        host (or (System/getenv (str upcase-prefix "_HOST"))
-                  prefix)
-        port (or (System/getenv (str upcase-prefix "_PORT")) default-port)]
-  (str host ":" port)))
-
-(def hosts {:playlist (make-host "playlist" 4001)
-            :schedule (make-host "schedule" 4000)})
+(def hosts (clc/make-hosts ["playlist" 4001]
+                           ["schedule" 4000]))
 
 (defn hosts-or-valid [name body]
   (let [playlists-map (get-playlists-map (:playlist hosts))]
@@ -41,7 +34,7 @@
         (if (= (:status validate) :ok)
             (let [response (post-schedule (:schedule hosts) schedule (:body request))]
               (if (= (:status response) :failure)
-                (clc/make-response 200 {:status :failure :message "cannot create schedule"})
+                (clc/make-response 200 {:status :failure :messages ["Cannot Create Schedule: Already Exists"]})
                 (clc/make-response 200 (:body response))))
             (clc/make-response 200 validate)))))
 
@@ -51,7 +44,7 @@
         (if (= (:status validate) :ok)
           (let [response (put-schedule (:schedule hosts) schedule (:body request))]
             (if (= (:status response) :failure)
-              (clc/make-response 200 {:status :failure :message "cannot update schedule"})
+              (clc/make-response 200 {:status :failure :messages ["Schedule Does Not Exist: cannot update schedule"]})
               (clc/make-response 200 (:body response))))
           (clc/make-response 200 validate)))))
 

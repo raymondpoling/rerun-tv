@@ -42,7 +42,7 @@
                               :playlist {:type "playlist" :name "e" :length 18}}
                               {:type "playlist" :name "f" :length 14}]}
           playlist-map {"a" 13 "b" 14 "c" 12 "d" 16 "e" 18 "f" 20}
-          expected {:status :invalid :message "failed validations: [a, c, f]"}
+          expected {:status :invalid :messages ["Failed Validation: a" "Failed Validation: c", "Failed Validation: f"]}
           actual (validate-schedule playlist-map "something" testing)]
       (is (= (:status expected) (:status actual)))
       (is (= (:message expected) (:message actual))))))

@@ -53,50 +53,54 @@
               {"status" "failure"
               "message" "playlist service not available"}))))))
 
-(deftest put-tests
-  (testing "put new schedule"
+(deftest post-tests
+  (testing "post new schedule"
     (with-fake-routes-in-isolation {"http://schedule:4000/schedule1"
-                                    {:put (fn [req] {:status 200 :headers {} :body (generate-string {:status :ok})})}
+                                    {:post (fn [req] {:status 200 :headers {} :body (generate-string {:status :ok})})}
                                     "http://playlist:4001/"
                                       (fn [request] {:status 200 :headers ()
                                                     :body (generate-string {:status :ok :playlists [{:name "series_test1", :length 27}]})})}
-    (let [response (app (-> (mock/request :put "/schedule/store/schedule1")
+    (let [response (app (-> (mock/request :post "/schedule/store/schedule1")
                             (mock/json-body {:name "schedule1" :playlists [{:type "playlist" :name "series_test1" :length 27}]})))]
       (is (= (:status response) 200))
       (is (= (parse-string (:body response))
               {"status" "ok"})))))
-  (testing "puted schedule must have playlists"
+  (testing "posted schedule must have playlists"
     (with-fake-routes-in-isolation {"http://schedule:4000/schedule1"
-                                    {:put (fn [req] {:status 200 :headers {} :body (generate-string {:status :ok})})}
+                                    {:post (fn [req] {:status 200 :headers {} :body (generate-string {:status :ok})})}
                                     "http://playlist:4001/"
                                       (fn [request] {:status 200 :headers ()
                                                     :body (generate-string {:status :ok :playlists [{:name "series_test1", :length 27}]})})}
-    (let [response (app (-> (mock/request :put "/schedule/store/schedule1")
+    (let [response (app (-> (mock/request :post "/schedule/store/schedule1")
                             (mock/json-body {:name "schedule1"})))]
       (is (= (:status response) 200))
       (is (= (parse-string (:body response))
-              {"status" "invalid" "message" "invalid schedule"})))))
-  (testing "puted schedule must have correct name"
+              {"status" "invalid" "messages" ["Invalid Schedule: must provide a playlists"
+                                              "Invalid Schedule: playlists must be an array"]})))))
+  (testing "posted schedule must have correct name"
     (with-fake-routes-in-isolation {"http://schedule:4000/schedule1"
-                                    {:put (fn [req] {:status 200 :headers {} :body (generate-string {:status :ok})})}
+                                    {:post (fn [req] {:status 200 :headers {} :body (generate-string {:status :ok})})}
                                     "http://playlist:4001/"
                                       (fn [request] {:status 200 :headers ()
                                                     :body (generate-string {:status :ok :playlists [{:name "series_test1", :length 27}]})})}
-    (let [response (app (-> (mock/request :put "/schedule/store/schedule1")
+    (let [response (app (-> (mock/request :post "/schedule/store/schedule1")
                             (mock/json-body {:name "schedule2" :playlists [{:type "playlist" :name "series_test1" :length 27}]})))]
       (is (= (:status response) 200))
       (is (= (parse-string (:body response))
-              {"status" "invalid" "message" "invalid schedule"})))))
-  (testing "put new schedule must put a schedule"
+              {"status" "invalid" "messages" ["Invalid Schedule: name must match"]})))))
+  (testing "post new schedule must put a schedule"
     (with-fake-routes-in-isolation {"http://schedule:4000/schedule1"
-                                    {:put (fn [req] {:status 200 :headers {} :body (generate-string {:status :ok})})}
+                                    {:post (fn [req] {:status 200 :headers {} :body (generate-string {:status :ok})})}
                                     "http://playlist:4001/"
                                       (fn [request] {:status 200 :headers ()
                                                     :body (generate-string {:status :ok :playlists [{:name "series_test1", :length 27}]})})}
-    (let [response (app (mock/request :put "/schedule/store/schedule1"))]
+    (let [response (app (mock/request :post "/schedule/store/schedule1"))]
       (is (= (:status response) 200))
       (is (= (parse-string (:body response))
-              {"status" "invalid" "message" "invalid schedule"})))))
+              {"status" "invalid" "messages" [
+                "Invalid Schedule: name must match"
+                "Invalid Schedule: must provide a playlists"
+                "Invalid Schedule: playlists must be an array"]})))))
   (testing "post new schedule but invalid"
     (with-fake-routes-in-isolation {"http://schedule:4000/schedule1"
                                     {:post (fn [req] {:status 200 :headers {} :body (generate-string {:status :ok})})}
@@ -107,7 +111,7 @@
                             (mock/json-body {:name "schedule1" :playlists [{:type "playlist" :name "series_test1" :length 12}]})))]
       (is (= (:status response) 200))
       (is (= (parse-string (:body response))
-              {"status" "invalid" "message" "failed validations: [series_test1]"})))))
+              {"status" "invalid" "messages" ["Failed Validation: series_test1"]})))))
   (testing "post new schedule but no playlist service"
     (with-fake-routes-in-isolation {"http://schedule:4000/schedule1"
                                     {:post (fn [req] {:status 200 :headers {} :body (generate-string {:status :ok})})}
@@ -129,7 +133,7 @@
                             (mock/json-body {:name "schedule1" :playlists [{:type "playlist" :name "series_test1" :length 27}]})))]
       (is (= (:status response) 200))
       (is (= (parse-string (:body response))
-              {"status" "failure" "message" "cannot create schedule"}))))))
+              {"status" "failure" "messages" ["Cannot Create Schedule: Already Exists"]}))))))
 
 (deftest put-tests
   (testing "put new schedule"
@@ -153,7 +157,9 @@
                             (mock/json-body {:name "schedule1"})))]
       (is (= (:status response) 200))
       (is (= (parse-string (:body response))
-              {"status" "invalid" "message" "invalid schedule"})))))
+              {"status" "invalid" "messages" [
+                "Invalid Schedule: must provide a playlists"
+                "Invalid Schedule: playlists must be an array"]})))))
   (testing "puted schedule must have correct name"
     (with-fake-routes-in-isolation {"http://schedule:4000/schedule1"
                                     {:put (fn [req] {:status 200 :headers {} :body (generate-string {:status :ok})})}
@@ -164,7 +170,7 @@
                             (mock/json-body {:name "schedule2" :playlists [{:type "playlist" :name "series_test1" :length 27}]})))]
       (is (= (:status response) 200))
       (is (= (parse-string (:body response))
-              {"status" "invalid" "message" "invalid schedule"})))))
+              {"status" "invalid" "messages" ["Invalid Schedule: name must match"]})))))
   (testing "put new schedule must put a schedule"
     (with-fake-routes-in-isolation {"http://schedule:4000/schedule1"
                                     {:put (fn [req] {:status 200 :headers {} :body (generate-string {:status :ok})})}
@@ -174,7 +180,10 @@
     (let [response (app (mock/request :put "/schedule/store/schedule1"))]
       (is (= (:status response) 200))
       (is (= (parse-string (:body response))
-              {"status" "invalid" "message" "invalid schedule"})))))
+              {"status" "invalid" "messages" [
+                "Invalid Schedule: name must match"
+                "Invalid Schedule: must provide a playlists"
+                "Invalid Schedule: playlists must be an array"]})))))
   (testing "put new schedule but invalid"
     (with-fake-routes-in-isolation {"http://schedule:4000/schedule1"
                                     {:put (fn [req] {:status 200 :headers {} :body (generate-string {:status :ok})})}
@@ -185,7 +194,7 @@
                             (mock/json-body {:name "schedule1" :playlists [{:type "playlist" :name "series_test1" :length 12}]})))]
       (is (= (:status response) 200))
       (is (= (parse-string (:body response))
-              {"status" "invalid" "message" "failed validations: [series_test1]"})))))
+              {"status" "invalid" "messages" ["Failed Validation: series_test1"]})))))
   (testing "put new schedule but no playlist service"
     (with-fake-routes-in-isolation {"http://schedule:4000/schedule1"
                                     {:put (fn [req] {:status 200 :headers {} :body (generate-string {:status :ok})})}
@@ -207,7 +216,7 @@
                             (mock/json-body {:name "schedule1" :playlists [{:type "playlist" :name "series_test1" :length 27}]})))]
       (is (= (:status response) 200))
       (is (= (parse-string (:body response))
-              {"status" "failure" "message" "cannot update schedule"}))))))
+              {"status" "failure" "messages" ["Schedule Does Not Exist: cannot update schedule"]}))))))
 
 (deftest get-sent-validations
   (testing "validate a valid schedule"
@@ -227,7 +236,10 @@
     (let [response (app (mock/request :get "/schedule/validate"))]
       (is (= (:status response) 200))
       (is (= (parse-string (:body response))
-              {"status" "invalid" "message" "invalid schedule"})))))
+              {"status" "invalid" "messages" [
+                "Invalid Schedule: must provide a playlists"
+                "Invalid Schedule: playlists must be an array"
+                "Invalid Schedule: name must be defined"]})))))
   (testing "when playlists missing, invalid"
     (with-fake-routes-in-isolation {"http://playlist:4001/"
                                       (fn [request] {:status 200 :headers ()
@@ -236,7 +248,9 @@
                             (mock/json-body {:name "schedule1"})))]
       (is (= (:status response) 200))
       (is (= (parse-string (:body response))
-              {"status" "invalid" "message" "invalid schedule"})))))
+              {"status" "invalid" "messages" [
+                "Invalid Schedule: must provide a playlists"
+                "Invalid Schedule: playlists must be an array"]})))))
   (testing "when name missing, invalid"
     (with-fake-routes-in-isolation {"http://playlist:4001/"
                                       (fn [request] {:status 200 :headers ()
@@ -245,7 +259,7 @@
                             (mock/json-body {:playlists [{:type "playlist" :name "series_test1" :length 27}]})))]
       (is (= (:status response) 200))
       (is (= (parse-string (:body response))
-              {"status" "invalid" "message" "invalid schedule"})))))
+              {"status" "invalid" "messages" ["Invalid Schedule: name must be defined"]})))))
   (testing "when empty, doesn't validate"
     (with-fake-routes-in-isolation {"http://playlist:4001/"
                                       (fn [request] {:status 200 :headers ()
@@ -254,7 +268,10 @@
                             (mock/json-body {})))]
       (is (= (:status response) 200))
       (is (= (parse-string (:body response))
-              {"status" "invalid" "message" "invalid schedule"}))))))
+              {"status" "invalid" "messages" [
+                "Invalid Schedule: must provide a playlists"
+                "Invalid Schedule: playlists must be an array"
+                "Invalid Schedule: name must be defined"]}))))))
 
 (deftest get-schedule-validations
   (testing "validate a valid schedule"
@@ -279,7 +296,10 @@
     (let [response (app (mock/request :get "/schedule/validate/test2"))]
       (is (= (:status response) 200))
       (is (= (parse-string (:body response))
-              {"status" "invalid" "message" "invalid schedule"})))))
+              {"status" "invalid" "messages" [
+                "Invalid Schedule: name must match"
+                "Invalid Schedule: must provide a playlists"
+                "Invalid Schedule: playlists must be an array"]})))))
   (testing "when playlists missing, invalid"
     (with-fake-routes-in-isolation {"http://schedule:4000/test3"
                                       (fn [request] {:status 200 :headers ()
@@ -290,7 +310,8 @@
     (let [response (app (mock/request :get "/schedule/validate/test3"))]
       (is (= (:status response) 200))
       (is (= (parse-string (:body response))
-              {"status" "invalid" "message" "invalid schedule"})))))
+              {"status" "invalid" "messages" ["Invalid Schedule: must provide a playlists"
+                "Invalid Schedule: playlists must be an array"]})))))
   (testing "when name missing, invalid"
     (with-fake-routes-in-isolation {"http://schedule:4000/test4"
                                       (fn [request] {:status 200 :headers ()
@@ -301,7 +322,7 @@
     (let [response (app (mock/request :get "/schedule/validate/test4"))]
       (is (= (:status response) 200))
       (is (= (parse-string (:body response))
-              {"status" "invalid" "message" "invalid schedule"})))))
+              {"status" "invalid" "messages" ["Invalid Schedule: name must match"]})))))
   (testing "when name wrong, invalid"
     (with-fake-routes-in-isolation {"http://schedule:4000/test4"
                                       (fn [request] {:status 200 :headers ()
@@ -312,7 +333,7 @@
     (let [response (app (mock/request :get "/schedule/validate/test4"))]
       (is (= (:status response) 200))
       (is (= (parse-string (:body response))
-              {"status" "invalid" "message" "invalid schedule"}))))))
+              {"status" "invalid" "messages" ["Invalid Schedule: name must match"]}))))))
 
 (deftest not-found
   (testing "not-found route"

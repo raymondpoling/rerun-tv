@@ -30,7 +30,8 @@
 (defn update-series [host series data]
   (clc/log-on-error {:status "failed" :message "meta service not available"}
     (client/put (str "http://" host "/series/" series)
-      {:as :json :body (generate-string data)})))
+      {:as :json :body (generate-string data)
+        :headers {"content-type" "application/json"}})))
 
 (defn fetch-series [host series catalog_id_only]
   (clc/log-on-error {:status "failed" :message "meta service not available"}

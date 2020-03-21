@@ -33,7 +33,7 @@
                            ["user" 4002]
                            ["playlist" 4001]
                            ["builder" 4003]
-                           ["meta" 4004]
+                           ["omdb" 4011]
                            ["messages" 4010]))
 
 (defn wrap-redirect [function]
@@ -80,7 +80,7 @@
 (defn fetch-preview-frame [schedule-name index]
   (let [items (get-schedule-items (:schedule hosts) schedule-name index)
         catalog_ids (map #(fetch-catalog-id (:playlist hosts) (:name %) (:index %)) items)
-        meta (flatten (map #(:records (get-meta-by-catalog-id (:meta hosts) (:item %))) catalog_ids))]
+        meta (flatten (map #(:records (get-meta-by-catalog-id (:omdb hosts) (:item %))) catalog_ids))]
         (map merge meta items)))
 
 (defroutes app-routes
@@ -129,7 +129,7 @@
     (-> (redirect "/login.html")
         (assoc :session {:user nil})))
   (GET "/bulk-update.html" []
-    (let [series (get-all-series (:meta hosts))]
+    (let [series (get-all-series (:omdb hosts))]
       (bulk-update series nil)))
   (POST "/bulk-update.html" [series update]
     (fn [request]
@@ -141,9 +141,9 @@
                                 :episode (second split-line)
                                 :episode_name (nth split-line 2)
                                 :summary (nth split-line 3)}))
-              series-list (get-all-series (:meta hosts))
+              series-list (get-all-series (:omdb hosts))
               maps (map to-map lines)
-              result (bulk-update-series (:meta hosts) series maps)]
+              result (bulk-update-series (:omdb hosts) series {:records maps})]
           (println "results - " result)
           (if (= "ok" (:status result)) (println "message response: "(add-message (:messages hosts) "System"
               (str (:user (:session request)) " updated " series " with more data!")

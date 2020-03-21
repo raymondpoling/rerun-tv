@@ -22,5 +22,5 @@
 
 (defn get-meta-by-catalog-id [host id]
   (clc/log-on-error {:status "failed" :message "Could not find item in catalog"}
-    (let [url (str "http://" host "/catalog-id/" id "?fields=summary,episode_name,series,season,episode")]
+    (let [url (str "http://" host "/catalog-id/" id)]
       (:body (client/get url {:as :json})))))

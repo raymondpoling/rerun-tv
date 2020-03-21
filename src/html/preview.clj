@@ -26,12 +26,20 @@
     [:h2 schedule ": " idx]
     divs])
 
+(defn make-title [i]
+  (:series i) (str " S" (:season i) "E" (:episode i)))
+
 (defn make-divs [items]
   (map #(vector :div {:class "item" }
     [:b (:name %)
     [:br] "Index: " (:index %)]
-    [:br] (:series %) (str " S" (:season %) "E" (:episode %))
-    [:br] [:em (:episode_name %)]) items))
+    [:br] (if (not (empty? (:imdbid %)))
+        [:a {:href (str "http://imdb.com/title/" (:imdbid %)) :target "_blank"} (make-title %)]
+        (make-title %))
+    [:br] [:div {:class "tooltip"} [:span {:class "tooltiptext"} (:summary %)] [:em (:episode_name %)]]
+    [:img {:src (if (and (not (empty? (:thumbnail %))) (not (= "N/A" (:thumbnail %)))) (:thumbnail %) "/image/not-available.png")}]
+  ; [:br] [:p (:summary %)]
+    ) items))
 
 (defn make-preview-page [schedule schedules idx update previous current next]
   (let [options (make-options schedule schedules)

@@ -5,7 +5,8 @@
 (def database (atom {:dbtype "mysql"
                :dbname "schedule"
                :user nil
-               :password nil}))
+               :password nil
+               :serverTimezone "America/New_York"}))
 
 (defn initialize
 ([]
@@ -18,6 +19,12 @@
           (j/query @database
             ["SELECT schedule FROM schedule.schedule WHERE name = ?" name])]
   (parse-string (:schedule (first sched)) true)))
+
+(defn find-schedules []
+  (let [sched
+          (j/query @database
+            ["SELECT name FROM schedule.schedule"])]
+  (map #(:name %) sched)))
 
 (defn insert-schedule [name schedule]
   (j/insert! @database "schedule.schedule"

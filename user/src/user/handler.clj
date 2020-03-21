@@ -30,7 +30,9 @@
           (do
             (logger/warn (str "user/schedule not found '" user "/" schedule "'"))
             (clc/make-response 404 {:status :not-found}))
-          (clc/make-response 200 {:status :ok :idx value}))))
+          (do
+            (logger/debug (str "index? " value " preview? " preview))
+            (clc/make-response 200 {:status :ok :idx value})))))
   (PUT "/:user/:schedule/:index" [user schedule index]
     (if (update-user-schedule-index user schedule index)
       (clc/make-response 200 {:status :ok})

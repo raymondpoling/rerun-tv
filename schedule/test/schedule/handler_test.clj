@@ -48,6 +48,15 @@
       (is (= (:status response) 200))
       (is (= (parse-string (:body response))
               {"status" "ok" "items" [{"name" "cats","index" 3},{"name" "dogs","index" 16}]}))))
+  (testing "get all schedule names"
+    (let [_ (app (-> (mock/request :post "/test-found2")
+                     (mock/json-body {:name "test-found2"
+                                      :playlists [{:type "playlist" :name "cats" :length 12},
+                                                  {:type "playlist" :name "dogs" :length 13}]})))
+          response (app (mock/request :get "/"))]
+      (is (= (:status response) 200))
+      (is (= (parse-string (:body response))
+              {"status" "ok" "schedules" ["test-found" "test-found2"]}))))
   (testing "deleting playlist"
     (let [response (app (mock/request :delete "/test-found"))]
       (is (= (:status response) 200))

@@ -209,7 +209,7 @@
       (is (= (parse-string (:body response))
               {"status" "failure" "message" "cannot update schedule"}))))))
 
-(deftest get-validations
+(deftest get-sent-validations
   (testing "validate a valid schedule"
     (with-fake-routes-in-isolation {"http://playlist:4001/"
                                       (fn [request] {:status 200 :headers ()
@@ -245,9 +245,18 @@
                             (mock/json-body {:playlists [{:type "playlist" :name "series_test1" :length 27}]})))]
       (is (= (:status response) 200))
       (is (= (parse-string (:body response))
+              {"status" "invalid" "message" "invalid schedule"})))))
+  (testing "when empty, doesn't validate"
+    (with-fake-routes-in-isolation {"http://playlist:4001/"
+                                      (fn [request] {:status 200 :headers ()
+                                                    :body (generate-string {:status :ok :playlists [{:name "series_test1", :length 27}]})})}
+    (let [response (app (-> (mock/request :get "/schedule/validate")
+                            (mock/json-body {})))]
+      (is (= (:status response) 200))
+      (is (= (parse-string (:body response))
               {"status" "invalid" "message" "invalid schedule"}))))))
 
-(deftest get-validations
+(deftest get-schedule-validations
   (testing "validate a valid schedule"
     (with-fake-routes-in-isolation {"http://schedule:4000/test1"
                                       (fn [request] {:status 200 :headers ()

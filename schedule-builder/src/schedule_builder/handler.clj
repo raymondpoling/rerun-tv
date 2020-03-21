@@ -58,8 +58,9 @@
   (GET "/schedule/validate" []
     (fn [request]
       (let [playlists-map (get-playlists-map (:playlist hosts))
-            schedule (:schedule (:body request))
-            validate (validate-schedule playlists-map (:name (:body schedule)) (:body schedule))]
+            schedule (:body request)
+            validate (validate-schedule playlists-map (:name schedule) schedule)]
+      (logging/debug (str "Valid?: " validate "\nschedule: " schedule "\nrequests: " request))
       (clc/make-response 200 validate))))
 
   (GET "/schedule/validate/:schedule-name" [schedule-name]

@@ -20,6 +20,7 @@
             [html.schedule-builder :refer [schedule-builder]]
             [html.schedule-builder-get :refer [schedule-builder-get]]
             [html.bulk-update :refer [bulk-update]]
+            [helpers.schedule-builder :refer :all]
             [cheshire.core :refer [parse-string generate-string]]
             [hiccup.core :refer [html]]
             [java-time :as jt]
@@ -52,37 +53,17 @@
 
         (function request)))))
 
-(defn sb [schedule-name schedule-body preview type]
-  (fn [request]
-    (let [playlists (get-playlists (:playlist hosts))
-          sched (try (parse-string schedule-body true) (catch Exception e nil))
-          schedule-name (or (:name sched) schedule-name)
-          got-sched (get-schedule (:schedule hosts) schedule-name)
-          schedule (if-let [body sched]
-            schedule-body
-            (or (not-empty schedule-body) (generate-string (or (not-empty sched) got-sched {:name schedule-name, :playlists []}) {:pretty true})))
-            validate  (if preview
-                          (validate-schedule (:builder hosts) schedule)
-                          (let
-                            [result (send-schedule (:builder hosts) type schedule-name schedule)]
-                              (if (= "ok" (:status result))
-                                (add-message (:messages hosts)
-                                   "System"
-                                   (str "Schedule " schedule-name " " type "d!")
-                                   (str "A schedule has been " (clojure.string/lower-case type) "d by " (:user (:session request)) ", "
-                                        (html [:a {:href (str "/preview.html?schedule=" schedule-name)} " check it out!"]))))
-                            result))]
-          (println "did it validate? "  sched)
-          (println "got-sched" got-sched)
-      (if (and (= type "Create") got-sched)
-        (redirect (str "/schedule-builder.html?message=Schedule with name '" schedule-name "' already exists"))
-        (schedule-builder schedule playlists validate type)))))
-
 (defn fetch-preview-frame [schedule-name index]
   (let [items (get-schedule-items (:schedule hosts) schedule-name index)
         catalog_ids (map #(fetch-catalog-id (:playlist hosts) (:name %) (:index %)) items)
         meta (flatten (map #(:records (get-meta-by-catalog-id (:omdb hosts) (:item %))) catalog_ids))]
         (map merge meta items)))
+
+(defn write-message [{:keys [author title message]}]
+  (add-message (:messages hosts)
+    author
+    title
+    message))
 
 (defroutes app-routes
   (GET "/preview.html" [schedule index idx update reset download]
@@ -114,13 +95,30 @@
   (GET "/index.html" [start]
     (let [events (get-messages (:messages hosts) start)
           adjusted-dates (map #(merge % {:posted (jt/format "YYYY-MM-dd HH:mm:ssz" (jt/with-zone-same-instant (jt/zoned-date-time (:posted %)) (jt/zone-id)))}) (:events events))]
-      (println "events host " (:messages hosts) " events? " adjusted-dates)
+      (logger/error "events host " (:messages hosts) " events? " adjusted-dates)
       (make-index adjusted-dates)))
   (GET "/schedule-builder.html" [message]
     (let [schedule-names (get-schedules (:schedule hosts))]
       (schedule-builder-get schedule-names message)))
-  (POST "/schedule-builder.html" [schedule-name schedule-body preview type]
-    (sb schedule-name schedule-body preview type))
+  (POST "/schedule-builder.html" [schedule-name schedule-body preview mode]
+    (fn [request]
+      (let [playlists (get-playlists (:playlist hosts))
+            validity (if preview
+              #(validate-schedule (:builder hosts) %)
+              #(send-schedule (:builder hosts) mode schedule-name %))
+            got-sched (get-schedule (:schedule hosts) schedule-name)
+            sched (if (not-empty schedule-body)
+                      (make-schedule-string schedule-body validity)
+                      (make-schedule-map got-sched validity))]
+        (if (and (= "ok" (:status (valid? sched))) (not preview))
+          (write-message
+             {:author "System"
+              :title (str "Schedule " schedule-name " " mode "d!")
+              :message (str "A schedule has been " (clojure.string/lower-case mode) "d by " (:user (:session request)) ", "
+                  (html [:a {:href (str "/preview.html?schedule=" schedule-name)} " check it out!"]))}))
+        (if (and (= mode "Create") got-sched)
+          (redirect (str "/schedule-builder.html?message=Schedule with name '" schedule-name "' already exists"))
+          (schedule-builder sched schedule-name playlists mode)))))
   (POST "/login" [username password]
     (if (= "ok" (:status (validate-user (:auth hosts) username password)))
       (-> (redirect "/index.html ")
@@ -134,22 +132,20 @@
       (bulk-update series nil)))
   (POST "/bulk-update.html" [series update]
     (fn [request]
-    (println "update? " update)
-        (let [lines (clojure.string/split update #"\n")
-              to-map (fn [line]
-                        (let [split-line (clojure.string/split line #"\|")]
-                              {:season (first split-line)
-                                :episode (second split-line)
-                                :episode_name (nth split-line 2)
-                                :summary (nth split-line 3)}))
-              series-list (get-all-series (:omdb hosts))
-              maps (map to-map lines)
-              result (bulk-update-series (:omdb hosts) series {:records maps})]
-          (println "results - " result)
-          (if (= "ok" (:status result)) (println "message response: "(add-message (:messages hosts) "System"
-              (str (:user (:session request)) " updated " series " with more data!")
-              (html [:ol (map (fn [i] [:li (str "S" (:season i) "E" (:episode i) " " (:episode_name i))]) maps)]))))
-          (bulk-update series-list result))))
+      (let [lines (clojure.string/split update #"\n")
+            to-map (fn [line]
+                      (let [split-line (clojure.string/split line #"\|")]
+                            {:season (first split-line)
+                              :episode (second split-line)
+                              :episode_name (nth split-line 2)
+                              :summary (nth split-line 3)}))
+            series-list (get-all-series (:omdb hosts))
+            maps (map to-map lines)
+            result (bulk-update-series (:omdb hosts) series {:records maps})]
+        (if (= "ok" (:status result)) (write-message {:author "System"
+            :title (str (:user (:session request)) " updated " series " with more data!")
+            :message (html [:ol (map (fn [i] [:li (str "S" (:season i) "E" (:episode i) " " (:episode_name i))]) maps)])}))
+        (bulk-update series-list result))))
   (route/files "public")
   (route/not-found "Not Found"))
 

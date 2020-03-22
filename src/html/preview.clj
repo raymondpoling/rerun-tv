@@ -27,7 +27,7 @@
     divs])
 
 (defn make-title [i]
-  (:series i) (str " S" (:season i) "E" (:episode i)))
+  (str (:series i) " S" (:season i) "E" (:episode i)))
 
 (defn make-divs [items]
   (map #(vector :div {:class "item" }

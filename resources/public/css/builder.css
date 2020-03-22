@@ -18,6 +18,7 @@ textarea {
   padding: 0;
   overflow-x: auto;
   margin: 2em auto 2em auto;
+  display: block;
 }
 
 table {

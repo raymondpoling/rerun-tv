@@ -2,7 +2,7 @@
   (:require [html.header :refer [header]]
             [hiccup.page :refer [html5]]
             [clojure.tools.logging :as logger]
-            [cheshire.core :refer [generate-string]]))
+            [cheshire.core :refer [parse-string]]))
 
 (defn playlist-drop-down [playlists]
     [:select {:id "playlist"}
@@ -95,7 +95,7 @@
 
 
 (defn schedule-builder [schedule playlists validate type]
-  (let [converted (map convert (:playlists schedule))
+  (let [converted (map convert (:playlists (try (parse-string schedule true) (catch Exception _ {:playlists []}))))
         small (apply median (map length converted))]
   (logger/debug "converted: " validate)
     (html5 {:lang "en" :dir "ltr"}
@@ -108,19 +108,20 @@
         [:div {:id "content"}
           (header "Build a Schedule")
           (let [padded (padding (map #(render % true small 1) converted))]
-            [:table {:class "schedule"}
-              [:thead
-                [:tr [:th {:scope "col" :class "first"} "Type: Length" [:br] "RR (Repitition Rate)"]
-                      [:th {:colspan (if (= 0 small) 1 (first padded))} "Playlists"]]]
-              [:tbody (if (= 0 small)
-                [:tr [:td {:class "empty"} "Empty"]]
-                (second padded))]])
+            [:div {:id "table-holder"}
+              [:table {:class "schedule"}
+                [:thead
+                  [:tr [:th {:scope "col" :class "first"} "Type: Length" [:br] "RR (Repitition Rate)"]
+                        [:th {:colspan (if (= 0 small) 1 (first padded))} "Playlists"]]]
+                [:tbody (if (= 0 small)
+                  [:tr [:td {:class "empty"} "Empty"]]
+                  (second padded))]]])
           [:div {:class "playlists"} (playlist-drop-down playlists)]
           [:div [:form {:method "post" :action "schedule-builder.html"}
-            [:textarea {:class (:status validate) :name "schedule-body"} (generate-string schedule {:pretty true})]
+            [:textarea {:class (:status validate) :name "schedule-body"} schedule]
             (if (= "ok" (:status validate))
               [:div {:class "ok"} "OK!"]
-              [:div {:class "invalid"} (:message validate)])
+              [:div {:class "invalid"} [:ol (map #(vector :li %) (:messages validate))]])
             [:input {:type "checkbox" :checked "checked" :id "preview" :value "preview" :name "preview"}][:label {:for "preview"} "Preview"]
             [:input {:type "hidden" :name "type" :value type}]
             [:input {:type "submit" :value "Submit"}]]]]])))

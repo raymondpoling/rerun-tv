@@ -55,23 +55,24 @@
 (defn sb [schedule-name schedule-body preview type]
   (fn [request]
     (let [playlists (get-playlists (:playlist hosts))
-          sched (parse-string schedule-body true)
+          sched (try (parse-string schedule-body true) (catch Exception e nil))
           schedule-name (or (:name sched) schedule-name)
           got-sched (get-schedule (:schedule hosts) schedule-name)
           schedule (if-let [body sched]
-            body
-            (or got-sched {:name schedule-name, :playlists []}))
-          validate (if preview
-                      (validate-schedule (:builder hosts) schedule)
-                      (do
-                        (add-message (:messages hosts)
+            schedule-body
+            (or (not-empty schedule-body) (generate-string (or (not-empty sched) got-sched {:name schedule-name, :playlists []}) {:pretty true})))
+            validate  (if preview
+                          (validate-schedule (:builder hosts) schedule)
+                          (let
+                            [result (send-schedule (:builder hosts) type schedule-name schedule)]
+                              (if (= "ok" (:status result))
+                                (add-message (:messages hosts)
                                    "System"
                                    (str "Schedule " schedule-name " " type "d!")
                                    (str "A schedule has been " (clojure.string/lower-case type) "d by " (:user (:session request)) ", "
-                                        (html [:a {:href (str "/preview.html?schedule=" schedule-name)} " check it out!"])))
-                        (println "Adding event " sched)
-                        (send-schedule (:builder hosts) type schedule-name schedule)))]
-          (println "did it validate? " validate)
+                                        (html [:a {:href (str "/preview.html?schedule=" schedule-name)} " check it out!"]))))
+                            result))]
+          (println "did it validate? "  sched)
           (println "got-sched" got-sched)
       (if (and (= type "Create") got-sched)
         (redirect (str "/schedule-builder.html?message=Schedule with name '" schedule-name "' already exists"))

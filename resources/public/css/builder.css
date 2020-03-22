@@ -13,9 +13,15 @@ textarea {
   background-color: red;
 }
 
+#table-holder {
+  margin: 0;
+  padding: 0;
+  overflow-x: auto;
+  margin: 2em auto 2em auto;
+}
+
 table {
     border-collapse: collapse;
-    margin: 2em auto 2em auto ;
 }
 
  td {

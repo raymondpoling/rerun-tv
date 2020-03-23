@@ -30,14 +30,16 @@
   (str (:series i) " S" (:season i) "E" (:episode i)))
 
 (defn make-divs [items]
-  (map #(vector :div {:class "item" }
-    [:b (:name %)
-    [:br] "Index: " (:index %)]
-    [:br] (if (not (empty? (:imdbid %)))
-        [:a {:href (str "http://imdb.com/title/" (:imdbid %)) :target "_blank"} (make-title %)]
-        (make-title %))
-    [:br] [:div {:class "tooltip"} [:span {:class "tooltiptext"} (:summary %)] [:em (:episode_name %)]]
+  (map #(vector :article {:class "item" }
     [:img {:src (if (not (or (empty? (:thumbnail %)) (= "N/A" (:thumbnail %)))) (:thumbnail %) "/image/not-available.svg")}]
+    [:ul {:class "textbox"}
+      [:li [:b (:name %)]]
+      [:li {:style "font-size: small;text-decoration: underline"} "Index: " (:index %)]
+      [:li (if (not (empty? (:imdbid %)))
+          [:a {:href (str "http://imdb.com/title/" (:imdbid %)) :target "_blank"} (make-title %)]
+          (make-title %))]
+      [:li [:em (:episode_name %)]]]
+    [:div {:class "summary"} [:hr] [:p (:summary %)]]
   ; [:br] [:p (:summary %)]
     ) items))
 

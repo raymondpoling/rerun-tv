@@ -22,8 +22,8 @@
      [:host_id "BIGINT(20) UNSIGNED NOT NULL"]
      [:protocol_id "BIGINT(20) UNSIGNED NOT NULL"]
      [:catalog_id "BIGINT(20) UNSIGNED NOT NULL"]
-     [:path "VARCHAR(256) NOT NULL"]]
-     "FOREIGN KEY (host_id) REFERENCES file_locator.hosts(id),
-     FOREIGN KEY (protocol_id) REFERENCES file_locator.protocol(id),
-     FOREIGN KEY (catalog_id) REFERENCES file_locator.catalog_ids(id)"))
+     [:path "VARCHAR(256) NOT NULL"]
+     ["FOREIGN KEY (host_id) REFERENCES file_locator.hosts(id)"]
+     ["FOREIGN KEY (protocol_id) REFERENCES file_locator.protocols(id)"]
+     ["FOREIGN KEY (catalog_id) REFERENCES file_locator.catalog_ids(id)"]]))
    (j/execute! @database ["CREATE UNIQUE INDEX by_host_protocol_catalog ON file_locator.urls(catalog_id,host_id,protocol_id)"]))

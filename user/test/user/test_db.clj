@@ -14,6 +14,6 @@
   (j/execute! @database (j/create-table-ddl "user2.index"
     [[:user_id "BIGINT(20) UNSIGNED NOT NULL"]
     [:idx "INTEGER UNSIGNED NOT NULL"]
-    [:schedule "VARCHAR(20) NOT NULL"]]
-    "PRIMARY KEY (user_id, schedule),
-    FOREIGN KEY (user_id) REFERENCES user2.user(id) ON DELETE CASCADE")))
+    [:schedule "VARCHAR(20) NOT NULL"]
+    ["PRIMARY KEY (user_id, schedule)"]
+    ["FOREIGN KEY (user_id) REFERENCES user2.user(id) ON DELETE CASCADE"]])))

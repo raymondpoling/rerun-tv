@@ -37,7 +37,7 @@
         [:a {:href (str "http://imdb.com/title/" (:imdbid %)) :target "_blank"} (make-title %)]
         (make-title %))
     [:br] [:div {:class "tooltip"} [:span {:class "tooltiptext"} (:summary %)] [:em (:episode_name %)]]
-    [:img {:src (if (and (not (empty? (:thumbnail %))) (not (= "N/A" (:thumbnail %)))) (:thumbnail %) "/image/not-available.png")}]
+    [:img {:src (if (not (or (empty? (:thumbnail %)) (= "N/A" (:thumbnail %)))) (:thumbnail %) "/image/not-available.svg")}]
   ; [:br] [:p (:summary %)]
     ) items))
 

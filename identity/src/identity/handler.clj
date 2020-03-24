@@ -57,6 +57,13 @@
     (catch java.sql.SQLException e
       (logger/error (str "could not get list of roles: " (.getMessage e)))
       (clc/make-response 500 {:status "failed" :message "server error"}))))
+  (GET "/user" []
+    (try
+      (let [users (find-users)]
+        (clc/make-response 200 {:status :ok :users users}))
+    (catch java.sql.SQLException e
+      (logger/error (str "could not get list of users: " (.getMessage e)))
+      (clc/make-response 500 {:status "failed" :message "server error"}))))
   (route/not-found (clc/make-response 404 {:status :not-found})))
 
 (def app

@@ -114,6 +114,20 @@
                                               "email" "me4@nail.com"
                                               "role" "media-czar"}))))
 
+  (testing "get all users"
+    (let [response (app (mock/request :get "/user"))]
+      (is (= (:status response) 200))
+      (is (= (parse-string (:body response)) {"status" "ok"
+                                              "users"[{"user" "test-user"
+                                                "email" "me@nail.com"
+                                                "role" "media"}
+                                                {"user" "test-user3"
+                                                "email" "me3@nail.com"
+                                                "role" "media-czar"}
+                                                {"user" "test-user4"
+                                                "email" "me4@nail.com"
+                                                "role" "media-czar"}]}))))
+
   (testing "not-found route"
     (let [response (app (mock/request :get "/"))]
       (is (= (:status response) 404)))))

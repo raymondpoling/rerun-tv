@@ -29,6 +29,13 @@
     ON role.id = identity.role_id
     WHERE user = ?" user])))
 
+(defn find-users []
+  (j/query @database [
+    "SELECT user, role, email
+    FROM identity.identity
+    JOIN identity.role
+    ON role.id = identity.role_id"]))
+
 (defn update-user [user role]
   (let [role_id (find-role role)]
     (j/update! @database "identity.identity" {:role_id role_id} ["user = ?" user])))

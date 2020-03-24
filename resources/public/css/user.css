@@ -1,0 +1,76 @@
+.row-layout {
+  flex-direction: row;
+}
+
+.form-holder {
+  width: 30%;
+  margin-bottom: 2em;
+  flex-direction: column;
+  display: inline-block;
+}
+
+.table-holder {
+  width: 50%;
+  margin: 0 2em 0 0;
+  padding: 2em;
+  display: inline-block;
+  vertical-align: top;
+}
+
+table {
+  margin: 0 2em 0 0;
+  border-collapse: collapse;
+  border: 1px solid black;
+  display: inline-block;
+  align-self: flex-start;
+}
+
+td {
+ /* height: 5em; */
+ /* border: blue dashed 1px; */
+ padding-left: 1em;
+ padding-right: 1em;
+}
+
+th {
+ width: 7em;
+ padding-left: 1em;
+ padding-right: 1em;
+ text-align: left;
+ border: 1px solid black;
+}
+
+thead th {
+ background-color: tan;
+}
+
+tr:nth-child(even) {
+  background-color: lightgray;
+}
+
+tr:nth-child(odd) {
+  background-color: white;
+}
+
+form {
+  height: 12em;
+  padding: 1em;
+  margin: 1em;
+  border: solid black 1px;
+  width: 14em;
+  display: inline-block;
+}
+
+h2 {
+  text-align: center;
+}
+
+ul {
+  list-style: none;
+  margin: auto;
+}
+
+label {
+  width: 4em;
+  display: inline-block;
+}

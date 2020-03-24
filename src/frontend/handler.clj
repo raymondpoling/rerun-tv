@@ -2,7 +2,7 @@
   (:require [compojure.core :refer :all]
             [compojure.route :as route]
             [ring.middleware.json :as json]
-            [remote-call.identity :refer [fetch-user]]
+            [remote-call.identity :refer [fetch-user fetch-users fetch-roles user-update create-user]]
             [remote-call.schedule :refer :all]
             [remote-call.schedule-builder :refer [validate-schedule send-schedule]]
             [remote-call.validate :refer [validate-user]]
@@ -21,6 +21,7 @@
             [html.schedule-builder :refer [schedule-builder]]
             [html.schedule-builder-get :refer [schedule-builder-get]]
             [html.bulk-update :refer [bulk-update]]
+            [html.user-management :refer [user-management]]
             [helpers.schedule-builder :refer :all]
             [cheshire.core :refer [parse-string generate-string]]
             [hiccup.core :refer [html]]
@@ -44,7 +45,8 @@
     `(fn [~sym]
       (if (not (some #(= (:role (:session ~sym)) %) ~roles))
         (redirect "/index.html")
-        ~@body))))
+        (do
+        ~@body)))))
 
 (defn wrap-redirect [function]
   (fn [request]
@@ -162,6 +164,23 @@
               :title (str (:user session) " updated " series " with more data!")
               :message (html [:ol (map (fn [i] [:li (str "S" (:season i) "E" (:episode i) " " (:episode_name i))]) maps)])}))
           (bulk-update series-list result (:role session))))))
+  (GET "/user-management.html" []
+    (fn [{{:keys [role]} :session}]
+      (with-authorized-roles ["admin"]
+        (user-management
+          (:users (fetch-users (:identity hosts)))
+          (:roles (fetch-roles (:identity hosts)))
+          role))))
+  (POST "/user" [new-user new-email new-role]
+    (println (format "Adding user: %s E-Mail: %s Role: %s" new-user new-email new-role))
+    (with-authorized-roles ["admin"]
+      (println (create-user (:identity hosts) new-user new-email new-role))
+      (redirect "/user-management.html")))
+  (POST "/role" [update-user update-role]
+    (println (format "Updating user: %s Role: %s" update-user update-role))
+    (with-authorized-roles ["admin"]
+      (println (user-update (:identity hosts) update-user update-role))
+      (redirect "/user-management.html")))
   (route/files "public")
   (route/not-found "Not Found"))
 

@@ -4,7 +4,7 @@
             [clojure.tools.logging :as logger]
             [cheshire.core :refer [generate-string]]))
 
-(defn bulk-update [series results]
+(defn bulk-update [series results role]
   (html5
     [:head
       [:meta {:charset "utf-8"}]
@@ -13,7 +13,7 @@
       [:title "ReRun TV - Update Series"]]
     [:body
       [:div {:id "content"}
-      (header "Update Series")
+      (header "Update Series" role)
       [:form {:action "/bulk-update.html" :method "post"}
         [:label {:for "series"} "Series"]
         (vec (concat (list :select {:id "series" :name "series"}) (map (fn [opt] [:option opt]) series)))

@@ -1,15 +1,17 @@
 (ns html.header)
 
-(defn nav []
+(defn nav [role]
   [:nav
     [:a {:href "index.html"} "TOP"]
-    [:a {:href "bulk-update.html"} "Update Series"]
+    (if (some #(= role %) ["admin" "media"])
+      [:a {:href "bulk-update.html"} "Update Series"])
     [:a {:href "preview.html"} "Preview Schedule"]
-    [:a {:href "schedule-builder.html"} "Build Schedule"]
+    (if (some #(= role %) ["admin" "media"])
+      [:a {:href "schedule-builder.html"} "Build Schedule"])
     [:a {:href "/logout"} "Logout"]
   ])
 
-(defn header [page-title]
+(defn header [page-title role]
   [:div {:class "header"}
     [:h1 page-title]
-    (nav)])
+    (nav role)])

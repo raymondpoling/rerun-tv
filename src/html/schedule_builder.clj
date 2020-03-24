@@ -29,7 +29,7 @@
     (nth (sort values) (/ (count values) 2))
     0))
 
-(defn schedule-builder [schedule schedule-name playlists mode]
+(defn schedule-builder [schedule schedule-name playlists mode role]
   (let [converted (map convert (:playlists (parsed schedule)))
         small (apply median (map length converted))]
   (logger/debug "validity? " (valid? schedule))
@@ -41,7 +41,7 @@
         [:title "ReRun TV - Build a Schedule"]]
       [:body
         [:div {:id "content"}
-          (header "Build a Schedule")
+          (header "Build a Schedule" role)
           (let [padded (padding (map #(render % true small 1) converted))]
             [:div {:id "table-holder"}
               [:table {:class "schedule"}

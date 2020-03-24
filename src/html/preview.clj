@@ -43,7 +43,7 @@
   ; [:br] [:p (:summary %)]
     ) items))
 
-(defn make-preview-page [schedule schedules idx update previous current next]
+(defn make-preview-page [schedule schedules idx update previous current next role]
   (let [options (make-options schedule schedules)
         prev-items (make-divs previous)
         curr-items (make-divs current)
@@ -55,7 +55,7 @@
         (stylesheet "css/preview.css")]
       [:body
         [:div {:id "content"}
-          (header "Schedule Preview")
+          (header "Schedule Preview" role)
           (form schedule options idx update)
           (preview-column schedule prev-items (- idx 1))
           (preview-column schedule curr-items idx true)

@@ -30,3 +30,12 @@
                          :query-params {:apikey apikey
                                         :t series
                                         :type "series"}}))))
+
+(defn imdb-id-lookup [host apikey imdbid]
+  (clc/log-on-error
+   {:status "failed" :message "omdb service not available"}
+   (:body (client/get (str "http://" host "/")
+                           {:as :json
+                            :query-params {:apikey apikey
+                                           :i imdbid
+                                           :type "episode"}}))))

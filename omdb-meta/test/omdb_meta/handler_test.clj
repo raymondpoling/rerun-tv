@@ -285,3 +285,57 @@
                                     (fn [request] {:status 404 :body (generate-string {:status "not found"})})}
       (let [response (app (mock/request :get "/catalog-id/TESTS0101002"))]
         (is (= (:status response) 404))))))
+
+(deftest imdb-id-lookup
+  (testing "lookup by imdbid"
+    (with-fake-routes-in-isolation
+      {"http://omdb:8888/?apikey=&i=tt6565&type=episode"
+       (fn [request]
+          {
+           :status 200
+           :body (generate-string
+                  {:Plot "This is the plot"
+                   :Response "True"
+                   :Episode 1
+                   :Season 1
+                   :imdbID "tt6565"
+                   :Title "The Cat Returns"
+                   :Poster "http://here.com/img.jpg"})
+           })}
+      (let [response (app (mock/request :get "/imdbid/tt6565"))]
+        (is (= (:status response) 200))
+        (is (= (parse-string (:body response))
+               {"status" "ok",
+                "records" [
+                           {"episode_name" "The Cat Returns",
+                            "summary" "This is the plot",
+                            "episode" 1,
+                            "season" 1,
+                            "imdbid" "tt6565",
+                            "thumbnail" "http://here.com/img.jpg"
+                            }]})))))
+  (testing "lookup incomplete record by catalog id"
+    (with-fake-routes-in-isolation
+       {"http://omdb:8888/?apikey=&i=tt6533&type=episode"
+        (fn [request]
+          {
+           :status 200
+           :body (generate-string
+                  {:Response "True"
+                   :Episode 1
+                   :Season 2
+                   :imdbID "tt6533"
+                   :Title "Cat R4"
+                   :Poster "http://here.org/other.jpg"})
+           })}
+      (let [response (app (mock/request :get "/imdbid/tt6533"))]
+        (is (= (:status response) 200))
+        (is (= (parse-string (:body response))
+               {"status" "ok",
+                "records" [
+                           {"episode_name" "Cat R4",
+                            "episode" 1,
+                            "season" 2,
+                            "imdbid" "tt6533",
+                            "thumbnail" "http://here.org/other.jpg"
+                            }]}))))))

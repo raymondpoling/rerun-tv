@@ -5,11 +5,12 @@
             [remote-call.identity :refer [fetch-user fetch-users fetch-roles user-update create-user]]
             [remote-call.schedule :refer :all]
             [remote-call.schedule-builder :refer [validate-schedule send-schedule]]
+            [remote-call.locator :refer [get-locations save-locations]]
             [remote-call.validate :refer [validate-user]]
             [remote-call.format :refer [fetch-playlist]]
             [remote-call.user :refer [fetch-index]]
             [remote-call.playlist :refer [get-playlists fetch-catalog-id]]
-            [remote-call.meta :refer [get-all-series bulk-update-series get-meta-by-catalog-id]]
+            [remote-call.meta :refer [get-all-series bulk-update-series get-meta-by-catalog-id get-series-episodes save-episode get-meta-by-imdb-id]]
             [remote-call.messages :refer [get-messages add-message]]
             [ring.util.response :refer [response not-found header status redirect]]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
@@ -22,6 +23,8 @@
             [html.schedule-builder-get :refer [schedule-builder-get]]
             [html.bulk-update :refer [bulk-update]]
             [html.user-management :refer [user-management]]
+            [html.library :refer [make-library]]
+            [html.update :refer [make-update-page side-by-side]]
             [helpers.schedule-builder :refer :all]
             [cheshire.core :refer [parse-string generate-string]]
             [hiccup.core :refer [html]]
@@ -38,7 +41,8 @@
                            ["playlist" 4001]
                            ["builder" 4003]
                            ["omdb" 4011]
-                           ["messages" 4010]))
+                           ["messages" 4010]
+                           ["locator" 4005]))
 
 (defmacro with-authorized-roles [roles & body]
   (let [sym (gensym)]
@@ -148,49 +152,89 @@
         (let [series (get-all-series (:omdb hosts))]
           (bulk-update series nil role)))))
   (POST "/bulk-update.html" [series update]
-    (with-authorized-roles ["admin","media"]
-      (fn [{:keys [session]}]
-        (let [lines (clojure.string/split update #"\n")
-              to-map (fn [line]
-                        (let [split-line (clojure.string/split line #"\|")]
-                              {:season (first split-line)
-                                :episode (second split-line)
-                                :episode_name (nth split-line 2)
-                                :summary (nth split-line 3)}))
-              series-list (get-all-series (:omdb hosts))
-              maps (map to-map lines)
-              result (bulk-update-series (:omdb hosts) series {:records maps})]
-          (if (= "ok" (:status result)) (write-message {:author "System"
-              :title (str (:user session) " updated " series " with more data!")
-              :message (html [:ol (map (fn [i] [:li (str "S" (:season i) "E" (:episode i) " " (:episode_name i))]) maps)])}))
-          (bulk-update series-list result (:role session))))))
+        (with-authorized-roles ["admin","media"]
+          (fn [{:keys [session]}]
+            (let [lines (clojure.string/split update #"\n")
+                  to-map (fn [line]
+                           (let [split-line (clojure.string/split line #"\|")]
+                             {:season (first split-line)
+                              :episode (second split-line)
+                              :episode_name (nth split-line 2)
+                              :summary (nth split-line 3)}))
+                  series-list (get-all-series (:omdb hosts))
+                  maps (map to-map lines)
+                  result (bulk-update-series (:omdb hosts) series {:records maps})]
+              (if (= "ok" (:status result)) (write-message {:author "System"
+                                                            :title (str (:user session) " updated " series " with more data!")
+                                                            :message (html [:ol (map (fn [i] [:li (str "S" (:season i) "E" (:episode i) " " (:episode_name i))]) maps)])}))
+              (bulk-update series-list result (:role session))))))
   (GET "/user-management.html" []
-    (fn [{{:keys [role]} :session}]
-      (with-authorized-roles ["admin"]
-        (user-management
-          (:users (fetch-users (:identity hosts)))
-          (:roles (fetch-roles (:identity hosts)))
-          role))))
+       (fn [{{:keys [role]} :session}]
+         (with-authorized-roles ["admin"]
+           (user-management
+            (:users (fetch-users (:identity hosts)))
+            (:roles (fetch-roles (:identity hosts)))
+            role))))
   (POST "/user" [new-user new-email new-role]
-    (println (format "Adding user: %s E-Mail: %s Role: %s" new-user new-email new-role))
-    (with-authorized-roles ["admin"]
-      (println (create-user (:identity hosts) new-user new-email new-role))
-      (redirect "/user-management.html")))
+        (logger/debug (format "Adding user: %s E-Mail: %s Role: %s" new-user new-email new-role))
+        (with-authorized-roles ["admin"]
+          (logger/debug (create-user (:identity hosts) new-user new-email new-role))
+          (redirect "/user-management.html")))
   (POST "/role" [update-user update-role]
-    (println (format "Updating user: %s Role: %s" update-user update-role))
-    (with-authorized-roles ["admin"]
-      (println (user-update (:identity hosts) update-user update-role))
-      (redirect "/user-management.html")))
+        (logger/debug (format "Updating user: %s Role: %s" update-user update-role))
+        (with-authorized-roles ["admin"]
+          (logger/debug (user-update (:identity hosts) update-user update-role))
+          (redirect "/user-management.html")))
+  (GET "/library.html" [series-name]
+       (with-authorized-roles ["admin","media","user"]
+         (fn [{{:keys [role]} :session}]
+           (let [series (get-all-series (:omdb hosts))
+                 s-name (or series-name (first series))
+                 episodes (get-series-episodes (:omdb hosts) s-name)
+                 items (flatten (map #(:records (get-meta-by-catalog-id (:omdb hosts) %)) (:catalog_ids episodes)))
+                 items-with-ids (map merge items
+                                     (map (fn [c] {:catalog-id c})
+                                          (:catalog_ids episodes)))]
+             (logger/debug "series " s-name " episodes " items)
+             (make-library series s-name items-with-ids role)))))
+  (GET "/update.html" [catalog-id]
+       (with-authorized-roles ["admin","media"]
+         (fn [{{:keys [role]} :session}]
+           (let [episode (first (:records (get-meta-by-catalog-id (:omdb hosts) catalog-id)))
+                 files (clojure.string/join "\n" (get-locations (:locator hosts) catalog-id))]
+             (make-update-page episode files catalog-id role)))))
+  (POST "/update.html"
+        [catalog-id series episode_name episode season
+         summary imdbid thumbnail files mode]
+        (with-authorized-roles ["admin","media"]
+          (let [record {:episode_name episode_name
+                        :episode episode
+                        :season season
+                        :summary summary
+                        :imdbid imdbid
+                        :thumbnail thumbnail}]
+            (fn [{{:keys [role]} :session}]
+              (if (= "Save" mode)
+                (do
+                  (logger/debug "RECORD? " record)
+                  (logger/debug "SAVE? " (save-episode (:omdb hosts) series record))
+                  (save-locations (:locator hosts)
+                                  catalog-id
+                                  (map clojure.string/trim
+                                       (clojure.string/split files #"\n")))
+                  (redirect (str "/update.html?catalog-id=" catalog-id)))
+                (let [omdb-record (first (:records (get-meta-by-imdb-id (:omdb hosts) imdbid)))]
+                  (side-by-side (assoc record :series series) omdb-record files catalog-id role)))))))
   (route/files "public")
   (route/not-found "Not Found"))
 
 (def app
   (wrap-defaults
     (->
-       app-routes
-       (json/wrap-json-response)
-       (json/wrap-json-body {:keywords? true})
-       (wrap-redirect))
+     app-routes
+     (json/wrap-json-response)
+     (json/wrap-json-body {:keywords? true})
+     (wrap-redirect))
      (assoc-in site-defaults [:security :anti-forgery] false)))
 
 (defn -main []

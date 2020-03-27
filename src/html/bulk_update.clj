@@ -21,9 +21,22 @@
         ; [:textarea {:id "summary" :name "summary"}]
         [:div {:id "explanation"}
           [:p "Use this format for following section:"]
-          [:p "season number|episode number|episode name|summary"]]
+         [:p
+          "{\"series\":{\"name\":name, \"summary\":summary,\"\":}
+\"records\":[{\"episode_name\":episode_name,\"episode\":episode,\"season\":season,\"summary\":summary,\"thumbnail\":thumbnail,\"imdbid\":imdbid}]}"]]
         [:label {:for "update"} "Update"]
-        [:textarea {:id "update" :name "update"}]
+       [:textarea {:id "update" :name "update"}
+        "{\"series\":
+  {\"name\":name,
+   \"summary\":summary,
+   \"imdbid\":imdbid},
+   \"records\":
+     [{\"episode_name\":episode_name,
+       \"episode\":episode,
+       \"season\":season,
+       \"summary\":summary,
+       \"thumbnail\":thumbnail,
+       \"imdbid\":imdbid}]}"]
         [:input {:type "submit" :value "Submit"}]]
         [:div {:style (if (not= "ok" (:status results)) "display:none")}
           [:h3 "Updated Catalog Ids"]

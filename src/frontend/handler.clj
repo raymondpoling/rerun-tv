@@ -154,19 +154,13 @@
   (POST "/bulk-update.html" [series update]
         (with-authorized-roles ["admin","media"]
           (fn [{:keys [session]}]
-            (let [lines (clojure.string/split update #"\n")
-                  to-map (fn [line]
-                           (let [split-line (clojure.string/split line #"\|")]
-                             {:season (first split-line)
-                              :episode (second split-line)
-                              :episode_name (nth split-line 2)
-                              :summary (nth split-line 3)}))
-                  series-list (get-all-series (:omdb hosts))
-                  maps (map to-map lines)
-                  result (bulk-update-series (:omdb hosts) series {:records maps})]
-              (if (= "ok" (:status result)) (write-message {:author "System"
-                                                            :title (str (:user session) " updated " series " with more data!")
-                                                            :message (html [:ol (map (fn [i] [:li (str "S" (:season i) "E" (:episode i) " " (:episode_name i))]) maps)])}))
+            (let [series-list (get-all-series (:omdb hosts))
+                  as-map (parse-string update true)
+                  result (bulk-update-series (:omdb hosts) series as-map)]
+              (if (= "ok" (:status result))
+                (write-message {:author "System"
+                                :title (str (:user session) " updated " series " with more data!")
+                                :message (html [:ol (map (fn [i] [:li (str "S" (:season i) "E" (:episode i) " " (:episode_name i))]) (:records as-map))])}))
               (bulk-update series-list result (:role session))))))
   (GET "/user-management.html" []
        (fn [{{:keys [role]} :session}]

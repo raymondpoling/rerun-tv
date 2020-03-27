@@ -85,7 +85,8 @@
     (if (not default?)
       [:li
        [:label {:for n} "OMDB"]
-       [:input {:id n :name n :type "radio" :value (k omdb)}
+       [:input {:id n :name n :checked :checked
+                :type "radio" :value (k omdb)}
         (k omdb)]])]))
 
 (defn make-thumb-comp [k v omdb]
@@ -101,7 +102,8 @@
      (if (not default?)
        [:li
         [:label {:for n} "OMDB"]
-        [:input {:id n :name n :type "radio" :value (k omdb)}]
+        [:input {:id n :name n :checked :checked
+                 :type "radio" :value (k omdb)}]
         [:br]
         (if-image (k omdb))])]))
 

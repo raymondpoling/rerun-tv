@@ -21,7 +21,7 @@
       (:id record)))
 
 (defroutes app-routes
-  (POST "/series/:name/:season/:episode" [name season episode]
+  (POST "/series/:name{[^/]+}/:season/:episode" [name season episode]
     (fn [request]
       (let [series_record? (find-series name)
           series (if (nil? (id series_record?)) (insert-series name) series_record?)
@@ -33,7 +33,7 @@
             (catch java.sql.SQLException e
               (logger/error e)
               (clc/make-response 500 {:status :failure}))))))
-  (PUT "/series/:name/:season/:episode" [name season episode]
+  (PUT "/series/:name{[^/]+}/:season/:episode" [name season episode]
     (fn [request]
       (let [series_record? (find-series name)
             series (if (nil? (id series_record?)) (insert-series name) series_record?)]
@@ -48,7 +48,7 @@
               (clc/make-response 500 {:status :failure}))
             (catch Exception e
               (logger/error e))))))
-  (PUT "/series/:name" [name]
+  (PUT "/series/:name{[^/]+}" [name]
     (fn [request]
       (let [series_record? (find-series name)
             series (if (nil? (id series_record?)) (insert-series name) series_record?)]
@@ -63,7 +63,7 @@
             (catch java.sql.SQLException e
               (logger/error e)
               (clc/make-response 500 {:status :failure}))))))
-  (GET "/series/:name" [name catalog_id_only fields]
+  (GET "/series/:name{[^/]+}" [name catalog_id_only fields]
     (let [top-record (find-by-series name)
           series (first top-record)
           records (second top-record)
@@ -72,7 +72,7 @@
           (if (nil? records)
             (clc/make-response 404 {:status :not_found})
             (clc/make-response 200 (merge to_return {:status :ok :catalog_ids catalog_ids} )))))
-  (GET "/series/:name/:season/:episode" [name season episode]
+  (GET "/series/:name{[^/]+}/:season/:episode" [name season episode]
     (fn [request]
       (let [catalog_ids? (or (:catalog_id_only (:params request)))
             record (first (find-by-series-season-episode name season episode))
@@ -83,7 +83,7 @@
             (if (nil? record)
               (clc/make-response 404 {:status :not_found})
               (clc/make-response 200 (merge to_return {:status :ok :catalog_ids [catalog_id]}))))))
-  (DELETE "/series/:name/:season/:episode" [name season episode]
+  (DELETE "/series/:name{[^/]+}/:season/:episode" [name season episode]
     (let [catalog_id (delete-record name (Integer/parseInt season) (Integer/parseInt episode))]
     (clc/make-response 200 {:status :ok :catalog_ids [(make-catalog-id catalog_id season episode)]})))
   (GET "/catalog-id/:catalog_id" [catalog_id]

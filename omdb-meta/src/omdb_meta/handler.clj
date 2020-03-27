@@ -18,21 +18,21 @@
 (def apikey (System/getenv "APIKEY"))
 
 (defroutes app-routes
-  (POST "/series/:name/:season/:episode" [name season episode]
+  (POST "/series/:name{[^/]+}/:season/:episode" [name season episode]
     (fn [request]
       (let [updated-response (update/update-episode (merge (:body request) {:season season :episode episode}) name (:omdb hosts) apikey)
             create (:body (create-episode (:meta hosts) name season episode updated-response))]
             (if (= "ok" (:status create))
               (clc/make-response 200 create)
               (clc/make-response 500 create)))))
-  (PUT "/series/:name/:season/:episode" [name season episode]
+  (PUT "/series/:name{[^/]+}/:season/:episode" [name season episode]
     (fn [request]
       (let [updated (update/update-episode (merge (:body request) {:season season :episode episode}) name (:omdb hosts) apikey)
             update (:body (update-episode (:meta hosts) name season episode updated))]
         (if (= "ok" (:status update))
           (clc/make-response 200 update)
           (clc/make-response 500 update)))))
-  (PUT "/series/:name" [name]
+  (PUT "/series/:name{[^/]+}" [name]
     (fn [request]
       (let [omdb (:omdb hosts)
             updated-series (update/update-series (:series (:body request)) name omdb apikey)
@@ -45,17 +45,17 @@
         (if (= "ok" (:status result))
           (clc/make-response 200 result)
           (clc/make-response 500 result)))))
-  (GET "/series/:name" [name catalog_id_only]
+  (GET "/series/:name{[^/]+}" [name catalog_id_only]
     (let [response (fetch-series (:meta hosts) name catalog_id_only)]
       (if (= "ok" (:status response))
         (clc/make-response 200 response)
         (clc/make-response 500 response))))
-  (GET "/series/:name/:season/:episode" [name season episode catalog_id_only]
+  (GET "/series/:name{[^/]+}/:season/:episode" [name season episode catalog_id_only]
     (let [response (get-episode (:meta hosts) name season episode catalog_id_only)
           updated-response (if catalog_id_only nil {:records [(update/update-episode (first (:records response)) name (:omdb hosts) apikey)]})]
         (update-episode (:meta hosts) name season episode (dissoc (first (:records updated-response)) :series))
         (clc/make-response 200 (merge response updated-response))))
-  (DELETE "/series/:name/:season/:episode" [name season episode]
+  (DELETE "/series/:name{[^/]+}/:season/:episode" [name season episode]
     (delete-episode (:meta hosts) name season episode))
   (GET "/catalog-id/:catalog_id" [catalog_id fields]
     (if fields

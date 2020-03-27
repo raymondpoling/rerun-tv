@@ -27,7 +27,7 @@
           [:em (:episode_name %)])]]
     [:div {:class "summary"} [:hr] [:p (:summary %)]]) episodes))
 
-(defn make-library [series series-name episodes role]
+(defn make-library [series series-name records role]
   (html5
     [:head
       [:meta {:charset "utf-8"}]
@@ -37,6 +37,16 @@
     [:body
       [:div {:id "content"}
         (header "Library" role)
-        (series-select series series-name)
+       (series-select series series-name)
+       [:div {:class "series-header"}
+        [:h2 series-name]
+        (if (and (not= (:thumbnail (:series records)) "N/A")
+                (not-empty (:thumbnail (:series records))))
+          [:img {:src (:thumbnail (:series records))}])
+        [:p (:summary (:series records))[:br]
+       (if (and (not= (:imdbid (:series records)) "N/A")
+                (not-empty (:imdbid (:series records))))
+          [:a {:href (str "http://imdb.com/title/" (:imdbid (:series records)))
+             :target "_blank"} "IMDB"])]]
         [:div {:class "episodes"}
-          (make-episodes episodes role)]]]))
+          (make-episodes (:records records) role)]]]))

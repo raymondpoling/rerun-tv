@@ -156,7 +156,8 @@
           (fn [{:keys [session]}]
             (let [series-list (get-all-series (:omdb hosts))
                   as-map (parse-string update true)
-                  result (bulk-update-series (:omdb hosts) series as-map)]
+                  series-name (or (:name (:series as-map)) series)
+                  result (bulk-update-series (:omdb hosts) series-name as-map)]
               (if (= "ok" (:status result))
                 (write-message {:author "System"
                                 :title (str (:user session) " updated " series " with more data!")
@@ -188,9 +189,11 @@
                  items (flatten (map #(:records (get-meta-by-catalog-id (:omdb hosts) %)) (:catalog_ids episodes)))
                  items-with-ids (map merge items
                                      (map (fn [c] {:catalog-id c})
-                                          (:catalog_ids episodes)))]
+                                          (:catalog_ids episodes)))
+                 record {:series (first (:records episodes))
+                         :records items-with-ids} ]
              (logger/debug "series " s-name " episodes " items)
-             (make-library series s-name items-with-ids role)))))
+             (make-library series s-name record role)))))
   (GET "/update.html" [catalog-id]
        (with-authorized-roles ["admin","media"]
          (fn [{{:keys [role]} :session}]

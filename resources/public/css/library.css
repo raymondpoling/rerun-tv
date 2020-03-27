@@ -58,3 +58,18 @@ img {
   visibility: visible;
   height: 7em;
 }
+
+.series-header {
+    width: 100%;
+    padding: 0 1em 1em 1em;
+}
+
+.series-header > img {
+    margin: 0;
+}
+
+.series-header > p {
+    width: 40%;
+    margin: 1em;
+    display: inline-block;
+}

@@ -217,30 +217,34 @@
                {"status" "ok",
                 "catalog_ids" ["TESTS0101002","TESTS0101003"]})))))
   (testing "find a single full record"
-    (with-fake-routes-in-isolation {"http://meta:4004/series/test-series/1/1"
-                                    (fn [request]
-                                      {:status 200
-                                        :body (generate-string
-                                          {:status :ok
-                                            :catalog_ids ["TESTS0101001"]
-                                            :records [{:episode_name "The Cat Returns"
-                                            :summary "Wonderful story of cats being cats and everyone loving them. Hooray!"
-                                            :season 1
-                                            :episode 1
-                                            :series "test-series"
-                                            :imdbid "tt6565"
-                                            :thumbnail "http://here.com/img.img"}]})})}
+    (with-fake-routes-in-isolation
+      {"http://meta:4004/series/test-series/1/1"
+       (fn [request]
+         {:status 200
+          :body (generate-string
+                 {:status :ok
+                  :catalog_ids ["TESTS0101001"]
+                  :records [{:episode_name "The Cat Returns"
+                             :summary "Wonderful story of cats being cats and everyone loving them. Hooray!"
+                             :season 1
+                             :episode 1
+                             :series "test-series"
+                             :imdbid "tt6565"
+                             :thumbnail "http://here.com/img.img"}]})})}
       (let [response (app (mock/request :get "/series/test-series/1/1"))]
         (is (= (:status response) 200))
-        (is (= (parse-string (:body response)) {"status" "ok","catalog_ids" ["TESTS0101001"],"records"
-                                [{"episode_name" "The Cat Returns",
-                                "summary" "Wonderful story of cats being cats and everyone loving them. Hooray!"
-                                "season" 1
-                                "episode" 1
-                                "series" "test-series",
-                                "imdbid" "tt6565",
-                                "thumbnail" "http://here.com/img.img"
-                                }]})))))
+        (is (= (parse-string (:body response))
+               {"status" "ok",
+                "catalog_ids" ["TESTS0101001"],
+                "records"
+                [{"episode_name" "The Cat Returns",
+                  "summary" "Wonderful story of cats being cats and everyone loving them. Hooray!"
+                  "season" 1
+                  "episode" 1
+                  "series" "test-series",
+                  "imdbid" "tt6565",
+                  "thumbnail" "http://here.com/img.img"
+                  }]})))))
   (testing "get list of available series"
     (with-fake-routes-in-isolation {"http://meta:4004/series"
                                     (fn [request]

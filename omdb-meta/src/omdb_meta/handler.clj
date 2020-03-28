@@ -23,7 +23,7 @@
       (let [updated-response (update/update-episode (merge (:body request) {:season season :episode episode}) name (:omdb hosts) apikey)
             create (:body (create-episode (:meta hosts) name season episode updated-response))]
             (if (= "ok" (:status create))
-              (clc/make-response 200 create)
+              (clc/make-response 200 (merge create {:records [updated-response]}))
               (clc/make-response 500 create)))))
   (PUT "/series/:name{[^/]+}/:season/:episode" [name season episode]
     (fn [request]
@@ -33,7 +33,8 @@
           (clc/make-response 200 update)
           (clc/make-response 500 update)))))
   (PUT "/series/:name{[^/]+}" [name]
-    (fn [request]
+       (fn [request]
+         (try
       (let [omdb (:omdb hosts)
             updated-series (update/update-series (:series (:body request)) name omdb apikey)
             updated-records (map #(update/update-episode % name omdb apikey) (:records (:body request)))
@@ -44,7 +45,9 @@
         (logger/debug "Result: " result)
         (if (= "ok" (:status result))
           (clc/make-response 200 result)
-          (clc/make-response 500 result)))))
+          (clc/make-response 500 result)))
+      (catch Exception e
+        (logger/error "Error processing bulk create: " (.getMessage e))))))
   (GET "/series/:name{[^/]+}" [name catalog_id_only]
     (let [response (fetch-series (:meta hosts) name catalog_id_only)]
       (if (= "ok" (:status response))

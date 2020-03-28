@@ -15,8 +15,10 @@
 (defn create-episode [host series season episode record]
   (clc/log-on-error {:status "failed" :message "meta service not available"}
     (client/post (str "http://" host "/series/" series "/" season "/" episode)
-      (if record {:as :json
-        :body (generate-string record)} {:as :json}))))
+                 (if record {:as :json
+                             :content-type :json
+                             :body (generate-string record)}
+                     {:as :json}))))
 
 (defn update-episode [host series season episode data]
   (clc/log-on-error {:status "failed" :message "meta service not available"}

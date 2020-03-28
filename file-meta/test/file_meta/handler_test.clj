@@ -84,6 +84,27 @@
                             }]})))]
       (is (= (:status response) 200))
       (is (= (:body response) "{\"status\":\"ok\",\"catalog_ids\":[\"TESTS0101002\",\"TESTS0101003\"]}"))))
+  (testing "bulk update nonexistent records"
+    (let [response (app (-> (mock/request :put "/series/test-series")
+                            (mock/json-body {"series" {"imdbid" "tt222222"
+                                "thumbnail" "http://test-series.jpg"
+                                "summary" "a test series i enjoy"}
+                            "records" [{
+                              "episode_name" "The Cat Returns 2"
+                              "summary" "Wonderful story of cats being cats and everyone loving them. Hooray! For the second time"
+                             "episode" 25
+                             "season" 17
+                             "imdbid" "tt6465"
+                             "thumbnail" "http://mew"
+                           }]})))]
+      (is (= (:status response) 200))
+      (is (= (parse-string (:body response))
+             {"status" "ok","catalog_ids"[],"failures"["TESTS0117025"]}))))
+  (testing "don't find non-existent record"
+    (let [response (app (mock/request :get "/series/test-series/17/25"))]
+      (is (= (:status response) 404))
+      (is (= (parse-string (:body response))
+             {"status" "not_found"}))))
   (testing "find a single full record"
     (let [response (app (mock/request :get "/series/test-series/1/1"))]
       (is (= (:status response) 200))

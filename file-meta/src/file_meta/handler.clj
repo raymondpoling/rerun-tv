@@ -39,7 +39,9 @@
             series (if (nil? (id series_record?)) (insert-series name) series_record?)]
 
             (try
-              (logger/debug (format "series: %s\n\tseason: %s\n\tepisode: %s\n\tbody:%s" name season episode (:body request)))
+              (logger/debug
+               (format "series: %s\n\tseason: %s\n\tepisode: %s\n\tbody:%s"
+                       name season episode (:body request)))
               (update-record (id series) season episode (:body request))
               (clc/make-response 200 {:status :ok :catalog_ids
                 [(make-catalog-id (:catalog_prefix series) season episode)]})
@@ -51,18 +53,41 @@
   (PUT "/series/:name{[^/]+}" [name]
     (fn [request]
       (let [series_record? (find-series name)
-            series (if (nil? (id series_record?)) (insert-series name) series_record?)]
-            (try
-              (doall (map (fn [t] (update-record (id series) (:season t) (:episode t) t)) (:records (:body request))))
-              (logger/debug "Processing: " (:body request))
-              (logger/debug "Records: " (:records (:body request)))
-              (let [series? (:series (:body request))]
-                (if series? (update-series name series?)))
-              (clc/make-response 200 {:status :ok :catalog_ids
-                (map (fn [t] (make-catalog-id (:catalog_prefix series) (str (:season t)) (str (:episode t)))) (:records (:body request)))})
-            (catch java.sql.SQLException e
-              (logger/error e)
-              (clc/make-response 500 {:status :failure}))))))
+            series (if (nil? (id series_record?))
+                     (insert-series name)
+                     series_record?)]
+        (try
+          (logger/debug "To process: " (:body request))
+          (let [updates (doall
+                         (map (fn [t] (update-record
+                                       (id series)
+                                       (:season t)
+                                       (:episode t) t))
+                              (:records (:body request))))]
+            (logger/debug "Processing: " (:body request))
+            (logger/debug "Records: " (:records (:body request)))
+            (let [series? (:series (:body request))]
+              (if series? (update-series name series?)))
+            (clc/make-response
+             200
+             (let [{successes true failures false}
+                   (group-by (fn [[_ saved?]] (> saved? 0))
+                             (map
+                              vector
+                              (:records (:body request))
+                              (flatten updates)))
+                   make-cid (fn [[t _]] (make-catalog-id
+                                         (:catalog_prefix series)
+                                         (str (:season t))
+                                         (str (:episode t))))
+                   succ-out (map make-cid successes)
+                   fail-out (map make-cid failures)]
+               (merge {:status :ok :catalog_ids succ-out}
+                      (if (not-empty fail-out)
+                        {:failures fail-out})))))
+          (catch java.sql.SQLException e
+            (logger/error e)
+            (clc/make-response 500 {:status :failure}))))))
   (GET "/series/:name{[^/]+}" [name catalog_id_only fields]
     (let [top-record (find-by-series name)
           series (first top-record)

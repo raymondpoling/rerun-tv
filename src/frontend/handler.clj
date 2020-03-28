@@ -10,7 +10,14 @@
             [remote-call.format :refer [fetch-playlist]]
             [remote-call.user :refer [fetch-index]]
             [remote-call.playlist :refer [get-playlists fetch-catalog-id]]
-            [remote-call.meta :refer [get-all-series bulk-update-series get-meta-by-catalog-id get-series-episodes save-episode get-meta-by-imdb-id]]
+            [remote-call.meta :refer [get-all-series
+                                      bulk-update-series
+                                      get-meta-by-catalog-id
+                                      get-series-episodes
+                                      save-episode
+                                      get-meta-by-imdb-id
+                                      create-episode
+                                      create-series]]
             [remote-call.messages :refer [get-messages add-message]]
             [ring.util.response :refer [response not-found header status redirect]]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
@@ -151,18 +158,48 @@
       (fn [{{:keys [role]} :session}]
         (let [series (get-all-series (:omdb hosts))]
           (bulk-update series nil role)))))
-  (POST "/bulk-update.html" [series update]
+  (POST "/bulk-update.html" [series update create?]
         (with-authorized-roles ["admin","media"]
           (fn [{:keys [session]}]
-            (let [series-list (get-all-series (:omdb hosts))
-                  as-map (parse-string update true)
-                  series-name (or (:name (:series as-map)) series)
-                  result (bulk-update-series (:omdb hosts) series-name as-map)]
-              (if (= "ok" (:status result))
-                (write-message {:author "System"
-                                :title (str (:user session) " updated " series " with more data!")
-                                :message (html [:ol (map (fn [i] [:li (str "S" (:season i) "E" (:episode i) " " (:episode_name i))]) (:records as-map))])}))
-              (bulk-update series-list result (:role session))))))
+            (let [series-list (get-all-series (:omdb hosts))]
+              (try
+                (let [as-map (parse-string update true)
+                      series-name (or (:name (:series as-map)) series)
+                      series (:series as-map)
+                      location-free (map #(dissoc % :locations) (:records as-map))
+                      record {:series series :records location-free}]
+                  (if (not create?)
+                    (let [result (bulk-update-series (:omdb hosts) series-name record)]
+                      (if (= "ok" (:status result))
+                        (do
+                          (dorun (map #(save-locations (:locator hosts) %1 %2)
+                                      (:catalog_ids result)
+                                      (map :locations (:records as-map))))
+                          (write-message {:author "System"
+                                          :title (str (:user session)
+                                                      " updated "
+                                                      series-name
+                                                      " with more data!")
+                                          :message (html [:ol (map (fn [i] [:li (str "S" (:season i) "E" (:episode i) " " (:episode_name i))]) (:records as-map))])})))
+                      (bulk-update series-list result (:role session)))
+                    (let [series_update (create-series (:omdb hosts) series-name series)
+                          all-created (doall
+                                       (map #(create-episode
+                                              (:omdb hosts)
+                                              series-name %)
+                                            location-free))
+                          catalog_ids (map #(first (:catalog_ids %)) all-created)]
+                      (if (every? #(= "ok" (:status %)) all-created)
+                        (do
+                          (map #(save-locations (:locator hosts) %1 %2) catalog_ids (:locations (:records as-map)))
+                          (write-message {:author "System"
+                                          :title (str (:user session) " added " series-name "!")
+                                          :message (html [:ol (map (fn [i] [:li (str "S" (:season i) "E" (:episode i) " " (:episode_name i))]) (map #(first (:records %)) all-created))])})))
+                      (bulk-update series-list {:status "ok" :catalog_ids catalog_ids} (:role session)))))
+                (catch com.fasterxml.jackson.core.JsonParseException e
+                  (bulk-update series-list
+                               {:status "failed" :message (.getMessage e)}
+                               (:role session))))))))
   (GET "/user-management.html" []
        (fn [{{:keys [role]} :session}]
          (with-authorized-roles ["admin"]

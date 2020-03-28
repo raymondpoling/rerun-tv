@@ -23,6 +23,29 @@
                    :body (generate-string update)
                    :headers {:content-type "application/json"}})))))
 
+(defn create-series [host series-name series]
+  (clc/log-on-error
+   {:status "failed" :message "omdb-meta service not available"}
+   (let [url (str "http://" host "/series/" series-name)]
+     (println "create series url: " url)
+     (println "create series payload: " series)
+     (:body
+      (client/put url
+                   {:as :json
+                    :body (generate-string {:series series})
+                    :headers {:content-type "application/json"}})))))
+
+(defn create-episode [host series episode]
+  (clc/log-on-error
+   {:status "failed" :message "omdb-meta service not available"}
+   (let [url (str "http://" host "/series/" series "/" (:season episode) "/" (:episode episode))]
+     (println "url: " url)
+     (:body
+      (client/post url
+                   {:as :json
+                    :body (generate-string episode)
+                    :headers {:content-type "application/json"}})))))
+
 (defn save-episode [host series episode]
   (clc/log-on-error
    {:status "failed"}

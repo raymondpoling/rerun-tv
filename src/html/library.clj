@@ -14,9 +14,9 @@
 (defn make-title [i]
   (str (:series i) " S" (:season i) "E" (:episode i)))
 
-(defn make-episodes [episodes role]
+(defn make-episodes [episodes series-img role]
   (map #(vector :article {:class "item" }
-    [:img {:src (if (not (or (empty? (:thumbnail %)) (= "N/A" (:thumbnail %)))) (:thumbnail %) "/image/not-available.svg")}]
+    [:img {:src (if (not (or (empty? (:thumbnail %)) (= "N/A" (:thumbnail %)))) (:thumbnail %) series-img)}]
     [:ul {:class "textbox"}
       [:li [:b (:name %)]]
       [:li (if (not (empty? (:imdbid %)))
@@ -49,4 +49,9 @@
           [:a {:href (str "http://imdb.com/title/" (:imdbid (:series records)))
              :target "_blank"} "IMDB"])]]
         [:div {:class "episodes"}
-          (make-episodes (:records records) role)]]]))
+         (make-episodes (:records records)
+                        (if (and (not= (:thumbnail (:series records)) "N/A")
+                                 (not-empty (:thumbnail (:series records))))
+                          (:thumbnail (:series records))
+                          "/images/not-available.svg")
+                        role)]]]))

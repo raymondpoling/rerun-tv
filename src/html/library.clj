@@ -53,5 +53,5 @@
                         (if (and (not= (:thumbnail (:series records)) "N/A")
                                  (not-empty (:thumbnail (:series records))))
                           (:thumbnail (:series records))
-                          "/images/not-available.svg")
+                          "/image/not-available.svg")
                         role)]]]))

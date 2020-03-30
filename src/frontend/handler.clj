@@ -1,7 +1,10 @@
 (ns frontend.handler
   (:require [compojure.core :refer :all]
             [compojure.route :as route]
+            [helpers.routes :refer [hosts with-authorized-roles write-message]]
             [ring.middleware.json :as json]
+            [route-logic.message :refer [set-message get-message]]
+            [route-logic.bulk-update :as rlbu]
             [remote-call.identity :refer [fetch-user fetch-users fetch-roles user-update create-user]]
             [remote-call.schedule :refer :all]
             [remote-call.schedule-builder :refer [validate-schedule send-schedule]]
@@ -28,36 +31,16 @@
             [html.index :refer [make-index]]
             [html.schedule-builder :refer [schedule-builder]]
             [html.schedule-builder-get :refer [schedule-builder-get]]
-            [html.bulk-update :refer [bulk-update]]
             [html.user-management :refer [user-management]]
             [html.library :refer [make-library]]
             [html.update :refer [make-update-page side-by-side]]
+            [html.bulk-update :refer [bulk-update]]
             [helpers.schedule-builder :refer :all]
             [cheshire.core :refer [parse-string generate-string]]
             [hiccup.core :refer [html]]
             [java-time :as jt]
             [org.httpkit.server :refer [run-server]])
   (:gen-class))
-
-
-(def hosts (clc/make-hosts ["auth" 4007]
-                           ["identity" 4012]
-                           ["schedule" 4000]
-                           ["format" 4009]
-                           ["user" 4002]
-                           ["playlist" 4001]
-                           ["builder" 4003]
-                           ["omdb" 4011]
-                           ["messages" 4010]
-                           ["locator" 4005]))
-
-(defmacro with-authorized-roles [roles & body]
-  (let [sym (gensym)]
-    `(fn [~sym]
-      (if (not (some #(= (:role (:session ~sym)) %) ~roles))
-        (redirect "/index.html")
-        (do
-        ~@body)))))
 
 (defn wrap-redirect [function]
   (fn [request]
@@ -81,13 +64,11 @@
         meta (flatten (map #(:records (get-meta-by-catalog-id (:omdb hosts) (:item %))) catalog_ids))]
         (map merge meta items)))
 
-(defn write-message [{:keys [author title message]}]
-  (add-message (:messages hosts)
-    author
-    title
-    message))
-
 (defroutes app-routes
+  (GET "/message.html" {{:keys [role]} :session}
+       (get-message role))
+  (POST "/message.html" [title message]
+        (set-message title message))
   (GET "/preview.html" [schedule index idx update reset download]
     (fn [{{:keys [user role]} :session}]
       (let [schedule-list (get-schedules (:schedule hosts))
@@ -160,46 +141,7 @@
           (bulk-update series nil role)))))
   (POST "/bulk-update.html" [series update create?]
         (with-authorized-roles ["admin","media"]
-          (fn [{:keys [session]}]
-            (let [series-list (get-all-series (:omdb hosts))]
-              (try
-                (let [as-map (parse-string update true)
-                      series-name (or (:name (:series as-map)) series)
-                      series (:series as-map)
-                      location-free (map #(dissoc % :locations) (:records as-map))
-                      record {:series series :records location-free}]
-                  (if (not create?)
-                    (let [result (bulk-update-series (:omdb hosts) series-name record)]
-                      (if (= "ok" (:status result))
-                        (do
-                          (dorun (map #(save-locations (:locator hosts) %1 %2)
-                                      (:catalog_ids result)
-                                      (map :locations (:records as-map))))
-                          (write-message {:author "System"
-                                          :title (str (:user session)
-                                                      " updated "
-                                                      series-name
-                                                      " with more data!")
-                                          :message (html [:ol (map (fn [i] [:li (str "S" (:season i) "E" (:episode i) " " (:episode_name i))]) (:records as-map))])})))
-                      (bulk-update series-list result (:role session)))
-                    (let [series_update (create-series (:omdb hosts) series-name series)
-                          all-created (doall
-                                       (map #(create-episode
-                                              (:omdb hosts)
-                                              series-name %)
-                                            location-free))
-                          catalog_ids (map #(first (:catalog_ids %)) all-created)]
-                      (if (every? #(= "ok" (:status %)) all-created)
-                        (do
-                          (map #(save-locations (:locator hosts) %1 %2) catalog_ids (:locations (:records as-map)))
-                          (write-message {:author "System"
-                                          :title (str (:user session) " added " series-name "!")
-                                          :message (html [:ol (map (fn [i] [:li (str "S" (:season i) "E" (:episode i) " " (:episode_name i))]) (map #(first (:records %)) all-created))])})))
-                      (bulk-update series-list {:status "ok" :catalog_ids catalog_ids} (:role session)))))
-                (catch com.fasterxml.jackson.core.JsonParseException e
-                  (bulk-update series-list
-                               {:status "failed" :message (.getMessage e)}
-                               (:role session))))))))
+          (rlbu/bulk-update-logic series update create?)))
   (GET "/user-management.html" []
        (fn [{{:keys [role]} :session}]
          (with-authorized-roles ["admin"]

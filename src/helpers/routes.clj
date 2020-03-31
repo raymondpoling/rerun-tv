@@ -12,6 +12,7 @@
                            ["playlist" 4001]
                            ["builder" 4003]
                            ["omdb" 4011]
+                           ;["omdb" 4004]
                            ["messages" 4010]
                            ["locator" 4005]))
 

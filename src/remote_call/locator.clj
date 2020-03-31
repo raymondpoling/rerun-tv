@@ -19,7 +19,9 @@
 (defn save-locations [host catalog-id locations]
   (clc/log-on-error
    {:status "failed" :message "locator service not available"}
-   (:body (client/put (str "http://" host "/catalog-id/" catalog-id)
-                      {:as :json
-                       :headers {:content-type "application/json"}
-                       :body (generate-string {:files locations})}))))
+   (let [result (:body (client/put (str "http://" host "/catalog-id/" catalog-id)
+                                   {:as :json
+                                    :headers {:content-type "application/json"}
+                                    :body (generate-string {:files locations})}))]
+     (println (format "For catalog ID %s got %s" catalog-id (str result)))
+     result)))

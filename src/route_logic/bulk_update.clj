@@ -26,7 +26,8 @@
                    [id %]) records)))
 
 (defn make-locatable [location-map catalog-ids]
-  (map #(vector % (get location-map (subs % 7))) catalog-ids))
+  (map #(vector % (get location-map (subs % 7)))
+       (filter not-empty catalog-ids)))
 
 (defn save-pairs [pairs]
   (doall (map #(let [[catalog-id record] %]
@@ -46,9 +47,9 @@
                                      series-name
                                      records-no-location))
         record-map (make-record-map (:records records))
-        location-pairs (make-locatable record-map (:catalog_ids result))]
-    (println "result? " result)
-    (save-pairs location-pairs)
+        location-pairs (make-locatable record-map (:catalog_ids result))
+        save-resp (save-pairs location-pairs)]
+    (println "result? " save-resp)
     (if (not-empty location-pairs)
       (write-message
        {:author "System"
@@ -68,14 +69,14 @@
   (fn [{:keys [session]}]
     (let [series-list (get-all-series (:omdb hosts))]
       (try
-        (let [series-name (or (:name (:series update)) series)
-              records (parse-string update true)]
+        (let [records (parse-string update true)
+              series-name (or (:name (:series records)) series)]
           (if (not create?)
             (make-or-update series-name series-list
-                            records (str "Updated series '" series-name "'!")
+                            records (str " updated series '" series-name "'!")
                             true session)
             (make-or-update series-name series-list
-                            records (str "Added new series '" series-name "'!")
+                            records (str " added new series '" series-name "'!")
                             false session)))
         (catch com.fasterxml.jackson.core.JsonParseException e
           (bulk-update series-list

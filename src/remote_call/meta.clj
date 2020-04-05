@@ -78,6 +78,13 @@
     (let [url (str "http://" host "/imdbid/" id)]
       (:body (client/get url {:as :json})))))
 
+(defn get-series-by-imdb-id [host id]
+  (clc/log-on-error 
+   {:status "failed" :message "Could not find item in catalog"}
+   (let [url (str "http://" host "/imdbid/series/" id)]
+     (println "series imdb id url: " url)
+     (:body (client/get url {:as :json})))))
+
 (defn get-series-episodes [host series]
   (clc/log-on-error {:status "failed" :message "meta host not available"}
     (let [url (str "http://" host "/series/" (url-encode series))]

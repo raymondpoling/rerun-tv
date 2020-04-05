@@ -53,8 +53,9 @@ tr:nth-child(odd) {
 }
 
 form {
-  height: 12em;
-  padding: 1em;
+#  height: 12em;
+padding: 1em;
+padding-bottom: 2em;
   margin: 1em;
   border: solid black 1px;
   width: 14em;

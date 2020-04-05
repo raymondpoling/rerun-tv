@@ -30,12 +30,14 @@
   [:form {:action "/user" :method "post"}
     [:h2 "Add User"]
     [:ul
-      [:li [:label {:for "new-user"} "User: "]
-        [:input {:name "new-user" :id "new-user"}]]
-      [:li [:label {:for "new-email"} "E-Mail: "]
-        [:input {:name "new-email" :id "new-email"}]]
-      [:li (make-role-options "new-" roles)]
-      [:li [:input {:type "submit"}]]]])
+     [:li [:label {:for "new-user"} "User: "]
+      [:input {:name "new-user" :id "new-user"}]]
+     [:li [:label {:for "new-email"} "E-Mail: "]
+      [:input {:name "new-email" :id "new-email"}]]
+     [:li [:label {:for "new-password"} "Password: "]
+      [:input {:name "new-password" :id "new-password"}]]
+     [:li (make-role-options "new-" roles)]
+     [:li [:input {:type "submit"}]]]])
 
 (defn user-management [users roles role]
   (html5

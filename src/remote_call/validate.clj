@@ -2,7 +2,8 @@
   (:require [diehard.core :as dh]
             [diehard.circuit-breaker :refer [state]]
             [cheshire.core :refer :all]
-            [clj-http.client :as client]))
+            [clj-http.client :as client]
+            [common-lib.core :as clc]))
 
 (dh/defcircuitbreaker ckt-brkr {:failure-threshold-ratio [8 10]
                             :delay-ms 1000})
@@ -10,11 +11,24 @@
 (defn validate-user [host user password]
   (try
     (dh/with-circuit-breaker ckt-brkr
-      (:body (client/post (str "http://" host "/validate/" user)
-              {:body (generate-string {:password password}) 
-                :content-type :json
-                :headers {:content-type "application/json"}
-                :as :json})))
-  (catch Exception e
-    (println e)
-    {:status :failure :message "schedule service not available"})))
+      (let [url (str "http://" host "/validate/" user)]
+        (println "validation url is: " url)
+        (:body (client/post
+                url
+                {:body (generate-string {:password password}) 
+                 :content-type :json
+                 :headers {:content-type "application/json"}
+                 :as :json}))))
+    (catch Exception e
+      (println e)
+      {:status :failure :message "schedule service not available"})))
+
+(defn create-auth [host user password]
+  (clc/log-on-error
+   {:status "failure" :message "auth service not available"}
+   (dh/with-circuit-breaker ckt-brkr
+     (:body (client/post (str "http://" host "/new/" user)
+                         {:body (generate-string {:password password})
+                          :content-type :json
+                          :headers {:content-type "application/json"}
+                          :as :json})))))

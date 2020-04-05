@@ -47,7 +47,8 @@
        (if (and (not= (:imdbid (:series records)) "N/A")
                 (not-empty (:imdbid (:series records))))
           [:a {:href (str "http://imdb.com/title/" (:imdbid (:series records)))
-             :target "_blank"} "IMDB"])]]
+               :target "_blank"} "IMDB"])]
+        [:a {:href (str "/update-series.html?series-name=" series-name)} "Edit Series"]]
         [:div {:class "episodes"}
          (make-episodes (:records records)
                         (if (and (not= (:thumbnail (:series records)) "N/A")

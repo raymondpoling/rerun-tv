@@ -1,4 +1,4 @@
-(ns html.update
+(ns html.series-update
   (:require [html.header :refer [header]]
             [hiccup.page :refer [html5]]
             [clojure.tools.logging :as logger]
@@ -34,43 +34,36 @@
           [:br]
           (if-image url)))
 
-(defn make-list [episode catalog-id]
+(defn make-list [series]
   [:ol
-   [:li
-    [:label {:for "catalog-id"} "Catalog ID"]
-    [:input {:value catalog-id
-             :type "text"
-             :name "catalog-id"
-             :readonly "readonly"}]]
-   (map (fn [[k v]]
-          (condp = k
-            :summary (show-summary v)
-            :thumbnail (show-thumbnail v)
-            :imdbid (show-imdb v)
-            (show-regular k v)))
-        episode)])
+    (map (fn [[k v]]
+           (condp = k
+             :summary (show-summary v)
+             :thumbnail (show-thumbnail v)
+             :imdbid (show-imdb v)
+             (show-regular k v)))
+         series)])
 
 (defn return-to-library [series]
   [:a {:href (str "/library.html?series-name=" series)}
    "Go Back to Library"])
 
-(defn make-update-page [episode files catalog-id role]
+(defn make-series-update-page [series role]
+  (println "series" series)
   (html5
     [:head
       [:meta {:charset "utf-8"}]
       [:link {:rel "stylesheet" :href "/css/master.css"}]
       [:link {:rel "stylesheet" :href "/css/update.css"}]
-      [:title "ReRun TV - Update Episode"]]
+      [:title "ReRun TV - Update Series"]]
     [:body
       [:div {:id "content"}
-       (header "Update Episode" role)
-       [:form {:method "post" :action "/update.html"}
-        (make-list episode catalog-id)
-        [:label {:for "files"} "File URLs"]
-        [:textarea {:name "files" :id "files"} files]
+       (header "Update Series" role)
+       [:form {:method "post" :action "/update-series.html"}
+        (make-list series)
         [:input {:value "Save" :type "submit" :name "mode"}]
         [:div {:class "spacer"}]
-        (return-to-library (:series episode))]]]))
+        (return-to-library (:name series))]]]))
 
 (defn should-default? [omdb-v]
   (or (= omdb-v "N/A") (nil? omdb-v)))
@@ -107,36 +100,28 @@
         [:br]
         (if-image (k omdb))])]))
 
-(defn make-options [episode omdb catalog-id]
+(defn make-options [series omdb]
   [:ol
-   [:li
-    [:label {:for "catalog-id"} "Catalog ID"]
-    [:input {:value catalog-id
-             :type "text"
-             :name "catalog-id"
-             :readonly "readonly"}]]
    (map (fn [[k v]]
           (let [n (name k)]
             (vector :li (clojure.string/upper-case n)
                     (condp = k
                       :thumbnail (make-thumb-comp k v omdb)
                       (make-reg-comp k v omdb)))))
-        episode)])
+        series)])
 
-(defn side-by-side [episode omdb files catalog-id role]
+(defn series-side-by-side [series omdb role]
   (html5
     [:head
       [:meta {:charset "utf-8"}]
       [:link {:rel "stylesheet" :href "/css/master.css"}]
       [:link {:rel "stylesheet" :href "/css/update.css"}]
-      [:title "ReRun TV - Update Episode"]]
+      [:title "ReRun TV - Update Series"]]
     [:body
       [:div {:id "content"}
-       (header "Update Episode" role)
-       [:form {:method "post" :action "/update.html"}
-        (make-options episode omdb catalog-id)
-        [:label {:for "files"} "File URLs"]
-        [:textarea {:name "files" :id "files"} files]
+       (header "Update Series" role)
+       [:form {:method "post" :action "/update-series.html"}
+        (make-options series omdb)
         [:input {:value "Save" :type "submit" :name "mode"}]
         [:div {:class "spacer"}]
-        (return-to-library (:series episode))]]]))
+        (return-to-library (:name series))]]]))

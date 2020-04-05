@@ -9,7 +9,7 @@
             [remote-call.schedule :refer :all]
             [remote-call.schedule-builder :refer [validate-schedule send-schedule]]
             [remote-call.locator :refer [get-locations save-locations]]
-            [remote-call.validate :refer [validate-user]]
+            [remote-call.validate :refer [validate-user create-auth]]
             [remote-call.format :refer [fetch-playlist]]
             [remote-call.user :refer [fetch-index]]
             [remote-call.playlist :refer [get-playlists fetch-catalog-id]]
@@ -19,6 +19,7 @@
                                       get-series-episodes
                                       save-episode
                                       get-meta-by-imdb-id
+                                      get-series-by-imdb-id
                                       create-episode
                                       create-series]]
             [remote-call.messages :refer [get-messages add-message]]
@@ -26,6 +27,7 @@
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
             [common-lib.core :as clc]
             [clojure.tools.logging :as logger]
+            [html.series-update :as hsu]
             [html.preview :refer [make-preview-page]]
             [html.login :refer [login]]
             [html.index :refer [make-index]]
@@ -50,12 +52,12 @@
       (do
         (logger/info "Going to login ->")
         (logger/info "uri: " (:uri request) " is matching? " (= "/login" (:uri request)))
-        (redirect "/login.html"))
+        (logger/info "going to login.html")
+        (redirect "login.html"))
       (do
         (logger/info "continuing request")
         (logger/info "- uri: " (:uri request) " is matching? " (= "/login" (:uri request)))
         (logger/info "- user: " (:user (:session request)))
-
         (function request)))))
 
 (defn fetch-preview-frame [schedule-name index]
@@ -93,6 +95,7 @@
               next (fetch-preview-frame sched (+ idx 1))]
           (make-preview-page sched schedule-list idx update previous current next role))))))
   (GET "/login.html" []
+       (logger/info "getenv host is "  (System/getenv "AUTH_PORT"))
      (login))
   (GET "/index.html" [start]
     (fn [{{:keys [role]} :session}]
@@ -126,6 +129,7 @@
             (redirect (str "/schedule-builder.html?message=Schedule with name '" schedule-name "' already exists"))
             (schedule-builder sched schedule-name playlists mode role))))))
   (POST "/login" [username password]
+        (logger/info "hosts map is? " hosts)
     (if (= "ok" (:status (validate-user (:auth hosts) username password)))
       (let [user (fetch-user (:identity hosts) username)]
         (-> (redirect "/index.html ")
@@ -149,10 +153,14 @@
             (:users (fetch-users (:identity hosts)))
             (:roles (fetch-roles (:identity hosts)))
             role))))
-  (POST "/user" [new-user new-email new-role]
+  (POST "/user" [new-user new-email new-role new-password]
         (logger/debug (format "Adding user: %s E-Mail: %s Role: %s" new-user new-email new-role))
         (with-authorized-roles ["admin"]
           (logger/debug (create-user (:identity hosts) new-user new-email new-role))
+          (logger/debug (str "Creating "
+                        new-user
+                        " got "
+                        (create-auth (:auth hosts) new-user new-password)))
           (redirect "/user-management.html")))
   (POST "/role" [update-user update-role]
         (logger/debug (format "Updating user: %s Role: %s" update-user update-role))
@@ -173,6 +181,36 @@
                          :records items-with-ids} ]
              (logger/debug "series " s-name " episodes " items)
              (make-library series s-name record role)))))
+  (GET "/update-series.html" [series-name]
+       (with-authorized-roles ["admin","media"]
+         (fn [{{:keys [role]} :session}]
+           (println "series-name: " series-name)
+           (let [series
+                 (assoc (first
+                         (:records
+                          (get-series-episodes (:omdb hosts) series-name)))
+                        :name series-name)]
+             (hsu/make-series-update-page series role)))))
+  (POST "/update-series.html" [name imdbid thumbnail summary mode]
+        (with-authorized-roles ["admin","media"]
+          (fn [{{:keys [role]} :session}]
+            (let [series-update {:series {:name name
+                                 :imdbid imdbid
+                                 :thumbnail thumbnail
+                                 :summary summary}}]
+              (if (= mode "Save")
+                (do
+                  (println "?save? "
+                           (bulk-update-series (:omdb hosts)
+                                               name
+                                               series-update))
+                  (hsu/make-series-update-page (:series series-update) role))
+                (let [omdb (first (:records
+                                   (get-series-by-imdb-id (:omdb hosts)
+                                                  imdbid)))]
+                  (println "side-by-side omdb " omdb)
+                  (hsu/series-side-by-side (:series series-update) omdb role)
+              ))))))
   (GET "/update.html" [catalog-id]
        (with-authorized-roles ["admin","media"]
          (fn [{{:keys [role]} :session}]

@@ -9,7 +9,7 @@
                  [diehard "0.9.1"]
                  [clj-http "3.10.0"]
                  [org.clojure/tools.logging "0.6.0"]
-                 [common-lib "0.1.1-SNAPSHOT"]
+                 [common-lib "0.1.1"]
                  [ch.qos.logback/logback-classic "1.2.3"]
                  [http-kit "2.1.16"]]
   :plugins [[lein-ring "0.12.5"]]

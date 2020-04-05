@@ -2,7 +2,8 @@
   (:require [compojure.core :refer :all]
             [compojure.route :as route]
             [remote-call.meta :refer :all]
-            [remote-call.omdb :refer [imdb-id-lookup]]
+            [remote-call.omdb :refer [imdb-id-lookup
+                                      imdb-series-id-lookup]]
             [omdb-meta.update :as update]
             [ring.middleware.json :as json]
             [clojure.tools.logging :as logger]
@@ -82,6 +83,34 @@
       (if (= "ok" (:status response))
         (clc/make-response 200 response)
         (clc/make-response 500 response))))
+  (GET "/imdbid/series/:imdbid" [imdbid]
+       (let [response (imdb-series-id-lookup (:omdb hosts) apikey imdbid)
+             conversion-map (into {} (map
+                                      (fn [[a b _]] [b a])
+                                      update/series-default-map))
+             converted (->> response
+                            (map (fn [[k v]]
+                                   (vector (or (k conversion-map)
+                                               k)
+                                           v)))
+                            (map (fn [[k v]]
+                                   (vector
+                                    (keyword
+                                     (clojure.string/lower-case (name k)))
+                                    v)))
+                            (filter (fn [[a _]] (some #(= a %)
+                                                      [:title
+                                                       :thumbnail
+                                                       :summary
+                                                       :imdbid
+                                                       :name])))
+                            (into {}))]
+         (logger/debug "Conversion map: " conversion-map)
+         (logger/debug "response is: " response)
+         (logger/debug "converted is: " converted)
+         (if (= "True" (:Response response))
+           (clc/make-response 200 {:status :ok :records [converted]})
+           (clc/make-response 500 response))))
   (GET "/imdbid/:imdbid" [imdbid]
        (let [response (imdb-id-lookup (:omdb hosts) apikey imdbid)
              conversion-map (into {} (map

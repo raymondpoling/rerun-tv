@@ -396,3 +396,50 @@
                             "imdbid" "tt6533",
                             "thumbnail" "http://here.org/other.jpg"
                             }]}))))))
+
+(deftest imdb-series-id-lookup
+  (testing "lookup by imdbid"
+    (with-fake-routes-in-isolation
+      {"http://omdb:8888/?apikey=&i=tt6565&type=series"
+       (fn [request]
+          {
+           :status 200
+           :body (generate-string
+                  {:Plot "This is the plot"
+                   :Response "True"
+                   :imdbID "tt6565"
+                   :Title "The Cat Returns"
+                   :Poster "http://here.com/img.jpg"})
+           })}
+      (let [response (app (mock/request :get "/imdbid/series/tt6565"))]
+        (is (= (:status response) 200))
+        (is (= (parse-string (:body response))
+               {"status" "ok",
+                "records" [
+                           {
+                            "title" "The Cat Returns"
+                            "summary" "This is the plot",
+                            "imdbid" "tt6565",
+                            "thumbnail" "http://here.com/img.jpg"
+                            }]})))))
+  (testing "lookup incomplete record by catalog id"
+    (with-fake-routes-in-isolation
+       {"http://omdb:8888/?apikey=&i=tt6533&type=series"
+        (fn [request]
+          {
+           :status 200
+           :body (generate-string
+                  {:Response "True"
+                   :imdbID "tt6533"
+                   :Title "Cat R4"
+                   :Poster "http://here.org/other.jpg"})
+           })}
+      (let [response (app (mock/request :get "/imdbid/series/tt6533"))]
+        (is (= (:status response) 200))
+        (is (= (parse-string (:body response))
+               {"status" "ok",
+                "records" [
+                           {"title" "Cat R4",
+                            "imdbid" "tt6533",
+                            "thumbnail" "http://here.org/other.jpg"
+                            }]}))))))

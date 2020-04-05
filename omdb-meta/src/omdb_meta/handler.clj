@@ -36,19 +36,30 @@
   (PUT "/series/:name{[^/]+}" [name]
        (fn [request]
          (try
-      (let [omdb (:omdb hosts)
-            updated-series (update/update-series (:series (:body request)) name omdb apikey)
-            updated-records (map #(update/update-episode % name omdb apikey) (:records (:body request)))
-            updated-record {:series updated-series :records updated-records}
-            result (:body (update-series (:meta hosts) name updated-record))]
+      (let [result (:body (update-series (:meta hosts) name (:body request)))]
         (logger/debug "Record to update: " (:records (:body request)))
-        (logger/debug "Updating records: " updated-record)
         (logger/debug "Result: " result)
         (if (= "ok" (:status result))
           (clc/make-response 200 result)
           (clc/make-response 500 result)))
       (catch Exception e
         (logger/error "Error processing bulk create: " (.getMessage e))))))
+  (POST "/series/:name{[^/?]+}" [name]
+        (fn [request]
+          (try
+            (let [omdb (:omdb hosts)
+                  updated-series (update/update-series (:series (:body request)) name omdb apikey)
+                  updated-records (map #(update/update-episode % name omdb apikey) (:records (:body request)))
+                  updated-record {:series updated-series :records updated-records}
+                  result (:body (create-series (:meta hosts) name updated-record))]
+              (logger/debug "Record to update: " (:records (:body request)))
+              (logger/debug "Updating records: " updated-record)
+              (logger/debug "Result: " result)
+              (if (= "ok" (:status result))
+                (clc/make-response 200 result)
+                (clc/make-response 500 result)))
+            (catch Exception e
+              (logger/error "Error processing bulk create: " (.getMessage e))))))
   (GET "/series/:name{[^/]+}" [name catalog_id_only]
     (let [response (fetch-series (:meta hosts) name catalog_id_only)]
       (if (= "ok" (:status response))

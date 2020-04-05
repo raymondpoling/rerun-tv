@@ -36,6 +36,13 @@
       {:as :json :body (generate-string data)
         :headers {"content-type" "application/json"}})))
 
+(defn create-series [host series data]
+  (clc/log-on-error
+   {:status "failed" :message "meta service not available"}
+   (client/post (str "http://" host "/series/" (url-encode series))
+                {:as :json :body (generate-string data)
+                 :headers {"content-type" "application/json"}})))
+
 (defn fetch-series [host series catalog_id_only]
   (clc/log-on-error {:status "failed" :message "meta service not available"}
     (:body (client/get (str "http://" host "/series/" (url-encode series))

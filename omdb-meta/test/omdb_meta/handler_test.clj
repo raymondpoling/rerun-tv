@@ -158,7 +158,49 @@
         (is (= (:status response) 200))
         (is (= (parse-string (:body response))
                {"status" "ok", "catalog_ids" ["TESTS0101001"]})))))
-  (testing "bulk update many records"
+  (testing "bulk update many records with no enrichment"
+    (with-fake-routes-in-isolation
+      {"http://meta:4004/series/test-series"
+       {:put (fn [request]
+         (let [r (parse-string (slurp (:body request)) true)
+               series (:series r)
+               record-1 (first (:records r))
+               record-2 (second (:records r))]
+           (if (and (= "a test series i enjoy" (:summary series))
+                    (= nil (:thumbnail series))
+                    (= nil (:imdbid series))
+                    (= nil (:episode_name record-1))
+                    (= nil (:summary record-1))
+                    (= "tt6465" (:imdbid record-1))
+                    (= "http://mew2" (:thumbnail record-2))
+                    (= nil (:episode_name record-2))
+                    (= "Wonderful story of cats being cats and everyone loving them. Hooray! Got tired of this" (:summary record-2))
+                    (= "tt6466" (:imdbid record-2)))
+             {:status 200 :body (generate-string
+                                 {:status :ok
+                                  :catalog_ids ["TESTS0101002""TESTS0101003"]})}
+             {:status 500})))}}
+      (let [response (app (-> (mock/request :put "/series/test-series")
+                              (mock/json-body
+                               {"series" {
+                                          "summary" "a test series i enjoy"}
+                                "records" [{
+                                            "episode" 2
+                                            "season" 1
+                                            "imdbid" "tt6465"
+                                            "thumbnail" "http://mew"
+                                            }
+                                           {"summary" "Wonderful story of cats being cats and everyone loving them. Hooray! Got tired of this"
+                                            "episode" 3
+                                            "season" 1
+                                            "imdbid" "tt6466"
+                                            "thumbnail" "http://mew2"
+                                            }]})))]
+        (is (= (:status response) 200))
+        (is (= (parse-string (:body response))
+               {"status" "ok",
+                "catalog_ids" ["TESTS0101002","TESTS0101003"]})))))
+  (testing "bulk post and enrich many records at once"
     (with-fake-routes-in-isolation
       {"http://omdb:8888/?apikey=&t=test-series&type=series"
        (fn [request]
@@ -177,7 +219,7 @@
                   :Poster "http://com.org/org.jpg"
                   :imdbID "tt3434"})})
        "http://meta:4004/series/test-series"
-       (fn [request]
+       {:post (fn [request]
          (let [r (parse-string (slurp (:body request)) true)
                series (:series r)
                record-1 (first (:records r))
@@ -195,8 +237,8 @@
              {:status 200 :body (generate-string
                                  {:status :ok
                                   :catalog_ids ["TESTS0101002""TESTS0101003"]})}
-             {:status 500})))}
-      (let [response (app (-> (mock/request :put "/series/test-series")
+             {:status 500})))}}
+      (let [response (app (-> (mock/request :post "/series/test-series")
                               (mock/json-body
                                {"series" {
                                           "summary" "a test series i enjoy"}

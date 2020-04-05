@@ -12,7 +12,7 @@
                  [clj-http "3.10.0"]
                  [org.clojure/tools.logging "0.6.0"]
                  [ch.qos.logback/logback-classic "1.2.3"]
-                 [common-lib "0.1.1"]
+                 [common-lib "0.1.2"]
                  [clojure.java-time "0.3.2"]
                  [hiccup "1.0.5"]
                  [http-kit "2.1.16"]]

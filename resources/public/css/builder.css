@@ -65,6 +65,10 @@ tr {
   background-color: #b3ffb3;
 }
 
+.complex {
+    background-color: #faf0e6;
+}
+
 .name {
   font-weight: bold;
 }

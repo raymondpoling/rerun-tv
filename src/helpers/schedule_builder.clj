@@ -65,6 +65,30 @@
               (second render))])))
   (length [self] (float (/ (length playlist) step))))
 
+(defrecord Complex [playlists]
+  ScheduleType
+  (render [self row? small divisor]
+    (if row?
+      (let [render (map #(render % true (/ small (count playlists)) divisor)
+                        playlists)
+            len (reduce + (map first render))]
+        [(apply max (map length playlists)) (vec
+              (concat
+               (make-row "complex"
+                         (length self)
+                         (pretty-divide
+                          (length self)
+                          small))
+               (list [:td {:colspan (apply max (map length playlists))}
+                      [:table (map second render)]])))])
+      (let [render (map #(render % true (/ small (count playlists)) divisor)
+                        playlists)]
+        [(apply max (map length playlists))
+         (list [:td {:colspan (apply max (map length playlists))} [:table (map second render)]])])))
+  (length [self] 
+                   (* (apply max (map length playlists))
+                    (count playlists))))
+
 (defprotocol Schedule
   (parses? [self])
   (parsed [self])

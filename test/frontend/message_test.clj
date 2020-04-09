@@ -6,13 +6,6 @@
             [frontend.make-cookie :refer [make-cookie]])
   (:use clj-http.fake))
 
-(defn extract [request key]
-  (-> request
-      :body
-      slurp
-      parse-string
-      (get key)))
-
 (deftest test-messages
   (let [admin-cookie (make-cookie "admin")
         media-cookie (make-cookie "media")

@@ -3,15 +3,8 @@
             [ring.mock.request :as mock]
             [frontend.handler :refer :all]
             [cheshire.core :refer :all]
-            )
+            [frontend.make-cookie :refer [extract]])
   (:use clj-http.fake))
-
-(defn extract [request key]
-  (-> request
-      :body
-      slurp
-      parse-string
-      (get key)))
 
 (deftest test-login
   (testing "redirect to login"

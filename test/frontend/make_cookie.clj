@@ -5,6 +5,13 @@
             [cheshire.core :refer :all])
   (:use clj-http.fake))
 
+(defn extract [request key]
+  (-> request
+      :body
+      slurp
+      parse-string
+      (get key)))
+
 (defn make-cookie [role]
   (with-fake-routes-in-isolation
     {(str "http://auth:4007/validate/" role)

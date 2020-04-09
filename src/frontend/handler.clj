@@ -129,12 +129,18 @@
             (redirect (str "/schedule-builder.html?message=Schedule with name '" schedule-name "' already exists"))
             (schedule-builder sched schedule-name playlists mode role))))))
   (POST "/login" [username password]
-        (logger/info "hosts map is? " hosts)
-    (if (= "ok" (:status (validate-user (:auth hosts) username password)))
-      (let [user (fetch-user (:identity hosts) username)]
-        (-> (redirect "/index.html ")
-            (assoc :session (dissoc user :status))))
-      (redirect "/login.html")))
+        (logger/debug "hosts map is? " hosts)
+        (let [auth (validate-user
+                    (:auth hosts)
+                    username
+                    password)]
+          (logger/debug "auth is: " auth)
+          (if (= "ok" (:status auth))
+            (let [user (fetch-user (:identity hosts) username)]
+              (logger/info "Logged in " username)
+              (-> (redirect "/index.html ")
+                  (assoc :session (dissoc user :status))))
+            (redirect "/login.html"))))
   (GET "/logout" []
     (-> (redirect "/login.html")
         (assoc :session {:user nil})))

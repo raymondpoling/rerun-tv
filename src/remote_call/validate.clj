@@ -3,6 +3,7 @@
             [diehard.circuit-breaker :refer [state]]
             [cheshire.core :refer :all]
             [clj-http.client :as client]
+            [clojure.tools.logging :as logger]
             [common-lib.core :as clc]))
 
 (dh/defcircuitbreaker ckt-brkr {:failure-threshold-ratio [8 10]
@@ -12,7 +13,7 @@
   (try
     (dh/with-circuit-breaker ckt-brkr
       (let [url (str "http://" host "/validate/" user)]
-        (println "validation url is: " url)
+        (logger/debug "validation url is: " url)
         (:body (client/post
                 url
                 {:body (generate-string {:password password}) 
@@ -20,7 +21,7 @@
                  :headers {:content-type "application/json"}
                  :as :json}))))
     (catch Exception e
-      (println e)
+      (logger/error e)
       {:status :failure :message "schedule service not available"})))
 
 (defn create-auth [host user password]

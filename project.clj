@@ -20,6 +20,7 @@
   :ring {:handler frontend.handler/app}
   :profiles
   {:dev {:dependencies [[javax.servlet/servlet-api "2.5"]
-                        [ring/ring-mock "0.3.2"]]}}
+                        [ring/ring-mock "0.3.2"]
+                        [clj-http-fake "1.0.3"]]}}
   :main frontend.handler
   :aot [frontend.handler])

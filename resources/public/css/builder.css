@@ -13,49 +13,60 @@ textarea {
   background-color: red;
 }
 
-.schedule {
-  display: grid;
-  grid-auto-rows: auto;
+#table-holder {
+  margin: 0;
+  padding: 0;
+  overflow-x: auto;
+  margin: 2em auto 2em auto;
+  display: block;
 }
 
 table {
     border-collapse: collapse;
-    margin: auto;
 }
 
-td {
+ td {
   height: 5em;
   border: blue dashed 1px;
   padding-left: 1em;
   padding-right: 1em;
 }
 
+th {
+  width: 7em;
+  padding-left: 1em;
+  padding-right: 1em;
+  text-align: left;
+  border: 1px solid black;
+}
+
+thead th {
+  background-color: tan;
+}
+
+.first {
+  border-right: 2px solid black;
+}
+
 tr {
   border: solid black 1px;
 }
 
-.first {
-  width: 7em;
-  text-align: left;
-}
-
-.row {
-  grid-auto-columns: auto;
-}
-
 .playlist {
-  width: 10em;
-  background-color: yellow;
+  background-color: #ffff99;
   border: black 1px solid;
-  text-align: center;
 }
 
 .merge {
-  background-color: pink;
+  background-color: #FFE4E1;
 }
 
 .multi {
-  background-color: lightgreen;
+  background-color: #b3ffb3;
+}
+
+.complex {
+    background-color: #faf0e6;
 }
 
 .name {
@@ -65,4 +76,8 @@ tr {
 .count {
   font-size: 0.8em;
   font-family: sans-serif;
+}
+
+.filler {
+  background-color: lightgray;
 }

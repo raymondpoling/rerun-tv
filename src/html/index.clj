@@ -2,7 +2,13 @@
   (:require [hiccup.page :refer [html5]]
             [html.header :refer [header]]))
 
-(defn make-index []
+(defn- make-event [event]
+  [:article
+  [:h2 (:title event)]
+  [:h3 "By " (:author event) " on " (:posted event)]
+  (:information event)])
+
+(defn make-index [events role]
   (html5 {:lang "en" :dir "ltr"}
     [:head
       [:meta {:charset "utf-8"}]
@@ -10,6 +16,9 @@
       [:title "ReRun TV"]]
     [:body
       [:div {:id "content"}
-        (header "ReRun TV")
-        [:article
-          [:h2 "Welcome! This is a stub article because this is just starting"]]]]))
+        (header "ReRun TV" role)
+        (map make-event events)
+        (if (= 10 (count events))
+          [:a {:id "previous"
+              :href (str "index.html?start=" (:message_number (last events)))}
+              "Previous"])]]))

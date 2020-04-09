@@ -14,29 +14,40 @@
     [:select {:name "schedule"}
       options]
     [:input {:type "hidden" :name "idx" :value idx}]
-    [:input {:type "text" :name "index" :size 5}]
+    [:input {:type "text" :name "index" :size 5 :value idx}]
     [:label {:for "update"} "Update?"]
     [:input {:type "checkbox" :id "update" :value "update" :name "update" :checked (if update "checked")}]
-    [:input {:type "submit" :value "Preview"}]])
+    [:input {:type "submit" :value "Preview"}]
+    [:input {:type "submit" :name "reset" :value "Reset"}]
+    [:input {:type "submit" :name "download" :value "Download"}]])
 
-(defn preview-column [schedule divs idx update]
-  [:div {:class "column"}
+(defn preview-column [schedule divs idx & outline]
+  [:div {:class "column" :style (if (first outline) "border:solid black 1px;border-radius: 0.5em")}
     [:h2 schedule ": " idx]
-    divs
-    [:br]
-    [:br]
-    [:div {:class "dl-button"}
-      [:a {:href (str "format/" schedule (if-let [idx (str "?index="  idx)]
-                    (str idx (if update (str "&update=update")))
-                    (if update (str "?update=update"))))}
-        "Download this List"]]])
+    divs])
+
+(defn make-title [i]
+  (str (:series i) " S" (:season i) "E" (:episode i)))
 
 (defn make-divs [items]
-  (map #(vector :div {:class "item" } (:name %) [:br] "Index: " (:index %)) items))
+  (map #(vector :article {:class "item" }
+    [:img {:src (if (not (or (empty? (:thumbnail %)) (= "N/A" (:thumbnail %)))) (:thumbnail %) "/image/not-available.svg")}]
+    [:ul {:class "textbox"}
+      [:li [:b (:name %)]]
+      [:li {:style "font-size: small;text-decoration: underline"} "Index: " (:index %)]
+      [:li (if (not (empty? (:imdbid %)))
+          [:a {:href (str "http://imdb.com/title/" (:imdbid %)) :target "_blank"} (make-title %)]
+          (make-title %))]
+      [:li [:em (:episode_name %)]]]
+    [:div {:class "summary"} [:hr] [:p (:summary %)]]
+  ; [:br] [:p (:summary %)]
+    ) items))
 
-(defn make-preview-page [schedule schedules idx items update]
+(defn make-preview-page [schedule schedules idx update previous current next role]
   (let [options (make-options schedule schedules)
-        divs (make-divs items)]
+        prev-items (make-divs previous)
+        curr-items (make-divs current)
+        next-items (make-divs next)]
     (html5 {:lang "en" :dir "ltr"}
       [:head
         [:title "Schedule Preview"]
@@ -44,6 +55,8 @@
         (stylesheet "css/preview.css")]
       [:body
         [:div {:id "content"}
-          (header "Schedule Preview")
+          (header "Schedule Preview" role)
           (form schedule options idx update)
-          (preview-column schedule divs idx update)]])))
+          (preview-column schedule prev-items (- idx 1))
+          (preview-column schedule curr-items idx true)
+          (preview-column schedule next-items (+ 1 idx))]])))

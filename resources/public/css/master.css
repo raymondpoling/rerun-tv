@@ -6,8 +6,9 @@ body {
 
 #content {
   width: 80%;
-  height: 100em;
+  /* height: 100em; */
   margin: auto;
+  padding: 1em 0em 1em 0em;
   background-color: white;
   color: black;
 }
@@ -15,7 +16,9 @@ body {
 nav {
   width: 100%;
   height: 2em;
-  background-color: black;
+  margin-top: 1em;
+  margin-bottom: 1em;
+  background-color: #663333;
   color: white;
   vertical-align: middle;
 }
@@ -32,7 +35,30 @@ nav a {
 }
 
 nav a:hover {
-  color: black;
+  color: #663333;
   background-color: white;
   text-decoration: none;
+}
+
+article {
+  background-color: #F0EAD6;
+  padding: 1em;
+  border-radius: 2em;
+  margin: 1em;
+}
+
+#previous {
+  background-color: #F0EAD6;
+  padding: 1em;
+  margin: auto;
+  display: block;
+  text-align: center;
+  border-radius: 2em;
+  font-size: 1.5em;
+  width: 30%;
+}
+
+#previous:hover {
+  color: #F0EAD6;
+  background-color: lightblue;
 }

@@ -1,0 +1,11 @@
+.fail {
+    padding: 1em;
+    border: solid red 1px;
+}
+
+.succ {
+    padding: 1em;
+    border: dashed green 1px;
+}
+
+

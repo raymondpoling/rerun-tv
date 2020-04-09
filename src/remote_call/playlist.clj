@@ -3,6 +3,7 @@
             [diehard.circuit-breaker :refer [state]]
             [cheshire.core :refer :all]
             [common-lib.core :as clc]
+            [clojure.tools.logging :as logger]
             [clj-http.client :as client]))
 
 (dh/defcircuitbreaker ckt-brkr {:failure-threshold-ratio [8 10]
@@ -13,7 +14,9 @@
     (dh/with-circuit-breaker ckt-brkr
       (:playlists (:body (client/get (str "http://" host "/") {:as :json}))))))
 
-(defn fetch-current-schedule [host user schedule]
-  (clc/log-on-error nil
+(defn fetch-catalog-id [host playlist idx]
+  (clc/log-on-error {:status "failed", :message "could not find catalog id"}
     (dh/with-circuit-breaker ckt-brkr
-      (client/get "http"))))
+      (let [url (str "http://" host "/" playlist "/" idx)]
+        (logger/debug "Looking up url: " url)
+        (:body (client/get url {:as :json}))))))

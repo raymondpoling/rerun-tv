@@ -11,15 +11,18 @@
   (flatten (map #(playlists-in-schedule-playlists [] %) (:playlists schedule))))
 
 (defn- validate-valid-schedule [name schedule]
-  (and (= (:name schedule) name) (some? (:playlists schedule)) (vector? (:playlists schedule)) name))
+  (filter #(not (nil? %)) [(if (not= (:name schedule) name) "Invalid Schedule: name must match")
+                           (if (empty? (:playlists schedule)) "Invalid Schedule: must provide a playlists")
+                           (if (not (vector? (:playlists schedule))) "Invalid Schedule: playlists must be an array")
+                             (if (not name) "Invalid Schedule: name must be defined")]))
 
 (defn validate-schedule [playlist-map name schedule]
-  (if (validate-valid-schedule name schedule)
+  (if-let [failures (not-empty (validate-valid-schedule name schedule))]
+    {:status :invalid :messages failures}
     (let [sched-playlists (playlists-in-schedule schedule)
           checklist (map (fn [t] [(= (get playlist-map (:name t)) (:length t)) (:name t)])
                     sched-playlists)]
           (if (every? #(first %) checklist)
               {:status :ok}
               {:status :invalid
-                :message (str "failed validations: [" (clojure.string/join ", " (map second (filter #(not (first %)) checklist))) "]")}))
-    {:status :invalid :message "invalid schedule"}))
+                :messages (map #(str "Failed Validation: " %) (map second (filter #(not (first %)) checklist)))}))))

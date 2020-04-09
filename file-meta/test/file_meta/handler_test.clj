@@ -62,6 +62,18 @@
                               })))]
       (is (= (:status response) 200))
       (is (= (:body response) "{\"status\":\"ok\",\"catalog_ids\":[\"TESTS0101001\"]}"))))
+  (testing "can't update nonexistant stub record"
+    (let [response (app (-> (mock/request :put "/series/does-not-exist-series/1/1")
+                            (mock/json-body {
+                                             "episode_name" "The Cat Returns"
+                                             "summary" "Wonderful story of cats being cats and everyone loving them. Hooray!"
+                                             "imdbid" "tt6565"
+                                             "thumbnail" "http://here.com/img.jpg"
+                                             })))]
+      (is (= (:status response) 404))
+      (is (= (parse-string (:body response))
+             {"status" "failure",
+              "message" "Series does-not-exist-series does not exist"}))))
   (testing "bulk update many records"
     (let [response (app (-> (mock/request :put "/series/test-series")
                             (mock/json-body {"series" {"imdbid" "tt222222"
@@ -84,6 +96,46 @@
                             }]})))]
       (is (= (:status response) 200))
       (is (= (:body response) "{\"status\":\"ok\",\"catalog_ids\":[\"TESTS0101002\",\"TESTS0101003\"]}"))))
+  (testing "bulk update nonexistent records"
+    (let [response (app (-> (mock/request :put "/series/test-series")
+                            (mock/json-body {"series" {"imdbid" "tt222222"
+                                "thumbnail" "http://test-series.jpg"
+                                "summary" "a test series i enjoy"}
+                            "records" [{
+                              "episode_name" "The Cat Returns 2"
+                              "summary" "Wonderful story of cats being cats and everyone loving them. Hooray! For the second time"
+                             "episode" 25
+                             "season" 17
+                             "imdbid" "tt6465"
+                             "thumbnail" "http://mew"
+                           }]})))]
+      (is (= (:status response) 200))
+      (is (= (parse-string (:body response))
+             {"status" "ok","catalog_ids"[],"failures"["TESTS0117025"]}))))
+  (testing "can't bulk-update a series that doesn't exist"
+    (let [response (app (-> (mock/request :put "/series/not-a-test-series")
+                           (mock/json-body
+                            {"series" {
+                                       "imdbid" "tt333"
+                                       "thumbnail" "http://otherseries"
+                                       "summary" "i should fail"}
+                             "records" [{
+                                         "episode_name" "Failures abound!"
+                                         "summary" "I don't work"
+                                         "episode" 44
+                                         "season" 21
+                                         "imdbid" "tt4444"
+                                         "thumbnail" "http://otherseries"
+                                         }]})))]
+      (is (= (:status response) 404))
+      (is (= (parse-string (:body response))
+             {"status" "failure",
+              "message" "Series not-a-test-series does not exist"}))))
+  (testing "don't find non-existent record"
+    (let [response (app (mock/request :get "/series/test-series/17/25"))]
+      (is (= (:status response) 404))
+      (is (= (parse-string (:body response))
+             {"status" "not_found"}))))
   (testing "find a single full record"
     (let [response (app (mock/request :get "/series/test-series/1/1"))]
       (is (= (:status response) 200))
@@ -190,3 +242,57 @@
   (testing "not-found after delete"
     (let [response (app (mock/request :get "/catalog-id/TESTS0101002"))]
       (is (= (:status response) 404)))))
+
+(deftest post-series
+  (testing "create a new series"
+    (let [response (app (-> (mock/request :post "/series/new-t")
+                            (mock/json-body
+                             {"series" {
+                                        "name" "new-t"
+                                        "summary" "do save"
+                                        }
+                              "records"[{
+                                         "episode_name" "save me"
+                                         "episode" 15
+                                         "season" 32
+                                         "summary" "new episode"
+                                         }
+                                        {
+                                         "episode_name" "me too"
+                                         "episode" 4
+                                         "season" 4
+                                         "summary" "here!"
+                                         }]})))]
+      (is (= (:status response) 200))
+      (is (= (parse-string (:body response))
+             {"status" "ok"
+              "catalog_ids" ["NEWT00132015","NEWT00104004"]}))))
+  (testing "Cannot post existing series"
+    (let [response (app (-> (mock/request :post "/series/new-t")
+                            (mock/json-body
+                             {"series" {
+                                        "name" "test-series"
+                                        "summary" "don't save"
+                                        }
+                              "records"[{
+                                         "episode_name" "don't save"
+                                         "episode" 15
+                                         "season" 32
+                                         "summary" "new episode"
+                                         }]})))]
+      (is (= (:status response) 400))
+      (is (= (parse-string (:body response))
+             {"status" "failure"
+              "message" "Series new-t already exists"}))))
+  (testing "find previous series"
+    (let [response (app (mock/request :get "/series/new-t"))]
+      (is (= (:status response) 200))
+      (is (= (parse-string (:body response))
+             {"records" [{
+                        "summary" "do save"
+                        "imdbid" nil
+                        "thumbnail" nil
+                        }]
+              "status" "ok"
+              "catalog_ids"["NEWT00104004"
+                            "NEWT00132015"]})))))

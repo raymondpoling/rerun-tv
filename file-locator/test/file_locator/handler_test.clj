@@ -31,6 +31,34 @@
       (is (= (:status response) 200))
       (is (= (parse-string (:body response)) {"status" "ok", "url" "ssh://host2/home/myself/Videos/test-me/Season 1/1-1.mkv"}))))
 
+  (testing "get all urls for a resource"
+    (let [response (app (mock/request :get "/catalog-id/TESTM0101001"))]
+      (is (= (:status response) 200))
+      (is (= (parse-string (:body response))
+             {"status" "ok",
+              "files" ["file://host1/home/myself/Videos/test-me/Season 1/1-1.mkv"
+                       "ssh://host2/home/myself/Videos/test-me/Season 1/1-1.mkv"]}))))
+
+  (testing "save a set of urls for a catalog-id both new and updated"
+    (let [response (app (-> (mock/request :put "/catalog-id/TESTM0101001")
+                            (mock/json-body
+                             {:files
+                              ["file://host1/home/myself/Videos/test-me/Season 1/1-1.mkv"
+                               "ssh://host2/home/myself/Videos/test-me/Season 1/1-1.avi"
+                               "ssh://host3/home/other/other.mkv"]})))]
+      (is (= (:status response) 200))
+      (is (= (parse-string (:body response))
+             {"status" "ok"}))))
+
+(testing "get all urls for a resource after update by catalog-id"
+    (let [response (app (mock/request :get "/catalog-id/TESTM0101001"))]
+      (is (= (:status response) 200))
+      (is (= (parse-string (:body response))
+             {"status" "ok",
+              "files" ["file://host1/home/myself/Videos/test-me/Season 1/1-1.mkv"
+                       "ssh://host2/home/myself/Videos/test-me/Season 1/1-1.avi"
+                       "ssh://host3/home/other/other.mkv"]}))))
+  
   (testing "not-found route"
     (let [response (app (mock/request :get "/invalid"))]
       (is (= (:status response) 404)))))

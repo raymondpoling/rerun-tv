@@ -31,6 +31,34 @@
       (catch Exception e
         (logger/error (str "could not post url for protocol/host/catalog_id '" protocol "/" host "/" catalog_id ": " (.getMessage e)))
         (clc/make-response 500 {:status :failed})))))
+  (GET "/catalog-id/:catalog-id" [catalog-id]
+       (try
+         (let [files (get-by-catalog-id catalog-id)]
+           (clc/make-response 200 {:status :ok :files files}))
+          (catch Exception e
+           (logger/error (format "Could not find catalog-id [%s]" catalog-id))
+           (clc/make-response 500 {:status :failed}))))
+  (PUT "/catalog-id/:catalog-id" [catalog-id]
+       (fn [request]
+         (try
+           (let [files (:files (:body request))
+                 pattern #"(.*)://([^/]*)(.*)"
+                 to-save (map #(let [[_ protocol host path] (re-find pattern %)]
+                                 {:protocol protocol
+                                  :host host
+                                  :path path}) files)]
+              (dorun (map #(let [path (:path %)
+                          host-id (find-or-insert-host (:host %))
+                          catalog_id (find-or-insert-catalog-id catalog-id)
+                          protocol-id (find-or-insert-protocol (:protocol %))]
+                      (insert-or-update-url protocol-id host-id catalog_id path)) to-save))
+              (clc/make-response 200 {:status :ok}))
+           (catch Exception e
+             (logger/error
+              (format
+               "Could not find catalog-id [%s] due to (%s)"
+               catalog-id (.getMessage e)))
+             (clc/make-response 500 {:status :failed})))))
   (route/not-found
     (fn [request]
       (do

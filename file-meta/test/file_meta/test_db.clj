@@ -19,8 +19,8 @@
     [[:id "IDENTITY"]
      [:series_id :int "NOT NULL"]
      [:season :int "NOT NULL"]
-     [:title "VARCHAR(50) NOT NULL"]]
-     "FOREIGN KEY (series_id) REFERENCES meta.series(id) ON DELETE CASCADE"))
+     [:title "VARCHAR(50) NOT NULL"]
+     ["FOREIGN KEY (series_id) REFERENCES meta.series(id) ON DELETE CASCADE"]]))
   (j/execute! @database ["CREATE UNIQUE INDEX subtitles ON meta.season_title(series_id, season)"])
   (j/execute! @database (j/create-table-ddl "meta.files"
     [[:id "IDENTITY"]
@@ -30,8 +30,8 @@
      [:episode_name "VARCHAR(120)"]
      [:summary "VARCHAR(100)"]
      [:thumbnail "VARCHAR(255)"]
-     [:imdbid "CHAR(10)"]]
-     "FOREIGN KEY (series_id) REFERENCES meta.series(id) ON DELETE CASCADE"))
+     [:imdbid "CHAR(10)"]
+     ["FOREIGN KEY (series_id) REFERENCES meta.series(id) ON DELETE CASCADE"]]))
   (j/execute! @database ["CREATE UNIQUE INDEX by_series_season_episode ON meta.files(series_id,season,episode)"]))
 
 (add-encoder org.h2.jdbc.JdbcClob

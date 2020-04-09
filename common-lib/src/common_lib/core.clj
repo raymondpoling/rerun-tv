@@ -5,9 +5,8 @@
 (defn make-host [prefix default-port]
   (let [upcase-prefix (clojure.string/upper-case prefix)
         host (or (System/getenv (str upcase-prefix "_HOST"))
-                  prefix)
-        port (or (System/getenv (str upcase-prefix "_PORT")) default-port)]
-  [(keyword prefix) (str host ":" port)]))
+                  (str prefix ":" default-port))]
+  [(keyword prefix) host]))
 
 (defn make-hosts [& hosts]
   (into {} (map #(make-host (first %) (second %)) hosts)))

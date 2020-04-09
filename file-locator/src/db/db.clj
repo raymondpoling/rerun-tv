@@ -38,7 +38,11 @@
         id)))
 
 (defn insert-url [protocol_id host_id catalog_id path]
-  (j/insert! @database "file_locator.urls" {:protocol_id protocol_id :host_id host_id :catalog_id catalog_id :path path}))
+  (j/insert! @database "file_locator.urls"
+             {:protocol_id protocol_id
+              :host_id host_id
+              :catalog_id catalog_id
+              :path path}))
 
 (defn fetch-url [protocol host catalog_id]
   (:path (first (j/query @database ["SELECT path
@@ -52,3 +56,26 @@
                                     WHERE catalog_ids.catalog_id =?
                                     AND hosts.host = ?
                                     AND protocols.protocol = ?" catalog_id host protocol]))))
+
+(defn get-by-catalog-id [catalog-id]
+  (map :url
+       (j/query @database ["SELECT concat(protocol,'://',host,path) AS url
+                           FROM file_locator.urls
+                           JOIN file_locator.hosts
+                           ON urls.host_id = hosts.id
+                           JOIN file_locator.protocols
+                           ON urls.protocol_id = protocols.id
+                           JOIN file_locator.catalog_ids
+                           ON urls.catalog_id = catalog_ids.id
+                           WHERE catalog_ids.catalog_id =?" catalog-id])))
+                                    
+(defn insert-or-update-url [protocol_id host_id catalog_id path]
+  (j/with-db-transaction [db @database]
+    (let [exists? (not-empty
+                   (j/query db
+                            ["SELECT path FROM file_locator.urls WHERE protocol_id = ? AND host_id = ? AND catalog_id = ?"
+                             protocol_id host_id catalog_id]))]
+      (if exists?
+        (j/update! db "file_locator.urls" {:path path} ["host_id = ? AND protocol_id = ? AND catalog_id = ?" host_id protocol_id catalog_id])
+        (insert-url protocol_id host_id catalog_id path)))))
+

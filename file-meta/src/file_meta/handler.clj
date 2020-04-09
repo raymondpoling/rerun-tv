@@ -21,7 +21,7 @@
       (:id record)))
 
 (defroutes app-routes
-  (POST "/series/:name/:season/:episode" [name season episode]
+  (POST "/series/:name{[^/]+}/:season/:episode" [name season episode]
     (fn [request]
       (let [series_record? (find-series name)
           series (if (nil? (id series_record?)) (insert-series name) series_record?)
@@ -33,38 +33,107 @@
             (catch java.sql.SQLException e
               (logger/error e)
               (clc/make-response 500 {:status :failure}))))))
-  (PUT "/series/:name/:season/:episode" [name season episode]
+  (PUT "/series/:name{[^/]+}/:season/:episode" [name season episode]
     (fn [request]
-      (let [series_record? (find-series name)
-            series (if (nil? (id series_record?)) (insert-series name) series_record?)]
-
-            (try
-              (logger/debug (format "series: %s\n\tseason: %s\n\tepisode: %s\n\tbody:%s" name season episode (:body request)))
-              (update-record (id series) season episode (:body request))
-              (clc/make-response 200 {:status :ok :catalog_ids
-                [(make-catalog-id (:catalog_prefix series) season episode)]})
+      (let [series_record? (find-series name)]
+        (if (nil? (id series_record?))
+          (clc/make-response 404 {:status :failure
+                                  :message (str "Series " name
+                                                " does not exist")})
+          (try
+            (logger/debug
+             (format "series: %s\n\tseason: %s\n\tepisode: %s\n\tbody:%s"
+                     name season episode (:body request)))
+            (update-record (id series_record?) season episode (:body request))
+            (clc/make-response
+             200 {:status :ok :catalog_ids
+                  [(make-catalog-id (:catalog_prefix series_record?)
+                                    season
+                                    episode)]})
             (catch java.sql.SQLException e
               (logger/error e)
               (clc/make-response 500 {:status :failure}))
             (catch Exception e
-              (logger/error e))))))
-  (PUT "/series/:name" [name]
+              (logger/error e)))))))
+  (PUT "/series/:name{[^/]+}" [name]
     (fn [request]
-      (let [series_record? (find-series name)
-            series (if (nil? (id series_record?)) (insert-series name) series_record?)]
-            (try
-              (doall (map (fn [t] (update-record (id series) (:season t) (:episode t) t)) (:records (:body request))))
+      (let [series_record? (find-series name)]
+        (if (nil? (id series_record?))
+          (clc/make-response 404 {:status :failure
+                                  :message (str "Series " name
+                                                " does not exist")})
+        (try
+          (logger/debug "To process: " (:body request))
+          (let [updates (doall
+                         (map (fn [t] (update-record
+                                       (id series_record?)
+                                       (:season t)
+                                       (:episode t) t))
+                              (:records (:body request))))]
+            (logger/debug "Processing: " (:body request))
+            (logger/debug "Records: " (:records (:body request)))
+            (let [series? (:series (:body request))]
+              (if series? (update-series name series?)))
+            (clc/make-response
+             200
+             (let [{successes true failures false}
+                   (group-by (fn [[_ saved?]] (> saved? 0))
+                             (map
+                              vector
+                              (:records (:body request))
+                              (flatten updates)))
+                   make-cid (fn [[t _]] (make-catalog-id
+                                         (:catalog_prefix series_record?)
+                                         (str (:season t))
+                                         (str (:episode t))))
+                   succ-out (map make-cid successes)
+                   fail-out (map make-cid failures)]
+               (merge {:status :ok :catalog_ids succ-out}
+                      (if (not-empty fail-out)
+                        {:failures fail-out})))))
+          (catch java.sql.SQLException e
+            (logger/error e)
+            (clc/make-response 500 {:status :failure})))))))
+  (POST "/series/:name{[^/]+}" [name]
+    (fn [request]
+      (let [series_record? (find-series name)]
+        (if (not (nil? (id series_record?)))
+          (clc/make-response 400 {:status :failure
+                                  :message (str "Series " name
+                                                " already exists")})
+          (try
+            (logger/debug "To process: " (:body request))
+            (let [series (insert-series name)
+                  updates (doall
+                           (map (fn [t] (insert-record
+                                         (id series) t))
+                                (:records (:body request))))]
               (logger/debug "Processing: " (:body request))
               (logger/debug "Records: " (:records (:body request)))
               (let [series? (:series (:body request))]
                 (if series? (update-series name series?)))
-              (clc/make-response 200 {:status :ok :catalog_ids
-                (map (fn [t] (make-catalog-id (:catalog_prefix series) (str (:season t)) (str (:episode t)))) (:records (:body request)))})
+              (clc/make-response
+               200
+               (let [{successes true failures false}
+                     (group-by (fn [[_ saved?]] (not (nil? saved?)))
+                               (map
+                                vector
+                                (:records (:body request))
+                                (flatten updates)))
+                     make-cid (fn [[t _]] (make-catalog-id
+                                           (:catalog_prefix series)
+                                           (str (:season t))
+                                           (str (:episode t))))
+                     succ-out (map make-cid successes)
+                     fail-out (map make-cid failures)]
+                 (merge {:status :ok :catalog_ids succ-out}
+                        (if (not-empty fail-out)
+                          {:failures fail-out})))))
             (catch java.sql.SQLException e
               (logger/error e)
-              (clc/make-response 500 {:status :failure}))))))
-  (GET "/series/:name" [name catalog_id_only fields]
-    (let [top-record (find-by-series name)
+              (clc/make-response 500 {:status :failure})))))))
+(GET "/series/:name{[^/]+}" [name catalog_id_only fields]
+       (let [top-record (find-by-series name)
           series (first top-record)
           records (second top-record)
           catalog_ids (map (fn [t] (make-catalog-id (:catalog_prefix t) (str (:season t)) (str (:episode t)))) records)
@@ -72,7 +141,7 @@
           (if (nil? records)
             (clc/make-response 404 {:status :not_found})
             (clc/make-response 200 (merge to_return {:status :ok :catalog_ids catalog_ids} )))))
-  (GET "/series/:name/:season/:episode" [name season episode]
+  (GET "/series/:name{[^/]+}/:season/:episode" [name season episode]
     (fn [request]
       (let [catalog_ids? (or (:catalog_id_only (:params request)))
             record (first (find-by-series-season-episode name season episode))
@@ -83,7 +152,7 @@
             (if (nil? record)
               (clc/make-response 404 {:status :not_found})
               (clc/make-response 200 (merge to_return {:status :ok :catalog_ids [catalog_id]}))))))
-  (DELETE "/series/:name/:season/:episode" [name season episode]
+  (DELETE "/series/:name{[^/]+}/:season/:episode" [name season episode]
     (let [catalog_id (delete-record name (Integer/parseInt season) (Integer/parseInt episode))]
     (clc/make-response 200 {:status :ok :catalog_ids [(make-catalog-id catalog_id season episode)]})))
   (GET "/catalog-id/:catalog_id" [catalog_id]

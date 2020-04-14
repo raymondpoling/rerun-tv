@@ -218,7 +218,7 @@
                                   (map clojure.string/trim
                                        (clojure.string/split files #"\n")))
                   (redirect (str "/update.html?catalog-id=" catalog-id)))
-                (let [omdb-record (first (:records (get-meta-by-imdb-id (:omdb hosts) imdbid)))]
+                  (let [omdb-record (first (:records (get-meta-by-imdb-id (:omdb hosts) imdbid)))]
                   (side-by-side (assoc record :series series) omdb-record files catalog-id role)))))))
   (route/files "public")
   (route/not-found "Not Found"))

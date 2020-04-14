@@ -32,7 +32,7 @@
           [:p "Use this format for following section:"]
          [:p
           "{\"series\": {\"name\":name, \"summary\":summary, \"imdbid\":imdbid,
-   \"thumbnail\":thumbnail}
+   \"thumbnail\":thumbnail},
 \"records\":[{\"episode_name\":episode_name, \"episode\":episode, \"season\":season, \"summary\":summary, \"thumbnail\":thumbnail, \"imdbid\":imdbid, \"locations\":[\"protocol://host//path\"]}]}]}"]]
         [:label {:for "update"} "Update"]
        [:textarea {:id "update" :name "update"}
@@ -47,7 +47,7 @@
        \"season\":season,
        \"summary\":summary,
        \"thumbnail\":thumbnail,
-       \"imdbid\":imdbid
+       \"imdbid\":imdbid,
        \"locations\":[\"protocol://host//path\"]}]}"]
         [:input {:type "submit" :value "Submit"}]]
        [:div {:class "succ"

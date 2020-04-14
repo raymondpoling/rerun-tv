@@ -15,7 +15,7 @@
                  [common-lib "0.1.2"]
                  [clojure.java-time "0.3.2"]
                  [hiccup "1.0.5"]
-                 [http-kit "2.1.16"]]
+                 [http-kit "2.3.0"]]
   :plugins [[lein-ring "0.12.5"]]
   :ring {:handler frontend.handler/app}
   :profiles

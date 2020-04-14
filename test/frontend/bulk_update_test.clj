@@ -233,6 +233,51 @@
                      "<li>ONE000101001</li>"
                      "</ol>"
                      ".*"))
+               (:body response))))))
+    (testing "series name in record takes precedence"
+      (logger/info "series name in record takes precedence")
+      (with-fake-routes-in-isolation
+        {"http://omdb:4011/series"
+         (fn [_]
+           (make-response {:status "ok"
+                           :results ["one","two","three"]}))
+         "http://omdb:4011/series/two"
+         {:put (fn [request]
+                 (let [t (parse-string (slurp (:body request)) true)]
+                   (if (= (:records t)
+                          [{:season 1 :episode 1}
+                           {:season 1 :episode 2}
+                           {:season 1 :episode 3}])
+                     (make-response
+                      {:status :ok :catalog_ids ["TWO000101001",
+                                                 "TWO000101002",
+                                                 "TWO000101003"]})
+                     {:status 500})))}
+         }
+        (let [response (app (-> (mock/request :post "/bulk-update.html")
+                                media-cookie
+                                (mock/body {:series "one"
+                                            :update
+                                            (generate-string
+                                             {:series {
+                                                       :name "two"
+                                                       }
+                                              :records
+                                              [{:season 1
+                                                :episode 1}
+                                               {:season 1
+                                                :episode 2}
+                                               {:season 1
+                                                :episode 3}]})})))]
+          (is (= (:status response) 200))
+          (is (re-matches
+               (re-pattern
+                (str "(?s).*"
+                     "<h3>Updated Catalog Ids</h3><ol>"
+                     "<li>TWO000101001</li>"
+                     "<li>TWO000101002</li>"
+                     "<li>TWO000101003</li></ol>"
+                     ".*"))
                (:body response))))))))
 
 (deftest parse-error

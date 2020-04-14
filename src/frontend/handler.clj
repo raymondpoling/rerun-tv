@@ -5,6 +5,7 @@
             [ring.middleware.json :as json]
             [route-logic.message :refer [set-message get-message]]
             [route-logic.bulk-update :as rlbu]
+            [route-logic.preview-logic :as rlpl]
             [remote-call.identity :refer [fetch-user fetch-users fetch-roles user-update create-user]]
             [remote-call.schedule :refer :all]
             [remote-call.schedule-builder :refer [validate-schedule send-schedule]]
@@ -28,7 +29,6 @@
             [common-lib.core :as clc]
             [clojure.tools.logging :as logger]
             [html.series-update :as hsu]
-            [html.preview :refer [make-preview-page]]
             [html.login :refer [login]]
             [html.index :refer [make-index]]
             [html.schedule-builder :refer [schedule-builder]]
@@ -60,40 +60,15 @@
         (logger/info "- user: " (:user (:session request)))
         (function request)))))
 
-(defn fetch-preview-frame [schedule-name index]
-  (let [items (get-schedule-items (:schedule hosts) schedule-name index)
-        catalog_ids (map #(fetch-catalog-id (:playlist hosts) (:name %) (:index %)) items)
-        meta (flatten (map #(:records (get-meta-by-catalog-id (:omdb hosts) (:item %))) catalog_ids))]
-        (map merge meta items)))
-
 (defroutes app-routes
   (GET "/message.html" {{:keys [role]} :session}
        (get-message role))
   (POST "/message.html" [title message]
         (set-message title message))
   (GET "/preview.html" [schedule index idx update reset download]
-    (fn [{{:keys [user role]} :session}]
-      (let [schedule-list (get-schedules (:schedule hosts))
-            sched (or schedule (first schedule-list))
-            idx (Integer/parseInt (str
-              (or (if reset (fetch-index (:user hosts) user sched true))
-                (not-empty index)
-                idx
-                (fetch-index (:user hosts) user sched true))))]
-            (logger/debug (str "with user: " user " index: " idx " and schedule: " sched))
-      (if download
-        (let [params {:index index :update update}
-              resp (fetch-playlist (:format hosts) user sched params)]
-          (logger/debug "RESP IS ***" resp "*** RESP IS")
-          (logger/debug "header? " (get (:headers resp) "Content-Type"))
-          (-> (response (:body resp))
-              (status 200)
-              (header "content-type" (get (:headers resp) "Content-Type"))
-              (header "content-disposition" (get (:headers resp) "Content-Disposition"))))
-        (let [current (fetch-preview-frame sched idx)
-              previous (fetch-preview-frame sched (- idx 1))
-              next (fetch-preview-frame sched (+ idx 1))]
-          (make-preview-page sched schedule-list idx update previous current next role))))))
+       (fn [{{:keys [user role]} :session}]
+         (rlpl/create-preview schedule role user index
+                              idx update reset download)))
   (GET "/login.html" []
        (logger/info "getenv host is "  (System/getenv "AUTH_PORT"))
      (login))

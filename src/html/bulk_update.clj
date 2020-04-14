@@ -5,7 +5,6 @@
             [cheshire.core :refer [generate-string]]))
 
 (defn bulk-update [series results role]
-  (println "Results are: " results)
   (html5
     [:head
       [:meta {:charset "utf-8"}]
@@ -18,7 +17,10 @@
       (header "Update Series" role)
       [:form {:action "/bulk-update.html" :method "post"}
         [:label {:for "series"} "Series"]
-       (vec (concat (list :select {:id "series" :name "series"}) (map (fn [opt] [:option opt]) series)))
+       (vec (concat (list :select {:id "series" :name "series"})
+                    (if (= "failed" (:status series))
+                      (list [:option  "not available"])
+                      (map (fn [opt] [:option opt]) series))))
        [:label {:for "create?"} "Create new series entry?"]
        [:input {:type :checkbox
                 :value :create?
@@ -29,26 +31,30 @@
         [:div {:id "explanation"}
           [:p "Use this format for following section:"]
          [:p
-          "{\"series\":{\"name\":name, \"summary\":summary,\"\":}
-\"records\":[{\"episode_name\":episode_name,\"episode\":episode,\"season\":season,\"summary\":summary,\"thumbnail\":thumbnail,\"imdbid\":imdbid}]}"]]
+          "{\"series\": {\"name\":name, \"summary\":summary, \"imdbid\":imdbid,
+   \"thumbnail\":thumbnail}
+\"records\":[{\"episode_name\":episode_name, \"episode\":episode, \"season\":season, \"summary\":summary, \"thumbnail\":thumbnail, \"imdbid\":imdbid, \"locations\":[\"protocol://host//path\"]}]}]}"]]
         [:label {:for "update"} "Update"]
        [:textarea {:id "update" :name "update"}
         "{\"series\":
   {\"name\":name,
-   \"summary\":summary,
-   \"imdbid\":imdbid},
+   \"summary\":summay,
+   \"imdbid\":imdbid,
+   \"thumbnail\":thumbnail},
    \"records\":
      [{\"episode_name\":episode_name,
        \"episode\":episode,
        \"season\":season,
        \"summary\":summary,
        \"thumbnail\":thumbnail,
-       \"imdbid\":imdbid}]}"]
+       \"imdbid\":imdbid
+       \"locations\":[\"protocol://host//path\"]}]}"]
         [:input {:type "submit" :value "Submit"}]]
        [:div {:class "succ"
               :style (if (not= "ok" (:status results)) "display:none")}
         [:h3 "Updated Catalog Ids"]
-        [:ol (map (fn [id] [:li id]) (:catalog_ids results))]]
+        [:ol (map (fn [id] [:li id]) (filter not-empty
+                                             (:catalog_ids results)))]]
        [:div {:class "fail"
               :style (if (empty? (:failures results)) "display:none")}
         [:h3 "Failed Catalog Ids"]

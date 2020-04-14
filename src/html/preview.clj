@@ -31,17 +31,23 @@
 
 (defn make-divs [items]
   (map #(vector :article {:class "item" }
-    [:img {:src (if (not (or (empty? (:thumbnail %)) (= "N/A" (:thumbnail %)))) (:thumbnail %) "/image/not-available.svg")}]
-    [:ul {:class "textbox"}
-      [:li [:b (:name %)]]
-      [:li {:style "font-size: small;text-decoration: underline"} "Index: " (:index %)]
-      [:li (if (not (empty? (:imdbid %)))
-          [:a {:href (str "http://imdb.com/title/" (:imdbid %)) :target "_blank"} (make-title %)]
-          (make-title %))]
-      [:li [:em (:episode_name %)]]]
-    [:div {:class "summary"} [:hr] [:p (:summary %)]]
-  ; [:br] [:p (:summary %)]
-    ) items))
+                [:img {:src (if (not (or (empty? (:thumbnail %))
+                                         (= "N/A" (:thumbnail %))))
+                              (:thumbnail %)
+                              "/image/not-available.svg")}]
+                [:ul {:class "textbox"}
+                 [:li [:b (:name %)]]
+                 [:li {:style "font-size: small;text-decoration: underline"}
+                  "Index: " (:index %)]
+                 [:li (if (not (empty? (:imdbid %)))
+                        [:a {:href (str "http://imdb.com/title/" (:imdbid %))
+                             :target "_blank"} (make-title %)]
+                        (make-title %))]
+                 [:li [:em (:episode_name %)]]]
+                [:div {:class "summary"}
+                 [:hr]
+                 [:p (:summary %)]])
+       items))
 
 (defn make-preview-page [schedule schedules idx update previous current next role]
   (let [options (make-options schedule schedules)

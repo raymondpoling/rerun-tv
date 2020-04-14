@@ -49,7 +49,6 @@
         record-map (make-record-map (:records records))
         location-pairs (make-locatable record-map (:catalog_ids result))
         save-resp (save-pairs location-pairs)]
-    (println "result? " save-resp)
     (if (not-empty location-pairs)
       (write-message
        {:author "System"

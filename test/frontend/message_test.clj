@@ -10,7 +10,7 @@
   (let [admin-cookie (make-cookie "admin")
         media-cookie (make-cookie "media")
         user-cookie (make-cookie "user")]
-    
+
     (testing "can get page with auth"
       (let [req (-> (mock/request :get "/message.html")
                     admin-cookie)

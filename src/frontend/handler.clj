@@ -165,7 +165,6 @@
   (GET "/update-series.html" [series-name]
        (with-authorized-roles ["admin","media"]
          (fn [{{:keys [role]} :session}]
-           (println "series-name: " series-name)
            (let [series
                  (assoc (first
                          (:records
@@ -181,15 +180,13 @@
                                  :summary summary}}]
               (if (= mode "Save")
                 (do
-                  (println "?save? "
                            (bulk-update-series (:omdb hosts)
                                                name
-                                               series-update))
+                                               series-update)
                   (hsu/make-series-update-page (:series series-update) role))
                 (let [omdb (first (:records
                                    (get-series-by-imdb-id (:omdb hosts)
                                                   imdbid)))]
-                  (println "side-by-side omdb " omdb)
                   (hsu/series-side-by-side (:series series-update) omdb role)
               ))))))
   (GET "/update.html" [catalog-id]

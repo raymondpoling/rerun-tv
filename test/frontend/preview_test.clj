@@ -3,7 +3,7 @@
             [ring.mock.request :as mock]
             [frontend.handler :refer :all]
             [cheshire.core :refer :all]
-            [frontend.make-cookie :refer [make-cookie]])
+            [frontend.util :refer [make-cookie]])
   (:use clj-http.fake))
 
 (defn make-response [response]

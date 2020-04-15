@@ -3,21 +3,19 @@
             [ring.mock.request :as mock]
             [frontend.handler :refer :all]
             [cheshire.core :refer :all]
-            [frontend.make-cookie :refer [make-cookie]]
-            [clojure.tools.logging :as logger])
+            [clojure.tools.logging :as logger]
+            [frontend.util :refer [make-cookie
+                                   make-response
+                                   testing-with-log-markers]])
   (:use clj-http.fake))
-
-(defn make-response [response]
-  {:headers {:content-type "application/json"}
-   :body (generate-string response)})
 
 (deftest test-all-missing-preview
   (let [admin-cookie (make-cookie "admin")
         media-cookie (make-cookie "media")
         user-cookie (make-cookie "user")]
-    (testing "user has no access"
-      (logger/info "user has no access")
-      (with-fake-routes-in-isolation
+    (testing-with-log-markers
+     "user has no access"
+     (with-fake-routes-in-isolation
         {}
         (let [response (app (-> (mock/request :get "/bulk-update.html")
                                 user-cookie))]
@@ -25,8 +23,7 @@
           (is (get (:headers response) "Location")
               "http://localhost:4008/login.html"))))
 
-    (testing "get basic service with media"
-      (logger/info "get basic service with media")
+    (testing-with-log-markers "get basic service with media"
       (with-fake-routes-in-isolation
         {"http://omdb:4011/series"
          (fn [_]
@@ -45,8 +42,7 @@
                      "<option>three</option>"
                      "</select>.*"))
                (:body response))))))
-    (testing "if omdb down, no series"
-      (logger/info "if omdb down, no series")
+    (testing-with-log-markers "if omdb down, no series"
       (with-fake-routes-in-isolation
         {"http://omdb:4011/series"
          (fn [_]
@@ -62,8 +58,7 @@
                      "<option>not available</option>"
                      "</select>.*"))
                (:body response))))))
-    (testing "Create new"
-      (logger/info "Create new")
+    (testing-with-log-markers "Create new"
       (with-fake-routes-in-isolation
         {"http://omdb:4011/series"
          (fn [_]
@@ -98,8 +93,7 @@
                      "<li>ONE000101003</li></ol>"
                      ".*"))
                (:body response))))))
-    (testing "Create new but two exist"
-      (logger/info "Create new but two exist")
+    (testing-with-log-markers "Create new but two exist"
       (with-fake-routes-in-isolation
         {"http://omdb:4011/series"
          (fn [_]
@@ -142,8 +136,7 @@
                      "</ol>"
                      ".*"))
                (:body response))))))
-    (testing "Update existing"
-      (logger/info "Update existing")
+    (testing-with-log-markers "Update existing"
       (with-fake-routes-in-isolation
         {"http://omdb:4011/series"
          (fn [_]
@@ -184,8 +177,7 @@
                      "<li>ONE000101003</li></ol>"
                      ".*"))
                (:body response))))))
-    (testing "Update existing but one exists"
-      (logger/info "Update existing but one exists")
+    (testing-with-log-markers "Update existing but one exists"
       (with-fake-routes-in-isolation
         {"http://omdb:4011/series"
          (fn [_]
@@ -234,8 +226,7 @@
                      "</ol>"
                      ".*"))
                (:body response))))))
-    (testing "series name in record takes precedence"
-      (logger/info "series name in record takes precedence")
+    (testing-with-log-markers "series name in record takes precedence"
       (with-fake-routes-in-isolation
         {"http://omdb:4011/series"
          (fn [_]
@@ -284,8 +275,7 @@
   (let [admin-cookie (make-cookie "admin")
         media-cookie (make-cookie "media")
         user-cookie (make-cookie "user")]
-    (testing "on post parse error, populate failed"
-      (logger/info "on post parse error, populate failed")
+    (testing-with-log-markers "on post parse error, populate failed"
       (with-fake-routes-in-isolation
         {"http://omdb:4011/series"
          (fn [_] (make-response {:status "ok"

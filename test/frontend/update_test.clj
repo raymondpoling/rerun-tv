@@ -3,21 +3,11 @@
             [ring.mock.request :as mock]
             [frontend.handler :refer :all]
             [cheshire.core :refer :all]
-            [frontend.make-cookie :refer [make-cookie]]
+            [frontend.util :refer [make-cookie
+                                   make-response
+                                   basic-matcher]]
             [clojure.tools.logging :as logger])
   (:use clj-http.fake))
-
-(defn make-response [response]
-  {:headers {:content-type "application/json"}
-   :body (generate-string response)})
-
-(defn basic-matcher [match body]
-  (re-matches
-   (re-pattern
-    (str "(?s).*"
-         match
-         ".*"))
-   body))
 
 (deftest update-episode
   (let [admin-cookie (make-cookie "admin")

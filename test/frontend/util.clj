@@ -1,9 +1,29 @@
-(ns frontend.make-cookie
-  (:require [clojure.test :refer :all]
-            [ring.mock.request :as mock]
-            [frontend.handler :refer :all]
-            [cheshire.core :refer :all])
+(ns frontend.util
+  (:require
+   [ring.mock.request :as mock]
+   [clojure.test :refer :all]
+   [cheshire.core :refer :all]
+   [frontend.handler :refer [app]]
+   [clojure.tools.logging :as logger])
   (:use clj-http.fake))
+
+(defmacro testing-with-log-markers [string & body]
+  `(testing ~string
+     (logger/debug "starting " ~string)
+     ~@body
+     (logger/debug "ending " ~string)))
+
+(defn make-response [response]
+  {:headers {:content-type "application/json"}
+   :body (generate-string response)})
+
+(defn basic-matcher [match body]
+  (re-matches
+   (re-pattern
+    (str "(?s).*"
+         match
+         ".*"))
+   body))
 
 (defn extract [request key]
   (-> request

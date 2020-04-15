@@ -3,17 +3,18 @@
             [ring.mock.request :as mock]
             [frontend.handler :refer :all]
             [cheshire.core :refer :all]
-            [frontend.make-cookie :refer [extract]])
+            [frontend.util :refer [testing-with-log-markers
+                                   extract]])
   (:use clj-http.fake))
 
 (deftest test-login
-  (testing "redirect to login"
+  (testing-with-log-markers "redirect to login"
     (let [response (app (mock/request :get "/index.html"))]
       (is (= (:status response) 302))
       (is (= (get (:headers response) "Location")
              "http://localhost/login.html"))))
 
-  (testing "login succeeds"
+  (testing-with-log-markers "login succeeds"
     (with-fake-routes-in-isolation
       {"http://auth:4007/validate/whoever"
        {:post (fn [request]
@@ -34,7 +35,7 @@
         (is (= (get (:headers response) "Location")
                "http://localhost/index.html")))))
 
-  (testing "login fails"
+  (testing-with-log-markers "login fails"
     (with-fake-routes-in-isolation
       {"http://auth:4007/validate/whoever"
        {:post (fn [request]
@@ -49,7 +50,7 @@
       (is (= (get (:headers response) "Location")
              "http://localhost/login.html")))))
 
-  (testing "login missing password"
+  (testing-with-log-markers "login missing password"
     (with-fake-routes-in-isolation
       {"http://auth:4007/validate/whoever"
        {:post (fn [request]
@@ -63,7 +64,7 @@
         (is (= (get (:headers response) "Location")
                "http://localhost/login.html")))))
 
-  (testing "login followed by logout"
+  (testing-with-log-markers "login followed by logout"
     (with-fake-routes-in-isolation
       {"http://auth:4007/validate/logsingood"
        {:post (fn [request]
@@ -106,7 +107,7 @@
                         (:body response2))))))
 
 
-    (testing "auth service fails" 
+    (testing-with-log-markers "auth service fails" 
       (with-fake-routes-in-isolation
         {"http://auth:4007/validate/whoever"
          {:post (fn [request]

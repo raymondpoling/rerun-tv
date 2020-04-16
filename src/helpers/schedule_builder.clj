@@ -72,18 +72,18 @@
       (let [render (map #(render % true (/ small (count playlists)) divisor)
                         playlists)
             len (reduce + (map first render))]
-        [(apply max (map length playlists)) (vec
+        [(length self) (vec
               (concat
                (make-row "complex"
                          (length self)
                          (pretty-divide
                           (length self)
                           small))
-               (list [:td {:colspan (apply max (map length playlists))}
+               (list [:td {:colspan (length self)}
                       [:table (map second render)]])))])
       (let [render (map #(render % true (/ small (count playlists)) divisor)
                         playlists)]
-        [(apply max (map length playlists))
+        [(length self)
          (list [:td {:colspan (apply max (map length playlists))} [:table (map second render)]])])))
   (length [self] 
                    (* (apply max (map length playlists))

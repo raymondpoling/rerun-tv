@@ -92,14 +92,23 @@
                 #(send-schedule (:builder hosts) mode schedule-name %))
               got-sched (get-schedule (:schedule hosts) schedule-name)
               sched (if (not-empty schedule-body)
-                        (make-schedule-string schedule-body validity)
-                        (make-schedule-map got-sched validity))]
+                      (make-schedule-string schedule-body validity)
+                      (if (nil? got-sched)
+                        (make-schedule-map {:name schedule-name
+                                               :playlists
+                                               [{:name ""
+                                                 :length 1
+                                                 :type "playlist"}]} validity)
+                        (make-schedule-map got-sched validity)))]
           (if (and (= "ok" (:status (valid? sched))) (not preview))
             (write-message
                {:author "System"
                 :title (str "Schedule " schedule-name " " mode "d!")
                 :message (str "A schedule has been " (clojure.string/lower-case mode) "d by " user ", "
-                    (html [:a {:href (str "/preview.html?schedule=" schedule-name)} " check it out!"]))}))
+                              (html [:a {:href
+                                         (str "/preview.html?schedule="
+                                              schedule-name)}
+                                     " check it out!"]))}))
           (if (and (= mode "Create") got-sched)
             (redirect (str "/schedule-builder.html?message=Schedule with name '" schedule-name "' already exists"))
             (schedule-builder sched schedule-name playlists mode role))))))

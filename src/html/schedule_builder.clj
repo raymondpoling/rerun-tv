@@ -19,7 +19,6 @@
     0))
 
 (defn convert [rows]
-  (println "Processing rows: " rows)
   (case (keyword (:type rows))
     :playlist (->Playlist (:name rows) (:length rows))
     :merge    (->Merge (map convert (:playlists rows)))

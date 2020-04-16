@@ -49,7 +49,6 @@
    "Go Back to Library"])
 
 (defn make-series-update-page [series role]
-  (println "series" series)
   (html5
     [:head
       [:meta {:charset "utf-8"}]

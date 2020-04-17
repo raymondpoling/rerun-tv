@@ -26,6 +26,7 @@
             [remote-call.messages :refer [get-messages add-message]]
             [ring.util.response :refer [response not-found header status redirect]]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
+            [ring.middleware.session :refer [wrap-session]]
             [common-lib.core :as clc]
             [clojure.tools.logging :as logger]
             [html.series-update :as hsu]
@@ -41,6 +42,8 @@
             [cheshire.core :refer [parse-string generate-string]]
             [hiccup.core :refer [html]]
             [java-time :as jt]
+            [taoensso.carmine.ring :refer [carmine-store]]
+            [taoensso.carmine :as car]
             [org.httpkit.server :refer [run-server]])
   (:gen-class))
 
@@ -58,6 +61,8 @@
         (logger/info "continuing request")
         (logger/info "- uri: " (:uri request) " is matching? " (= "/login" (:uri request)))
         (logger/info "- user: " (:user (:session request)))
+        (logger/info "session? " (:session request))
+        (logger/info "request? " request)
         (function request)))))
 
 (defroutes app-routes
@@ -229,6 +234,10 @@
   (route/files "public")
   (route/not-found "Not Found"))
 
+(def redis-var "REDIS_URI")
+
+(def server-conn1 {:pool {} :spec {:uri  (System/getenv redis-var)}})
+
 (def app
   (wrap-defaults
     (->
@@ -236,9 +245,19 @@
      (json/wrap-json-response)
      (json/wrap-json-body {:keywords? true})
      (wrap-redirect))
-     (assoc-in site-defaults [:security :anti-forgery] false)))
+    (->
+     site-defaults
+     (assoc-in [:security :anti-forgery] false)
+     (#(if (not-empty (System/getenv redis-var))
+                      (assoc-in %
+                                [:session :store]
+                                (carmine-store server-conn1))
+                      %)))))
+
 
 (defn -main []
   (let [port (Integer/parseInt (or (System/getenv "PORT") "4008"))]
     (run-server app {:port port})
+    (println "YOHO HERE!!!!"
+             (System/getenv redis-var))
     (logger/info (str "Listening on port " port))))

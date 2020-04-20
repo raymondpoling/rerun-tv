@@ -23,28 +23,36 @@
 ;; This should be cleaned up.
 (defn fetch [schedule-host playlist-host locator-host
              meta-host index schedule-name host protocol]
-  (run-while-valid index
-    (if-valid-return "schedule" nil? #(get-schedule schedule-host schedule-name %))
-    (if-valid-return "playlist"
-                      #(some nil? %)
-                      #(map
-                        (fn [item]
-                          (get-catalog-id playlist-host (:name item) (:index item)))
-                          %))
-    (if-valid-return "locator"
-      #(some (fn [t] (nil? (:locations t))) %)
-      #(map
-        (fn [item]
-          (if (and host protocol)
-            {:locations (get-protocol-host locator-host
-                                           protocol host
-                                           item)
-             :catalog_id item}
-            {:locations (get-locations locator-host item)
-             :catalog_id item})) %))
-    (if-valid-return "meta"
-      #(some (fn [t] (>= 1 (count t))) %)
-      #(map
-        (fn [item]
-          (assoc (get-meta meta-host (:catalog_id item))
-                 :locations (:locations item))) %))))
+  (run-while-valid
+   index
+   (if-valid-return "schedule" nil?
+                    #(get-schedule schedule-host schedule-name %))
+   (if-valid-return "playlist"
+     #(some (fn [t] (nil? (:catalog_id t))) %)
+     #(map
+       (fn [item]
+         {:catalog_id (get-catalog-id playlist-host
+                                      (:name item)
+                                      (:index item))
+          :playlist item})
+       %))
+   (if-valid-return "locator"
+     #(some (fn [t] (nil? (:locations t))) %)
+     #(map
+       (fn [item]
+         (if (and host protocol)
+           (merge item
+                  {:locations (get-protocol-host locator-host
+                                                 protocol host
+                                                 (:catalog_id item))})
+           (merge item
+                  {:locations (get-locations locator-host
+                                             (:catalog_id item))}))) %))
+   (if-valid-return "meta"
+     #(some (fn [t]
+              (= 0 (count (dissoc t :locations :playlist)))) %)
+     #(map
+       (fn [item]
+         (assoc (get-meta meta-host (:catalog_id item))
+                :playlist (:playlist item)
+                :locations (:locations item))) %))))

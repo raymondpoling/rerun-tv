@@ -1,10 +1,10 @@
 (ns user.handler-test
-  (:require [clojure.test :refer :all]
+  (:require [clojure.test :refer [deftest is testing]]
             [ring.mock.request :as mock]
-            [cheshire.core :refer :all]
+            [cheshire.core :refer [parse-string]]
             [db.db :refer [initialize]]
             [user.test-db :refer [create-h2-mem-tables]]
-            [user.handler :refer :all]))
+            [user.handler :refer [app]]))
 
 (deftest test-app
   (initialize)

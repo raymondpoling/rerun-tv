@@ -1,14 +1,18 @@
-(ns remote-call.schedule
+(ns remote-call.meta
   (:require [diehard.core :as dh]
-            [diehard.circuit-breaker :refer [state]]
-            [cheshire.core :refer :all]
             [common-lib.core :as clc]
             [clj-http.client :as client]))
+
+(declare ckt-brkr)
 
 (dh/defcircuitbreaker ckt-brkr {:failure-threshold-ratio [8 10]
                               :delay-ms 1000})
 
-(defn get-schedule [host schedule-name index]
+(defn get-meta [host catalog-id]
   (clc/log-on-error nil
       (dh/with-circuit-breaker ckt-brkr
-        (:items (:body (client/get (str "http://" host "/" schedule-name "/" index) {:as :json}))))))
+        (first
+         (:records
+          (:body
+           (client/get (str "http://" host "/catalog-id/" catalog-id)
+                       {:as :json})) true)))))

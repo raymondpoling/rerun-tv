@@ -19,3 +19,6 @@ profiles.clj
 .hg/
 env/
 *.properties
+.clj-kondo
+*/out.txt
+out.txt

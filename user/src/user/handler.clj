@@ -1,9 +1,9 @@
 (ns user.handler
-  (:require [compojure.core :refer :all]
+  (:require [compojure.core :refer [defroutes DELETE GET POST PUT]]
             [compojure.route :as route]
-            [ring.util.response :refer [response not-found header status]]
             [ring.middleware.json :as json]
-            [db.db :refer :all]
+            [db.db :refer [delete-user get-and-update
+                           initialize insert-user]]
             [common-lib.core :as clc]
             [clojure.tools.logging :as logger]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
@@ -25,7 +25,7 @@
         (logger/warn (str "could not delete user '" user "'"))
         (clc/make-response 400 {:status :failed}))))
   (GET "/:user/:schedule" [user schedule preview]
-    (let [value (get-and-update user schedule preview)]
+    (let [value (get-and-update user schedule nil preview)]
       (if (nil? value)
           (do
             (logger/warn (str "user/schedule not found '" user "/" schedule "'"))
@@ -34,7 +34,7 @@
             (logger/debug (str "index? " value " preview? " preview))
             (clc/make-response 200 {:status :ok :idx value})))))
   (PUT "/:user/:schedule/:index" [user schedule index]
-    (if (update-user-schedule-index user schedule index)
+    (if (get-and-update user schedule index false)
       (clc/make-response 200 {:status :ok})
       (clc/make-response 400 {:status :failed})))
   (route/not-found (clc/make-response 404 {:status :not-found})))

@@ -1,33 +1,32 @@
 (ns frontend.handler
-  (:require [compojure.core :refer :all]
+  (:require [compojure.core :refer [defroutes GET POST]]
             [compojure.route :as route]
             [helpers.routes :refer [hosts with-authorized-roles write-message]]
             [ring.middleware.json :as json]
             [route-logic.message :refer [set-message get-message]]
             [route-logic.bulk-update :as rlbu]
             [route-logic.preview-logic :as rlpl]
-            [remote-call.identity :refer [fetch-user fetch-users fetch-roles user-update create-user]]
-            [remote-call.schedule :refer :all]
-            [remote-call.schedule-builder :refer [validate-schedule send-schedule]]
+            [remote-call.identity :refer [fetch-user
+                                          fetch-users
+                                          fetch-roles
+                                          user-update
+                                          create-user]]
+            [remote-call.schedule :refer [get-schedule get-schedules]]
+            [remote-call.schedule-builder :refer [validate-schedule
+                                                  send-schedule]]
             [remote-call.locator :refer [get-locations save-locations]]
             [remote-call.validate :refer [validate-user create-auth]]
-            [remote-call.format :refer [fetch-playlist]]
-            [remote-call.user :refer [fetch-index]]
-            [remote-call.playlist :refer [get-playlists fetch-catalog-id]]
+            [remote-call.playlist :refer [get-playlists]]
             [remote-call.meta :refer [get-all-series
                                       bulk-update-series
                                       get-meta-by-catalog-id
                                       get-series-episodes
                                       save-episode
                                       get-meta-by-imdb-id
-                                      get-series-by-imdb-id
-                                      create-episode
-                                      create-series]]
-            [remote-call.messages :refer [get-messages add-message]]
-            [ring.util.response :refer [response not-found header status redirect]]
+                                      get-series-by-imdb-id]]
+            [remote-call.messages :refer [get-messages]]
+            [ring.util.response :refer [redirect]]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
-            [ring.middleware.session :refer [wrap-session]]
-            [common-lib.core :as clc]
             [clojure.tools.logging :as logger]
             [html.series-update :as hsu]
             [html.login :refer [login]]
@@ -38,13 +37,14 @@
             [html.library :refer [make-library]]
             [html.update :refer [make-update-page side-by-side]]
             [html.bulk-update :refer [bulk-update]]
-            [helpers.schedule-builder :refer :all]
-            [cheshire.core :refer [parse-string generate-string]]
+            [helpers.schedule-builder :refer [make-schedule-map
+                                              make-schedule-string
+                                              valid?]]
             [hiccup.core :refer [html]]
             [java-time :as jt]
             [taoensso.carmine.ring :refer [carmine-store]]
-            [taoensso.carmine :as car]
-            [org.httpkit.server :refer [run-server]])
+            [org.httpkit.server :refer [run-server]]
+            [clojure.string :as cls])
   (:gen-class))
 
 (defn wrap-redirect [function]
@@ -70,10 +70,12 @@
        (get-message role))
   (POST "/message.html" [title message]
         (set-message title message))
-  (GET "/preview.html" [schedule index idx update reset download]
+  (GET "/preview.html" [schedule index idx update reset
+                        download protocol-host format]
        (fn [{{:keys [user role]} :session}]
          (rlpl/create-preview schedule role user index
-                              idx update reset download)))
+                              idx update reset download
+                              protocol-host format)))
   (GET "/login.html" []
        (logger/info "getenv host is "  (System/getenv "AUTH_PORT"))
      (login))
@@ -105,11 +107,11 @@
                                                  :length 1
                                                  :type "playlist"}]} validity)
                         (make-schedule-map got-sched validity)))]
-          (if (and (= "ok" (:status (valid? sched))) (not preview))
+          (when (and (= "ok" (:status (valid? sched))) (not preview))
             (write-message
                {:author "System"
                 :title (str "Schedule " schedule-name " " mode "d!")
-                :message (str "A schedule has been " (clojure.string/lower-case mode) "d by " user ", "
+                :message (str "A schedule has been " (cls/lower-case mode) "d by " user ", "
                               (html [:a {:href
                                          (str "/preview.html?schedule="
                                               schedule-name)}
@@ -207,7 +209,7 @@
        (with-authorized-roles ["admin","media"]
          (fn [{{:keys [role]} :session}]
            (let [episode (first (:records (get-meta-by-catalog-id (:omdb hosts) catalog-id)))
-                 files (clojure.string/join "\n" (get-locations (:locator hosts) catalog-id))]
+                 files (cls/join "\n" (get-locations (:locator hosts) catalog-id))]
              (make-update-page episode files catalog-id role)))))
   (POST "/update.html"
         [catalog-id series episode_name episode season
@@ -226,8 +228,8 @@
                   (logger/debug "SAVE? " (save-episode (:omdb hosts) series record))
                   (save-locations (:locator hosts)
                                   catalog-id
-                                  (map clojure.string/trim
-                                       (clojure.string/split files #"\n")))
+                                  (map cls/trim
+                                       (cls/split files #"\n")))
                   (redirect (str "/update.html?catalog-id=" catalog-id)))
                   (let [omdb-record (first (:records (get-meta-by-imdb-id (:omdb hosts) imdbid)))]
                   (side-by-side (assoc record :series series) omdb-record files catalog-id role)))))))

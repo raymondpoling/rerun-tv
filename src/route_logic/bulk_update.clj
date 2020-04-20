@@ -1,17 +1,11 @@
 (ns route-logic.bulk-update
-  (:require [ring.middleware.json :as json]
-            [ring.util.response :refer [redirect]]
-            [remote-call.meta :refer [get-all-series
+  (:require [remote-call.meta :refer [get-all-series
                                       bulk-update-series
-                                      bulk-create-series
-                                      create-series
-                                      create-episode]]
+                                      bulk-create-series]]
             [remote-call.locator :refer [save-locations]]
             [helpers.routes :refer [hosts write-message]]
-            [common-lib.core :as clc]
-            [clojure.tools.logging :as logger]
             [html.bulk-update :refer [bulk-update]]
-            [cheshire.core :refer [parse-string generate-string]]
+            [cheshire.core :refer [parse-string]]
             [hiccup.core :refer [html]]))
 
 (defn extract-cat-id [id]
@@ -47,9 +41,9 @@
                                      series-name
                                      records-no-location))
         record-map (make-record-map (:records records))
-        location-pairs (make-locatable record-map (:catalog_ids result))
-        save-resp (save-pairs location-pairs)]
-    (if (not-empty location-pairs)
+        location-pairs (make-locatable record-map (:catalog_ids result))]
+    (save-pairs location-pairs)
+    (when (not-empty location-pairs)
       (write-message
        {:author "System"
         :title (str (:user session)

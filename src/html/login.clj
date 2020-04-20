@@ -1,6 +1,5 @@
 (ns html.login
-  (:require [hiccup.core :refer [html]]
-            [hiccup.page :refer [html5]]))
+  (:require [hiccup.page :refer [html5]]))
 
 (defn login []
   (html5 {:lang "en" :dir "ltr"}

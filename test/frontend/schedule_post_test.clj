@@ -1,19 +1,18 @@
 (ns frontend.schedule-post-test
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is]]
    [ring.mock.request :as mock]
-   [frontend.handler :refer :all]
-   [cheshire.core :refer :all]
-   [clojure.tools.logging :as logger]
+   [frontend.handler :refer [app]]
+   [cheshire.core :refer [generate-string]]
    [frontend.util :refer [make-cookie
                           make-response
                           testing-with-log-markers
-                          basic-matcher]])
-  (:use clj-http.fake))
+                          basic-matcher]]
+   [clojure.string :as cls]
+   [clj-http.fake :refer [with-fake-routes-in-isolation]]))
 
 (deftest test-schedule-post-routes-access
-  (let [admin-cookie (make-cookie "admin")
-        media-cookie (make-cookie "media")
+  (let [media-cookie (make-cookie "media")
         user-cookie (make-cookie "user")]
     (testing-with-log-markers
      "user cannot view schedule builder get"
@@ -86,7 +85,7 @@
                                            :preview "true"})))]
          (is (= (:status response) 200))
          (is (basic-matcher
-              (clojure.string/join
+              (cls/join
                space?
                [object-start "\"name\"" ":" "\"two\","
                 "\"playlists\"" ":" list-start
@@ -148,7 +147,7 @@
                                            :mode "Update"})))]
          (is (= (:status response) 200))
          (is (basic-matcher
-              (clojure.string/join
+              (cls/join
                space?
                [object-start "\"name\"" ":" "\"two\","
                 "\"playlists\"" ":" list-start
@@ -204,7 +203,7 @@
                                                 :length 12}]})})))]
          (is (= (:status response) 200))
          (is (basic-matcher
-              (clojure.string/join
+              (cls/join
                space?
                [object-start "\"name\"" ":" "\"two\","
                 "\"playlists\"" ":" list-start
@@ -270,7 +269,7 @@
                                                 :length 12}]})})))]
          (is (= (:status response) 200))
          (is (basic-matcher
-              (clojure.string/join
+              (cls/join
                space?
                [object-start "\"name\"" ":" "\"two\","
                 "\"playlists\"" ":" list-start
@@ -337,7 +336,7 @@
                                                 :length 12}]})})))]
          (is (= (:status response) 200))
          (is (basic-matcher
-              (clojure.string/join
+              (cls/join
                space?
                [object-start "\"name\"" ":" "\"two\","
                 "\"playlists\"" ":" list-start
@@ -398,7 +397,7 @@
                                                 :length 12}]})})))]
          (is (= (:status response) 200))
          (is (basic-matcher
-              (clojure.string/join
+              (cls/join
                space?
                [object-start "\"name\"" ":" "\"two\","
                 "\"playlists\"" ":" list-start

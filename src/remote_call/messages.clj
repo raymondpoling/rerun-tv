@@ -1,10 +1,9 @@
 (ns remote-call.messages
   (:require [diehard.core :as dh]
-            [diehard.circuit-breaker :refer [state]]
-            [cheshire.core :refer :all]
             [common-lib.core :as clc]
-            [java-time :as jt]
             [clj-http.client :as client]))
+
+(declare ckt-brkr)
 
 (dh/defcircuitbreaker ckt-brkr {:failure-threshold-ratio [8 10]
                               :delay-ms 1000})

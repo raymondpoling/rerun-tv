@@ -1,6 +1,7 @@
 (ns helpers.schedule-builder
   (:require
-    [cheshire.core :refer [parse-string generate-string]]))
+   [cheshire.core :refer [parse-string generate-string]]
+   [clojure.string :as cls]))
 
 (defn pretty-divide [upper lower]
   (format "%.2f" (float (/ upper lower))))
@@ -9,8 +10,9 @@
   (list :tr {:class class}
     (vec
       (concat
-        (list :th {:scope "row" :class "first"} (clojure.string/capitalize class) ": " length [:br] "RR: " rr)
-        (if extra (list [:br] (clojure.string/join " " extra)))))))
+       (list :th {:scope "row" :class "first"}
+             (cls/capitalize class) ": " length [:br] "RR: " rr)
+        (when extra (list [:br] (cls/join " " extra)))))))
 
 (defprotocol ScheduleType
   (render [self row? small divisor])
@@ -70,8 +72,7 @@
   (render [self row? small divisor]
     (if row?
       (let [render (map #(render % true (/ small (count playlists)) divisor)
-                        playlists)
-            len (reduce + (map first render))]
+                        playlists)]
         [(length self) (vec
               (concat
                (make-row "complex"
@@ -113,7 +114,6 @@
 
 (defn make-schedule-map [map validity]
   (let [g (generate-string map {:pretty true})
-        p (parse-string g :true)
         v (validity g)]
     (reify Schedule
       (parses? [_] true)

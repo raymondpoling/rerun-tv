@@ -1,10 +1,9 @@
 (ns frontend.message-test
-  (:require [clojure.test :refer :all]
+  (:require [clojure.test :refer [deftest is testing]]
             [ring.mock.request :as mock]
-            [frontend.handler :refer :all]
-            [cheshire.core :refer :all]
-            [frontend.util :refer [make-cookie]])
-  (:use clj-http.fake))
+            [frontend.handler :refer [app]]
+
+            [frontend.util :refer [make-cookie]]))
 
 (deftest test-messages
   (let [admin-cookie (make-cookie "admin")

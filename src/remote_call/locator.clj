@@ -1,9 +1,10 @@
 (ns remote-call.locator
   (:require [diehard.core :as dh]
-            [diehard.circuit-breaker :refer [state]]
-            [cheshire.core :refer :all]
+            [cheshire.core :refer [generate-string]]
             [common-lib.core :as clc]
             [clj-http.client :as client]))
+
+(declare ckt-brkr)
 
 (dh/defcircuitbreaker ckt-brkr {:failure-threshold-ratio [8 10]
                               :delay-ms 1000})

@@ -1,8 +1,6 @@
 (ns html.user-management
   (:require [html.header :refer [header]]
-            [hiccup.page :refer [html5]]
-            [clojure.tools.logging :as logger]
-            [cheshire.core :refer [generate-string]]))
+            [hiccup.page :refer [html5]]))
 
 (defn make-user-rows [users]
   (map (fn [{:keys [user email role]}]
@@ -12,7 +10,8 @@
   (let [role-name (str prefix "role")]
     (list [:label {:for role-name} "Role: "]
       [:select {:name role-name :id role-name}
-        (map #(vector :option (if (= "user" %) {:selected :selected}) %) roles)])))
+       (map #(vector :option (when (= "user" %) {:selected :selected}) %)
+            roles)])))
 
 (defn make-update [users roles]
   [:form {:action "/role" :method "post"}

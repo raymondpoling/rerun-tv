@@ -1,20 +1,16 @@
 (ns frontend.library-test
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is]]
    [ring.mock.request :as mock]
-   [frontend.handler :refer :all]
-   [cheshire.core :refer :all]
-   [clojure.tools.logging :as logger]
+   [frontend.handler :refer [app]]
    [frontend.util :refer [make-cookie
                           make-response
                           testing-with-log-markers
-                          basic-matcher]])
-  (:use clj-http.fake))
+                          basic-matcher]]
+   [clj-http.fake :refer [with-fake-routes-in-isolation]]))
 
 (deftest test-admin-routes
-  (let [admin-cookie (make-cookie "admin")
-        media-cookie (make-cookie "media")
-        user-cookie (make-cookie "user")]
+  (let [user-cookie (make-cookie "user")]
     (testing-with-log-markers
      "user can view library"
      (with-fake-routes-in-isolation

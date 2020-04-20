@@ -1,17 +1,15 @@
 (ns frontend.bulk-update-test
-  (:require [clojure.test :refer :all]
+  (:require [clojure.test :refer [deftest is]]
             [ring.mock.request :as mock]
-            [frontend.handler :refer :all]
-            [cheshire.core :refer :all]
-            [clojure.tools.logging :as logger]
+            [frontend.handler :refer [app]]
+            [cheshire.core :refer [parse-string generate-string]]
             [frontend.util :refer [make-cookie
                                    make-response
-                                   testing-with-log-markers]])
-  (:use clj-http.fake))
+                                   testing-with-log-markers]]
+            [clj-http.fake :refer [with-fake-routes-in-isolation]]))
 
 (deftest test-all-missing-preview
-  (let [admin-cookie (make-cookie "admin")
-        media-cookie (make-cookie "media")
+  (let [media-cookie (make-cookie "media")
         user-cookie (make-cookie "user")]
     (testing-with-log-markers
      "user has no access"
@@ -272,9 +270,7 @@
                (:body response))))))))
 
 (deftest parse-error
-  (let [admin-cookie (make-cookie "admin")
-        media-cookie (make-cookie "media")
-        user-cookie (make-cookie "user")]
+  (let [media-cookie (make-cookie "media")]
     (testing-with-log-markers "on post parse error, populate failed"
       (with-fake-routes-in-isolation
         {"http://omdb:4011/series"

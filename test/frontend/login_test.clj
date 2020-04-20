@@ -1,11 +1,11 @@
 (ns frontend.login-test
-  (:require [clojure.test :refer :all]
+  (:require [clojure.test :refer [deftest is]]
             [ring.mock.request :as mock]
-            [frontend.handler :refer :all]
-            [cheshire.core :refer :all]
+            [frontend.handler :refer [app]]
+            [cheshire.core :refer [generate-string]]
             [frontend.util :refer [testing-with-log-markers
-                                   extract]])
-  (:use clj-http.fake))
+                                   extract]]
+            [clj-http.fake :refer [with-fake-routes-in-isolation]]))
 
 (deftest test-login
   (testing-with-log-markers "redirect to login"
@@ -38,7 +38,7 @@
   (testing-with-log-markers "login fails"
     (with-fake-routes-in-isolation
       {"http://auth:4007/validate/whoever"
-       {:post (fn [request]
+       {:post (fn [_]
                 {:headers {:content-type
                            "application/json"}
                  :body (generate-string
@@ -53,7 +53,7 @@
   (testing-with-log-markers "login missing password"
     (with-fake-routes-in-isolation
       {"http://auth:4007/validate/whoever"
-       {:post (fn [request]
+       {:post (fn [_]
                 {:headers {:content-type
                            "application/json"}
                  :body (generate-string
@@ -67,13 +67,13 @@
   (testing-with-log-markers "login followed by logout"
     (with-fake-routes-in-isolation
       {"http://auth:4007/validate/logsingood"
-       {:post (fn [request]
+       {:post (fn [_]
                 {:headers {:content-type
                            "application/json"}
                  :body (generate-string
                         {"status" "ok"})})}
        "http://identity:4012/user/logsingood"
-       (fn [request]
+       (fn [_]
          {:headers {:content-type
                     "application/json"}
           :body (generate-string
@@ -110,7 +110,7 @@
     (testing-with-log-markers "auth service fails" 
       (with-fake-routes-in-isolation
         {"http://auth:4007/validate/whoever"
-         {:post (fn [request]
+         {:post (fn [_]
                   (throw (Exception. "doesn't work")))}}
         (let [response (app (-> (mock/request :post "/login")
                                 (mock/body {"username" "whoever"})))]

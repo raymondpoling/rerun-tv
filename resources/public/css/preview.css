@@ -82,3 +82,8 @@ img {
   visibility: visible;
   height: 7em;
 }
+
+.index {
+    font-size: small;
+    text-decoration: underline;
+}

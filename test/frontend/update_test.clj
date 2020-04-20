@@ -1,17 +1,15 @@
 (ns frontend.update-test
-  (:require [clojure.test :refer :all]
+  (:require [clojure.test :refer [deftest is testing]]
             [ring.mock.request :as mock]
-            [frontend.handler :refer :all]
-            [cheshire.core :refer :all]
+            [frontend.handler :refer [app]]
             [frontend.util :refer [make-cookie
                                    make-response
                                    basic-matcher]]
-            [clojure.tools.logging :as logger])
-  (:use clj-http.fake))
+            [clojure.tools.logging :as logger]
+            [clj-http.fake :refer [with-fake-routes-in-isolation]]))
 
 (deftest update-episode
-  (let [admin-cookie (make-cookie "admin")
-        media-cookie (make-cookie "media")
+  (let [media-cookie (make-cookie "media")
         user-cookie (make-cookie "user")]
     (testing "user has no access"
       (logger/info "user has no access")
@@ -84,7 +82,7 @@
                                :summary (:summary (:body r))
                                :thumbnail "N/A"}]}))}
          "http://locator:4005/catalog-id/AAAAA0103004"
-         (fn [r]
+         (fn [_]
            (make-response {:status "ok"}))
          }
         (let [response (app (-> (mock/request
@@ -127,7 +125,7 @@
                                :summary (:summary (:body r))
                                :thumbnail "N/A"}]}))}
          "http://locator:4005/catalog-id/AAAAA0103004"
-         (fn [r]
+         (fn [_]
            (make-response {:status "ok"}))
          }
         (let [response (app (-> (mock/request

@@ -1,10 +1,11 @@
 (ns remote-call.validate
   (:require [diehard.core :as dh]
-            [diehard.circuit-breaker :refer [state]]
-            [cheshire.core :refer :all]
+            [cheshire.core :refer [generate-string]]
             [clj-http.client :as client]
             [clojure.tools.logging :as logger]
             [common-lib.core :as clc]))
+
+(declare ckt-brkr)
 
 (dh/defcircuitbreaker ckt-brkr {:failure-threshold-ratio [8 10]
                             :delay-ms 1000})

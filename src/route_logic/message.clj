@@ -1,15 +1,9 @@
 (ns route-logic.message
-  (:require [compojure.core :refer :all]
-            [compojure.route :as route]
-            [ring.middleware.json :as json]
-            [ring.util.response :refer [redirect]]
+  (:require [ring.util.response :refer [redirect]]
             [remote-call.messages :refer [add-message]]
             [helpers.routes :refer [hosts with-authorized-roles]]
-            [common-lib.core :as clc]
             [clojure.tools.logging :as logger]
-            [html.message :refer [make-message-page]]
-            [cheshire.core :refer [parse-string generate-string]]
-            [java-time :as jt]))
+            [html.message :refer [make-message-page]]))
 
 (defn get-message [role]
        (with-authorized-roles ["admin"]

@@ -1,4 +1,5 @@
 /target
+*/target
 /lib
 /classes
 /checkouts
@@ -7,4 +8,17 @@ pom.xml.asc
 *.jar
 *.class
 /.lein-*
+*/.lein-*
 /.nrepl-port
+*~
+*.lobs
+nohup.out
+*.log
+profiles.clj
+.hgignore
+.hg/
+env/
+*.properties
+.clj-kondo
+*/out.txt
+out.txt

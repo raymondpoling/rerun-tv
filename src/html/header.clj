@@ -1,7 +1,7 @@
 (ns html.header)
 
 (defn- role-matches [role roles & body]
-  (if (some #(= role %) roles)
+  (when (some #(= role %) roles)
     body))
 
 (defn nav [role]

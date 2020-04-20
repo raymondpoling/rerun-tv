@@ -1,8 +1,6 @@
 (ns html.schedule-builder-get
   (:require [html.header :refer [header]]
-            [hiccup.page :refer [html5]]
-            [clojure.tools.logging :as logger]
-            [cheshire.core :refer [generate-string]]))
+            [hiccup.page :refer [html5]]))
 
 (defn schedule-options [schedule-names]
   (concat
@@ -21,7 +19,10 @@
         (header "Build a Schedule" role)
         [:form {:method "post" :action "schedule-builder.html" :class "box"}
           [:h2 {:class "box-center"} "Update Schedule"]
-          (vec (concat (list :select {:name "schedule-name" :class "box-center"}) (schedule-options schedule-names)))
+         (vec (concat (list :select
+                            {:name "schedule-name"
+                             :class "box-center"})
+                      (schedule-options schedule-names)))
           [:input {:type "hidden" :name "preview" :value "true"}]
           [:input {:type "submit" :name "mode" :value "Update" :class "box-center"}]]
         [:form {:method "post" :action "schedule-builder.html" :class "box"}
@@ -29,4 +30,5 @@
           [:input {:type "text" :name "schedule-name" :class "box-center"}]
           [:input {:type "hidden" :name "preview" :value "true"}]
           [:input {:type "submit" :name "mode" :value "Create" :class "box-center"}]]
-        [:div {:id "message" :style (if (not message) "display:none")} (if message message)]]]))
+       [:div {:id "message" :style (when (not message) "display:none")}
+        (when message message)]]]))

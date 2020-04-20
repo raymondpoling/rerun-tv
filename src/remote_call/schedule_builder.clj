@@ -1,9 +1,9 @@
 (ns remote-call.schedule-builder
   (:require [diehard.core :as dh]
-            [diehard.circuit-breaker :refer [state]]
-            [cheshire.core :refer :all]
             [common-lib.core :as clc]
             [clj-http.client :as client]))
+
+(declare ckt-brkr)
 
 (dh/defcircuitbreaker ckt-brkr {:failure-threshold-ratio [8 10]
                               :delay-ms 1000})

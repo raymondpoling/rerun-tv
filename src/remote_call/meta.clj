@@ -1,11 +1,12 @@
 (ns remote-call.meta
   (:require [diehard.core :as dh]
-            [diehard.circuit-breaker :refer [state]]
-            [cheshire.core :refer :all]
+            [cheshire.core :refer [generate-string]]
             [common-lib.core :as clc]
             [ring.util.codec :refer [url-encode]]
             [clj-http.client :as client]
             [clojure.tools.logging :as logger]))
+
+(declare ckt-brkr)
 
 (dh/defcircuitbreaker ckt-brkr {:failure-threshold-ratio [8 10]
                               :delay-ms 1000})

@@ -1,8 +1,6 @@
 (ns html.bulk-update
   (:require [html.header :refer [header]]
-            [hiccup.page :refer [html5]]
-            [clojure.tools.logging :as logger]
-            [cheshire.core :refer [generate-string]]))
+            [hiccup.page :refer [html5]]))
 
 (defn bulk-update [series results role]
   (html5
@@ -51,16 +49,16 @@
        \"locations\":[\"protocol://host//path\"]}]}"]
         [:input {:type "submit" :value "Submit"}]]
        [:div {:class "succ"
-              :style (if (not= "ok" (:status results)) "display:none")}
+              :style (when (not= "ok" (:status results)) "display:none")}
         [:h3 "Updated Catalog Ids"]
         [:ol (map (fn [id] [:li id]) (filter not-empty
                                              (:catalog_ids results)))]]
        [:div {:class "fail"
-              :style (if (empty? (:failures results)) "display:none")}
+              :style (when (empty? (:failures results)) "display:none")}
         [:h3 "Failed Catalog Ids"]
         [:ol (map (fn [id] [:li id]) (:failures results))]]
        [:div {:class "fail"
-              :style (if (or (nil? results)
+              :style (when (or (nil? results)
                               (= "ok" (:status results))) "display:none")}
         [:h3 "Failure"]
         [:p (:message results)]]]]))

@@ -1,11 +1,12 @@
 (ns frontend.util
   (:require
    [ring.mock.request :as mock]
-   [clojure.test :refer :all]
-   [cheshire.core :refer :all]
+   [clojure.test :refer [is testing]]
+   [cheshire.core :refer [generate-string parse-string]]
    [frontend.handler :refer [app]]
-   [clojure.tools.logging :as logger])
-  (:use clj-http.fake))
+   [clojure.tools.logging :as logger]
+   [clj-http.fake :refer [with-fake-routes-in-isolation]]
+   [clojure.string :as cls]))
 
 (defmacro testing-with-log-markers [string & body]
   `(testing ~string
@@ -24,6 +25,14 @@
          match
          ".*"))
    body))
+
+(defn each-line-and-combined [text & body]
+  (doall (map #(is (basic-matcher % text)) body))
+  (reduce #(do
+             (is (basic-matcher (format "%s.*%s" %1 %2) text))
+             %2)
+          body)
+  (is (basic-matcher (cls/join ".*" body) text)))
 
 (defn extract [request key]
   (-> request

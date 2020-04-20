@@ -1,8 +1,7 @@
 (ns html.update
   (:require [html.header :refer [header]]
             [hiccup.page :refer [html5]]
-            [clojure.tools.logging :as logger]
-            [cheshire.core :refer [generate-string]]))
+            [clojure.string :as cls]))
 
 (defn show-summary [text]
   (vector :li
@@ -19,7 +18,7 @@
 (defn show-regular [k v]
   (let [n (name k)]
     (vector :li
-            [:label {:for n} (clojure.string/upper-case n)]
+            [:label {:for n} (cls/upper-case n)]
             [:input {:id n :name n :value v}])))
 
 (defn if-image [img]
@@ -80,9 +79,9 @@
         default? (should-default? (k omdb))]
    [:ul
      [:li [:label {:for n} "Current"]
-      [:input {:id n :name n :checked (if default? :checked)
+      [:input {:id n :name n :checked (when default? :checked)
                :type "radio" :value v} v]]
-    (if (not default?)
+    (when (not default?)
       [:li
        [:label {:for n} "OMDB"]
        [:input {:id n :name n :checked :checked
@@ -95,11 +94,11 @@
     [:ul
      [:li
       [:label {:for n} "Current"]
-      [:input {:id n :name n :checked (if default? :checked)
+      [:input {:id n :name n :checked (when default? :checked)
                :type "radio" :value v}]
       [:br]
       (if-image v)]
-     (if (not default?)
+     (when (not default?)
        [:li
         [:label {:for n} "OMDB"]
         [:input {:id n :name n :checked :checked
@@ -117,7 +116,7 @@
              :readonly "readonly"}]]
    (map (fn [[k v]]
           (let [n (name k)]
-            (vector :li (clojure.string/upper-case n)
+            (vector :li (cls/upper-case n)
                     (condp = k
                       :thumbnail (make-thumb-comp k v omdb)
                       (make-reg-comp k v omdb)))))

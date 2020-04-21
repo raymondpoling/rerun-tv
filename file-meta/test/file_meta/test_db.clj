@@ -1,8 +1,7 @@
 (ns file-meta.test-db
   (:require [clojure.java.jdbc :as j]
     [db.db :refer [database]]
-    [cheshire.core :refer :all]
-    [cheshire.generate :refer [add-encoder encode-str remove-encoder]]))
+    [cheshire.generate :refer [add-encoder]]))
 
 (defn create-h2-mem-tables []
   (j/execute! @database ["CREATE SCHEMA META"])

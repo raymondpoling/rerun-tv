@@ -1,6 +1,6 @@
 (ns catalog.id-test
-  (:require [clojure.test :refer :all]
-            [catalog.id :refer :all]))
+  (:require [clojure.test :refer [deftest testing is]]
+            [catalog.id :refer [create-id next-id]]))
 
 (deftest catalog-id-test
   (testing "create a simple id"

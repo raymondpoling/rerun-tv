@@ -1,7 +1,6 @@
 (ns db.db
   (:require
-    [clojure.java.jdbc :as j]
-    [cheshire.core :refer :all]))
+    [clojure.java.jdbc :as j]))
 
 (def database (atom {:dbtype "mysql"
                :dbname "file_locator"

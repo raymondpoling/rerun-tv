@@ -1,10 +1,10 @@
 (ns file-locator.handler-test
-  (:require [clojure.test :refer :all]
+  (:require [clojure.test :refer [deftest is testing]]
             [ring.mock.request :as mock]
-            [cheshire.core :refer :all]
+            [cheshire.core :refer [parse-string]]
             [db.db :refer [initialize]]
             [file-locator.test-db :refer [create-h2-mem-tables]]
-            [file-locator.handler :refer :all]))
+            [file-locator.handler :refer [app]]))
 
 (deftest test-app
   (initialize)
@@ -58,7 +58,6 @@
               "files" ["file://host1/home/myself/Videos/test-me/Season 1/1-1.mkv"
                        "ssh://host2/home/myself/Videos/test-me/Season 1/1-1.avi"
                        "ssh://host3/home/other/other.mkv"]}))))
-  
   (testing "not-found route"
     (let [response (app (mock/request :get "/invalid"))]
       (is (= (:status response) 404)))))

@@ -1,6 +1,6 @@
 (ns file-locator.url-test
-  (:require [clojure.test :refer :all]
-            [file-locator.url :refer :all]))
+  (:require [clojure.test :refer [deftest is testing]]
+            [file-locator.url :refer [make-url]]))
 
 (deftest test-app
   (testing "file route"

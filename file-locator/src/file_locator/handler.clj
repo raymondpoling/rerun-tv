@@ -1,10 +1,16 @@
 (ns file-locator.handler
-  (:require [compojure.core :refer :all]
+  (:require [compojure.core :refer [GET POST PUT defroutes]]
               [ring.middleware.json :as json]
               [compojure.route :as route]
-              [ring.util.response :refer [response not-found header status]]
               [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
-              [db.db :refer :all]
+              [db.db :refer [fetch-url
+                             find-or-insert-catalog-id
+                             get-by-catalog-id
+                             initialize
+                             insert-or-update-url
+                             insert-url
+                             find-or-insert-host
+                             find-or-insert-protocol]]
               [common-lib.core :as clc]
               [clojure.tools.logging :as logger]
               [file-locator.url :refer [make-url]]
@@ -36,7 +42,10 @@
          (let [files (get-by-catalog-id catalog-id)]
            (clc/make-response 200 {:status :ok :files files}))
           (catch Exception e
-           (logger/error (format "Could not find catalog-id [%s]" catalog-id))
+            (logger/error
+             (format "Could not find catalog-id [%s]: '%s'"
+                     catalog-id
+                     (.getMessage e)))
            (clc/make-response 500 {:status :failed}))))
   (PUT "/catalog-id/:catalog-id" [catalog-id]
        (fn [request]
@@ -61,8 +70,7 @@
              (clc/make-response 500 {:status :failed})))))
   (route/not-found
     (fn [request]
-      (do
-        (logger/warn (str "document not found "  request)))
+        (logger/warn (str "document not found "  request))
         (clc/make-response 404 {:status :not-found}))))
 
 (def app

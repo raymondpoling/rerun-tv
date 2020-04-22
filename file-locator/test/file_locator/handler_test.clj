@@ -58,6 +58,14 @@
               "files" ["file://host1/home/myself/Videos/test-me/Season 1/1-1.mkv"
                        "ssh://host2/home/myself/Videos/test-me/Season 1/1-1.avi"
                        "ssh://host3/home/other/other.mkv"]}))))
+  (testing "get available protocol/hosts"
+    (let [response (app (mock/request :get "/all"))]
+      (is (= (:status response) 200))
+      (is (parse-string (:body response))
+          {"status" "ok",
+           "host-protocol" ["file/host1"
+                            "ssh/host2"
+                            "ssh/host3"]})))
   (testing "not-found route"
     (let [response (app (mock/request :get "/invalid"))]
       (is (= (:status response) 404)))))

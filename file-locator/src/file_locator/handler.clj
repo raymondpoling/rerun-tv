@@ -6,6 +6,7 @@
               [db.db :refer [fetch-url
                              find-or-insert-catalog-id
                              get-by-catalog-id
+                             get-protocol-host
                              initialize
                              insert-or-update-url
                              insert-url
@@ -18,6 +19,10 @@
     (:gen-class))
 
 (defroutes app-routes
+  (GET "/all" []
+       (clc/make-response 200
+                          {:status :ok
+                           :host-protocol (get-protocol-host)}))
   (GET "/:protocol/:host/:catalog_id" [protocol host catalog_id]
     (try
       (let [url (fetch-url protocol host catalog_id)]

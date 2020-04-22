@@ -3,6 +3,7 @@
             [compojure.route :as route]
             [ring.middleware.json :as json]
             [remote-call.fetch-records :refer [fetch]]
+            [remote-call.locator :refer [get-protocol-hosts]]
             [common-lib.core :as clc]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
             [clojure.tools.logging :as logger]
@@ -31,6 +32,9 @@
           (logger/debug "records: " records)
           (clc/make-response 200 {:status :ok :playlist records}))
         (clc/make-response 502 (first failure)))))
+  (GET "/protocol-host" []
+       (let [locator-host (:locator hosts)]
+         (clc/make-response 200 (get-protocol-hosts locator-host))))
 
   (route/not-found
     (clc/make-response 404 {:status :not-found})))

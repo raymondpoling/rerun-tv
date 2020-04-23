@@ -2,13 +2,13 @@
 # Dockerfile for series to playlist script
 #
 
-FROM python:2.7.17-buster
+FROM python:3.8.2-buster
 MAINTAINER Ray Poling <ruguerv@gmail.com>
 ENV REFRESHED_AT Wed Apr 04 2020
 
 RUN pip install requests
 
 COPY series_playlists.py series_playlists.py
-COPY make-http.py make-http.py
+COPY make_http.py make_http.py
 
 CMD ["python", "series_playlists.py"]

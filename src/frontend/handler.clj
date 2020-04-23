@@ -71,11 +71,11 @@
   (POST "/message.html" [title message]
         (set-message title message))
   (GET "/preview.html" [schedule index idx update reset
-                        download protocol-host format]
+                        download select-format]
        (fn [{{:keys [user role]} :session}]
          (rlpl/create-preview schedule role user index
                               idx update reset download
-                              protocol-host format)))
+                              select-format)))
   (GET "/login.html" []
        (logger/info "getenv host is "  (System/getenv "AUTH_PORT"))
      (login))

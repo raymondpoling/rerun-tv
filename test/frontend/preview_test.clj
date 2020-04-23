@@ -121,68 +121,85 @@
                                              "summary" "it yaps even more"
                                              "imdbid" "tt45456"
                                              "thumbnail" "image/yap3.jpg"}]}))
+         "http://format:4009/formats"
+         (fn [_] {:status 200
+                  :headers {:content-type "application/json"}
+                  :body (generate-string {:status :ok
+                                          :formats
+                                          ["file/pierre/m3u"
+                                           "file/john/m3u"
+                                           "http/pierre/m3u"
+                                           "http/archive/m3u"]})})
          }
         (let [response (app (-> (mock/request :get "/preview.html")
                                 user-cookie))]
           (is (= (:status response) 200))
-          (each-line-and-combined (:body response)
-                                  "<h2>one: 39</h2>"
-                                  "<img src=\"/image/not-available.svg\">"
-                                  "<li class=\"index\">squid: 2</li>"
-                                  "<li>SQUID S2E11</li>"
-                                  "<li><em>squid 1</em></li>"
-                                  "<p>not in omdb</p>"
+          (each-line-and-combined
+           (:body response)
+           "<select id=\"select-format\" name=\"select-format\">"
+           "<option>file/pierre/m3u</option>"
+           "<option>file/john/m3u</option>"
+           "<option>http/pierre/m3u</option>"
+           "<option>http/archive/m3u</option>"
+           "</select>"
 
-                                  "<img src=\"/image/not-available.svg\">"
-                                  "<li class=\"index\">AvBvC: 24</li>"
-                                  "<li><a href=\"http://imdb.com/title/tt2222\" target=\"_blank\">A v B v C S1E2</a></li>"
-                                  "<li><em>A</em></li>"
-                                  "<p>A wins</p>"
+           "<h2>one: 39</h2>"
+           "<img src=\"/image/not-available.svg\">"
+           "<li class=\"index\">squid: 2</li>"
+           "<li>SQUID S2E11</li>"
+           "<li><em>squid 1</em></li>"
+           "<p>not in omdb</p>"
 
-                                  "<img src=\"image/yap1.jpg\">"
-                                  "<li class=\"index\">yap: 13</li>"
-                                  "<li><a href=\"http://imdb.com/title/tt45454\" target=\"_blank\">Yap! S1E4</a></li>"
-                                  "<li><em>yappy</em></li>"
-                                  "<p>it yaps</p>"
+           "<img src=\"/image/not-available.svg\">"
+           "<li class=\"index\">AvBvC: 24</li>"
+           "<li><a href=\"http://imdb.com/title/tt2222\" target=\"_blank\">A v B v C S1E2</a></li>"
+           "<li><em>A</em></li>"
+           "<p>A wins</p>"
 
-                                  "<div class=\"column\" "
-                                  "style=\"border:solid black 1px;border-radius: 0.5em\">"
-                                  "<h2>one: 40</h2>"
-                                  "<img src=\"/image/not-available.svg\">"
-                                  "<li class=\"index\">squid: 3</li>"
-                                  "<li>SQUID S2E12</li>"
-                                  "<li><em>squid 2</em></li>"
-                                  "<p>not in omdb</p>"
+           "<img src=\"image/yap1.jpg\">"
+           "<li class=\"index\">yap: 13</li>"
+           "<li><a href=\"http://imdb.com/title/tt45454\" target=\"_blank\">Yap! S1E4</a></li>"
+           "<li><em>yappy</em></li>"
+           "<p>it yaps</p>"
 
-                                  "<img src=\"/image/not-available.svg\">"
-                                  "<li class=\"index\">AvBvC: 25</li>"
-                                  "<li><a href=\"http://imdb.com/title/tt3333\" target=\"_blank\">A v B v C S1E3</a></li>"
-                                  "<li><em>B</em></li>"
-                                  "<p>B wins</p>"
+           "<div class=\"column\" "
+           "style=\"border:solid black 1px;border-radius: 0.5em\">"
+           "<h2>one: 40</h2>"
+           "<img src=\"/image/not-available.svg\">"
+           "<li class=\"index\">squid: 3</li>"
+           "<li>SQUID S2E12</li>"
+           "<li><em>squid 2</em></li>"
+           "<p>not in omdb</p>"
 
-                                  "<img src=\"image/yap2.jpg\">"
-                                  "<li class=\"index\">yap: 14</li>"
-                                  "<li><a href=\"http://imdb.com/title/tt45455\" target=\"_blank\">Yap! S1E5</a></li>"
-                                  "<li><em>not so yappy</em></li>"
-                                  "<p>it stops yapping</p>"
+           "<img src=\"/image/not-available.svg\">"
+           "<li class=\"index\">AvBvC: 25</li>"
+           "<li><a href=\"http://imdb.com/title/tt3333\" target=\"_blank\">A v B v C S1E3</a></li>"
+           "<li><em>B</em></li>"
+           "<p>B wins</p>"
 
-                                  "<h2>one: 41</h2>"
-                                  "<img src=\"/image/not-available.svg\">"
-                                  "<li class=\"index\">squid: 4</li>"
-                                  "<li>SQUID S2E13</li>"
-                                  "<li><em>squid 3</em></li>"
-                                  "<p>not in omdb</p>"
+           "<img src=\"image/yap2.jpg\">"
+           "<li class=\"index\">yap: 14</li>"
+           "<li><a href=\"http://imdb.com/title/tt45455\" target=\"_blank\">Yap! S1E5</a></li>"
+           "<li><em>not so yappy</em></li>"
+           "<p>it stops yapping</p>"
 
-                                  "<img src=\"/image/not-available.svg\">"
-                                  "<li class=\"index\">AvBvC: 26</li>"
-                                  "<li><a href=\"http://imdb.com/title/tt4444\" target=\"_blank\">A v B v C S1E4</a></li>"
-                                  "<li><em>C</em></li>"
-                                  "<p>C wins</p>"
+           "<h2>one: 41</h2>"
+           "<img src=\"/image/not-available.svg\">"
+           "<li class=\"index\">squid: 4</li>"
+           "<li>SQUID S2E13</li>"
+           "<li><em>squid 3</em></li>"
+           "<p>not in omdb</p>"
 
-                                  "<img src=\"image/yap3.jpg\">"
-                                  "<li class=\"index\">yap: 15</li>"
-                                  "<li><a href=\"http://imdb.com/title/tt45456\" target=\"_blank\">Yap! S1E6</a></li>"
-                                  "<li><em>yappy again</em></li>"))))))
+           "<img src=\"/image/not-available.svg\">"
+           "<li class=\"index\">AvBvC: 26</li>"
+           "<li><a href=\"http://imdb.com/title/tt4444\" target=\"_blank\">A v B v C S1E4</a></li>"
+           "<li><em>C</em></li>"
+           "<p>C wins</p>"
+
+           "<img src=\"image/yap3.jpg\">"
+           "<li class=\"index\">yap: 15</li>"
+           "<li><a href=\"http://imdb.com/title/tt45456\" target=\"_blank\">Yap! S1E6</a></li>"
+           "<li><em>yappy again</em></li>"))))))
 
 (deftest download-test
   (let [admin-cookie (make-cookie "admin")]
@@ -202,8 +219,7 @@
                   :body "a file!"})}
         (let [response (app (-> (mock/request :get "/preview.html")
                                 admin-cookie
-                                (mock/body {:protocol-host "http/archive"
-                                            :format "m3u"
+                                (mock/body {:select-format "http/archive/m3u"
                                             :schedule "two"
                                             :index 12
                                             :download true})))]
@@ -226,8 +242,7 @@
                   :body "a file!"})}
         (let [response (app (-> (mock/request :get "/preview.html")
                                 admin-cookie
-                                (mock/body {:format "m3u"
-                                            :protocol-host "http/archive"
+                                (mock/body {:select-format "http/archive/m3u"
                                             :schedule "two"
                                             :index 12
                                             :download "download"

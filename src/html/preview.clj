@@ -9,7 +9,7 @@
   (map #(vector :option (when (= schedule %) {:selected "selected"}) %)
        schedules))
 
-(defn form [options idx update]
+(defn form [options idx update formats]
   [:form {:action "preview.html" :method "get"}
     [:select {:name "schedule"}
       options]
@@ -18,12 +18,8 @@
     [:label {:for "update"} "Update?"]
    [:input {:type "checkbox" :id "update" :value "update"
             :name "update" :checked (when update "checked")}]
-   [:select {:name "protocol-host" :id "protocol-host"}
-    [:option "file/CrystalBall"]
-    [:option "http/archive"]]
-   [:select {:name "format"}
-    [:option "m3u"]
-    [:option "json"]]
+   [:select {:name "select-format" :id "select-format"}
+    (map #(vector :option %) formats)]
     [:input {:type "submit" :value "Preview"}]
     [:input {:type "submit" :name "reset" :value "Reset"}]
     [:input {:type "submit" :name "download" :value "Download"}]])
@@ -58,7 +54,8 @@
                  [:p (:summary %)]])
        items))
 
-(defn make-preview-page [schedule schedules start-idx update preview role]
+  (defn make-preview-page [schedule schedules start-idx update preview formats
+                           role]
   (let [options (make-options schedule schedules)
         cols (map #(vector (make-divs %1) %2) preview
                   (range start-idx
@@ -74,7 +71,7 @@
       [:body
         [:div {:id "content"}
           (header "Schedule Preview" role)
-         (form options midpoint update)
+         (form options midpoint update formats)
          (map (fn [[items idx]] (preview-column
                                  schedule items idx
                                  (when (= idx midpoint) true)))

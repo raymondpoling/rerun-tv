@@ -19,7 +19,7 @@
     (:gen-class))
 
 (defroutes app-routes
-  (GET "/all" []
+  (GET "/protocol-host" []
        (clc/make-response 200
                           {:status :ok
                            :host-protocol (get-protocol-host)}))

@@ -137,4 +137,13 @@
         (let [response (app (mock/request :get "/test-user/test-schedule"))
               expected {"status" "failure" "message" "user service not available"}]
           (is (= (:status response) 502))
-          (is (= (parse-string (:body response)) expected)))))))
+          (is (= (parse-string (:body response)) expected)))))
+    (testing "advertise available protocol/host/formats"
+      (with-fake-routes-in-isolation
+        {"http://merge:4013/protocol-host"
+         (fn [_] {:status 200
+                  :headers {:content-type "application/json"}
+                  :body (generate-string {:status :ok
+                                          :protocol-host
+                                          ["file/"
+                                                          ]})})}))))

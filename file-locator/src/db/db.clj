@@ -79,10 +79,11 @@
         (insert-url protocol_id host_id catalog_id path)))))
 
 (defn get-protocol-host []
-  (j/query @database ["SELECT DISTINCT CONCAT(protocol,'/',host)
-                       FROM file_locator.urls
-                       JOIN file_locator.protocols
-                       ON file_locator.urls.protocol_id =
-                          file_locator.protocols.id
-                       JOIN file_locator.hosts
-                       ON file_locator.urls.host_id = file_locator.hosts.id"]))
+  (map :res
+       (j/query @database ["SELECT DISTINCT CONCAT(protocol,'/',host) AS res
+                           FROM file_locator.urls
+                           JOIN file_locator.protocols
+                           ON file_locator.urls.protocol_id =
+                              file_locator.protocols.id
+                           JOIN file_locator.hosts
+                           ON file_locator.urls.host_id = file_locator.hosts.id"])))

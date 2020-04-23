@@ -22,7 +22,7 @@
   (GET "/protocol-host" []
        (clc/make-response 200
                           {:status :ok
-                           :host-protocol (get-protocol-host)}))
+                           :protocol-host (get-protocol-host)}))
   (GET "/:protocol/:host/:catalog_id" [protocol host catalog_id]
     (try
       (let [url (fetch-url protocol host catalog_id)]

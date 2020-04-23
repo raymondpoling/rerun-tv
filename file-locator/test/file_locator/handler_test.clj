@@ -50,7 +50,7 @@
       (is (= (parse-string (:body response))
              {"status" "ok"}))))
 
-(testing "get all urls for a resource after update by catalog-id"
+  (testing "get all urls for a resource after update by catalog-id"
     (let [response (app (mock/request :get "/catalog-id/TESTM0101001"))]
       (is (= (:status response) 200))
       (is (= (parse-string (:body response))
@@ -61,11 +61,11 @@
   (testing "get available protocol/hosts"
     (let [response (app (mock/request :get "/protocol-host"))]
       (is (= (:status response) 200))
-      (is (parse-string (:body response))
+      (is (= (parse-string (:body response))
           {"status" "ok",
            "protocol-host" ["file/host1"
-                            "ssh/host2"
-                            "ssh/host3"]})))
+                           "ssh/host2"
+                           "ssh/host3"]}))))
   (testing "not-found route"
     (let [response (app (mock/request :get "/invalid"))]
       (is (= (:status response) 404)))))

@@ -28,3 +28,11 @@
        (:url 
         (:body
          (client/get url {:as :json})) true)))))
+
+(defn get-protocol-hosts [server]
+  (let [url (format "http://%s/protocol-host" server)]
+    (logger/debug (str "trying to get all: " url))
+    (clc/log-on-error
+     nil
+     (dh/with-circuit-breaker ckt-brkr
+       (:body (client/get url {:as :json}))))))

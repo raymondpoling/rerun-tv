@@ -1,7 +1,6 @@
 (ns db.db
   (:require
-    [clojure.java.jdbc :as j]
-    [cheshire.core :refer :all]))
+    [clojure.java.jdbc :as j]))
 
 (def database (atom {:dbtype "mysql"
                :dbname "file_locator"
@@ -68,7 +67,7 @@
                            JOIN file_locator.catalog_ids
                            ON urls.catalog_id = catalog_ids.id
                            WHERE catalog_ids.catalog_id =?" catalog-id])))
-                                    
+
 (defn insert-or-update-url [protocol_id host_id catalog_id path]
   (j/with-db-transaction [db @database]
     (let [exists? (not-empty
@@ -79,3 +78,12 @@
         (j/update! db "file_locator.urls" {:path path} ["host_id = ? AND protocol_id = ? AND catalog_id = ?" host_id protocol_id catalog_id])
         (insert-url protocol_id host_id catalog_id path)))))
 
+(defn get-protocol-host []
+  (map :res
+       (j/query @database ["SELECT DISTINCT CONCAT(protocol,'/',host) AS res
+                           FROM file_locator.urls
+                           JOIN file_locator.protocols
+                           ON file_locator.urls.protocol_id =
+                              file_locator.protocols.id
+                           JOIN file_locator.hosts
+                           ON file_locator.urls.host_id = file_locator.hosts.id"])))

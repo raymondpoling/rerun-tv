@@ -230,6 +230,24 @@
                         "message" "meta service not available"}]
           (is (= (:status response) 502))
           (is (= (parse-string (:body response)) expected)))))
+    (testing "provide list of protocol/hosts"
+      (with-fake-routes-in-isolation
+        {"http://locator:4006/protocol-host"
+         (fn [_] {:status 200
+                  :headers {:content-type "application/json"}
+                  :body (generate-string
+                         {:status :ok
+                          :protocol-host ["file/CrystalBall"
+                                          "http/archive"
+                                          "file/DeGuirre"]})})}
+        (let [response (app (mock/request :get "/protocol-host"))]
+          (is (= (:status response) 200))
+          (is (= (parse-string (:body response))
+                  {"status" "ok"
+                   "protocol-host" ["file/CrystalBall"
+                                   "http/archive"
+                                   "file/DeGuirre"]})))))
+
                                         ;
     (testing "not-found route"
       (let [response (app (mock/request :get "/invalid"))]

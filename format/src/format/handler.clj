@@ -3,7 +3,8 @@
             [compojure.route :as route]
             [ring.middleware.json :as json]
             [remote-call.user :refer [get-index set-index]]
-            [remote-call.merge :refer [get-merge]]
+            [remote-call.merge :refer [get-merge
+                                       fetch-protocol-host]]
             [format.m3u :refer [m3u]]
             [common-lib.core :as clc]
             [ring.util.response :refer [response header status]]
@@ -49,7 +50,12 @@
           response)
         (clc/make-response 502 {:status :failure
                                 :message (:message records)}))))
-
+  (GET "/formats" []
+       (let [protocol-hosts (:protocol-host (fetch-protocol-host (:merge hosts)))
+             formats (sort (concat (map #(format "%s/m3u" %) protocol-hosts)
+                             (map #(format "%s/json" %) protocol-hosts)))]
+         (println "prot-hosts?" protocol-hosts)
+         (clc/make-response 200 {:status :ok :formats formats})))
   (route/not-found
     (clc/make-response 404 {:status :not-found})))
 

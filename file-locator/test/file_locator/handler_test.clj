@@ -1,10 +1,10 @@
 (ns file-locator.handler-test
-  (:require [clojure.test :refer :all]
+  (:require [clojure.test :refer [deftest is testing]]
             [ring.mock.request :as mock]
-            [cheshire.core :refer :all]
+            [cheshire.core :refer [parse-string]]
             [db.db :refer [initialize]]
             [file-locator.test-db :refer [create-h2-mem-tables]]
-            [file-locator.handler :refer :all]))
+            [file-locator.handler :refer [app]]))
 
 (deftest test-app
   (initialize)
@@ -50,7 +50,7 @@
       (is (= (parse-string (:body response))
              {"status" "ok"}))))
 
-(testing "get all urls for a resource after update by catalog-id"
+  (testing "get all urls for a resource after update by catalog-id"
     (let [response (app (mock/request :get "/catalog-id/TESTM0101001"))]
       (is (= (:status response) 200))
       (is (= (parse-string (:body response))
@@ -58,7 +58,14 @@
               "files" ["file://host1/home/myself/Videos/test-me/Season 1/1-1.mkv"
                        "ssh://host2/home/myself/Videos/test-me/Season 1/1-1.avi"
                        "ssh://host3/home/other/other.mkv"]}))))
-  
+  (testing "get available protocol/hosts"
+    (let [response (app (mock/request :get "/protocol-host"))]
+      (is (= (:status response) 200))
+      (is (= (parse-string (:body response))
+          {"status" "ok",
+           "protocol-host" ["file/host1"
+                           "ssh/host2"
+                           "ssh/host3"]}))))
   (testing "not-found route"
     (let [response (app (mock/request :get "/invalid"))]
       (is (= (:status response) 404)))))

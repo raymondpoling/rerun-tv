@@ -1,8 +1,6 @@
 (ns file-locator.test-db
   (:require [clojure.java.jdbc :as j]
-    [db.db :refer [database]]
-    [cheshire.core :refer :all]
-    [cheshire.generate :refer [add-encoder encode-str remove-encoder]]))
+    [db.db :refer [database]]))
 
 (defn create-h2-mem-tables []
   (j/execute! @database ["CREATE SCHEMA FILE_LOCATOR"])

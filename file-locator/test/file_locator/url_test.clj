@@ -1,8 +1,8 @@
 (ns file-locator.url-test
-  (:require [clojure.test :refer :all]
-            [file-locator.url :refer :all]))
+  (:require [clojure.test :refer [deftest is testing]]
+            [file-locator.url :refer [make-url]]))
 
-(deftest test-app
+(deftest test-url
   (testing "file route"
     (let [expected "file:///home/ruguer/Videos/test-me/season 1/1-1.mkv"
           actual (make-url {:protocol "file"

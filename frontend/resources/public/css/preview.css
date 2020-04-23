@@ -1,0 +1,89 @@
+.content {
+    flex-direction: row;
+    overflow-x: auto;
+}
+
+.column {
+  width: 33%;
+  margin: 1em 0 0 0;
+  display: inline-flex;
+  vertical-align: top;
+  flex-direction: column;
+  align-content: space-between;
+}
+
+h2 {
+
+  text-align: center;
+}
+
+.item {
+  width: 20em;
+  padding: 1em;
+  margin: 3px auto 3px auto;
+  border: 2px dotted brown;
+  word-wrap: normal;
+  vertical-align: top;
+  background-color: #F0EAD6;
+  border-radius: 0.5em;
+  flex-direction: row;
+}
+
+.dl-button {
+  width: 5em;
+  height: 2em;
+  padding: 0.5em;
+  margin: auto;
+  border: 2px solid brown;
+  text-align: center;
+  text-decoration: none;
+  background-color: lightgray;
+  border-radius: 0.5em;
+}
+
+img {
+  max-width: 7em;
+  max-height: 6em;
+  padding: 0;
+  margin: 0;
+  border: 2px solid black;
+  border-radius: 0.5em;
+  vertical-align: top;
+  flex-grow: 2;
+}
+
+.textbox {
+  width: 11em;
+  text-align: left;
+  padding: 0;
+  margin: 0 0 0 1em;
+  display: inline-block;
+  flex-grow: 4;
+  /* flex-direction: column; */
+  list-style: none;
+}
+
+
+/* Tooltip text */
+.item > .summary {
+  visibility: hidden;
+  display: block;
+  width: 100%;
+  height: 0;
+}
+
+.summary > p {
+  overflow-y: auto;
+  height: 6em;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+.item:hover > .summary {
+  visibility: visible;
+  height: 7em;
+}
+
+.index {
+    font-size: small;
+    text-decoration: underline;
+}

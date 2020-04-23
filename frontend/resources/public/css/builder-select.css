@@ -1,0 +1,29 @@
+#message {
+  width: 22em;
+  border: red solid 1px;
+  margin: auto;
+  padding: 2em;
+}
+
+.box {
+  width: 22em;
+  border: black solid 1px;
+  margin: 2em auto 2em auto;
+  padding: 0.5em;
+}
+
+input {
+  margin: 0em auto 0.5em auto;
+  display: block;
+}
+
+select {
+  margin: 0em auto 0.5em auto;
+  display: block;
+}
+
+form > h2 {
+  text-align: center;
+  padding: 0;
+  margin: 0em 0em 0.5em;
+}

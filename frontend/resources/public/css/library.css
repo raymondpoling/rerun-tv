@@ -1,0 +1,75 @@
+.episodes {
+  flex-direction: row;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.item {
+  width: 20em;
+  padding: 1em;
+  margin: 3px;
+  border: 2px dotted brown;
+  word-wrap: normal;
+  display: inline-block;
+  vertical-align: top;
+  background-color: #F0EAD6;
+  border-radius: 0.5em;
+  flex-direction: row;
+}
+
+img {
+  max-width: 7em;
+  max-height: 6em;
+  padding: 0;
+  margin: 0;
+  border: 2px solid black;
+  border-radius: 0.5em;
+  vertical-align: top;
+  flex-grow: 2;
+}
+
+.textbox {
+  width: 11em;
+  text-align: left;
+  padding: 0;
+  margin: 0 0 0 1em;
+  display: inline-block;
+  flex-grow: 4;
+  /* flex-direction: column; */
+  list-style: none;
+}
+
+
+/* Tooltip text */
+.item > .summary {
+  visibility: visible;
+  display: block;
+  width: 100%;
+  height: 7em;
+}
+
+.summary > p {
+  overflow-y: auto;
+  height: 6em;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+.item:hover > .summary {
+  visibility: visible;
+  height: 7em;
+}
+
+.series-header {
+    width: 100%;
+    padding: 0 1em 1em 1em;
+}
+
+.series-header > img {
+    margin: 0;
+}
+
+.series-header > p {
+    width: 40%;
+    margin: 1em;
+    display: inline-block;
+}

@@ -1,12 +1,12 @@
 #message {
-  width: 10em;
+  width: 22em;
   border: red solid 1px;
   margin: auto;
   padding: 2em;
 }
 
 .box {
-  width: 10em;
+  width: 22em;
   border: black solid 1px;
   margin: 2em auto 2em auto;
   padding: 0.5em;

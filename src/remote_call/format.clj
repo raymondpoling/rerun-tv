@@ -15,3 +15,9 @@
      (client/get (str "http://" server "/" user "/" schedule)
                  {:query-params
                   (into {} (filter second params))}))))
+
+(defn fetch-formats [server]
+  (clc/log-on-error
+   {"status" "failed" "message" "format service not available"}
+   (dh/with-circuit-breaker ckt-brkr
+     (client/get (str "http://" server "/formats") {:as :json}))))

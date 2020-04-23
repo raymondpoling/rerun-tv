@@ -98,13 +98,14 @@
           (is (= (:status response) 200))
           (is (= (:body response) expected)))))
     (testing "get an m3u record and propogate update flag"
-      (with-fake-routes-in-isolation (merge route-maps {"http://user:4002/test-user/test-schedule?update=true"
-                                      (fn [result]
-                                        (if (= "update=true" (:query-string result))
-                                          {:status 200 :headers {}
-                                            :body (generate-string {:status :ok, :idx 5})}
-                                          {:status 500 :headers {}
-                                            :body (generate-string {:status :ok})}))})
+      (with-fake-routes-in-isolation
+        (merge route-maps {"http://user:4002/test-user/test-schedule?update=true"
+                           (fn [result]
+                             (if (= "update=true" (:query-string result))
+                               {:status 200 :headers {}
+                                :body (generate-string {:status :ok, :idx 5})}
+                               {:status 500 :headers {}
+                                :body (generate-string {:status :ok})}))})
         (let [response (app (mock/request :get "/test-user/test-schedule?update=true&format=m3u&host=archive&protocol=file"))
               expected (str "#EXTM3U\n"
                             "#PLAYLIST: test-schedule - 5\n"
@@ -122,12 +123,12 @@
         (merge route-maps
                {"http://merge:4012/test-user/test-schedule/5"
                 (fn [_] {:status 500 :headers {}
-                              :body nil})})
+                         :body nil})})
         (let [response (app (mock/request :get "/test-user/test-schedule"))
               expected {"status" "failure" "message" "merge service not available"}]
           (is (= (:status response) 502))
           (is (= (parse-string (:body response)) expected)))))
-    ;
+                                        ;
     (testing "propogate an error if user service fails"
       (with-fake-routes-in-isolation
         (merge route-maps {"http://user:4002/test-user/test-schedule"
@@ -140,10 +141,26 @@
           (is (= (parse-string (:body response)) expected)))))
     (testing "advertise available protocol/host/formats"
       (with-fake-routes-in-isolation
-        {"http://merge:4013/protocol-host"
+        {"http://merge:4012/protocol-host"
          (fn [_] {:status 200
                   :headers {:content-type "application/json"}
                   :body (generate-string {:status :ok
-                                          :protocol-host
-                                          ["file/"
-                                                          ]})})}))))
+                                          :formats
+                                          ["file/cats"
+                                           "file/mouse"
+                                           "http/cats"
+                                           "http/mouse"
+                                           ]})})}
+        (let [response (app (mock/request :get "/formats"))]
+          (is (= (:status response) 200))
+          (is (= (parse-string (:body response))
+                 {"status" "ok"
+                  "formats"
+                  ["file/cats/json"
+                   "file/cats/m3u"
+                   "file/mouse/json"
+                   "file/mouse/m3u"
+                   "http/cats/json"
+                   "http/cats/m3u"
+                   "http/mouse/json"
+                   "http/mouse/m3u"]})))))))

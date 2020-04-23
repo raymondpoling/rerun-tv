@@ -19,3 +19,12 @@
                       {:query-params
                        {:host host
                         :protocol protocol}}))))))))
+
+(defn fetch-protocol-host [server]
+  (let [url (format "http://%s/protocol-host" server)]
+    (clc/log-on-error
+     {:status :failure :message "merge service not available"}
+     (dh/with-circuit-breaker ckt-brkr
+         (:body
+          (client/get url {:as :json}))))))
+

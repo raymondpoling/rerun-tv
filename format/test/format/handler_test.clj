@@ -145,7 +145,7 @@
          (fn [_] {:status 200
                   :headers {:content-type "application/json"}
                   :body (generate-string {:status :ok
-                                          :formats
+                                          :protocol-host
                                           ["file/cats"
                                            "file/mouse"
                                            "http/cats"

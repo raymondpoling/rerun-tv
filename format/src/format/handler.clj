@@ -51,7 +51,7 @@
         (clc/make-response 502 {:status :failure
                                 :message (:message records)}))))
   (GET "/formats" []
-       (let [protocol-hosts (:formats (fetch-protocol-host (:merge hosts)))
+       (let [protocol-hosts (:protocol-host (fetch-protocol-host (:merge hosts)))
              formats (sort (concat (map #(format "%s/m3u" %) protocol-hosts)
                              (map #(format "%s/json" %) protocol-hosts)))]
          (println "prot-hosts?" protocol-hosts)

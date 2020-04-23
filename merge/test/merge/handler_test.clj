@@ -232,7 +232,7 @@
           (is (= (parse-string (:body response)) expected)))))
     (testing "provide list of protocol/hosts"
       (with-fake-routes-in-isolation
-        {"http://locator:4006/all"
+        {"http://locator:4006/protocol-host"
          (fn [_] {:status 200
                   :headers {:content-type "application/json"}
                   :body (generate-string

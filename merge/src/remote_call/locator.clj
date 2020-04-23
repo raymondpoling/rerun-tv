@@ -30,7 +30,7 @@
          (client/get url {:as :json})) true)))))
 
 (defn get-protocol-hosts [server]
-  (let [url (format "http://%s/all" server)]
+  (let [url (format "http://%s/protocol-host" server)]
     (logger/debug (str "trying to get all: " url))
     (clc/log-on-error
      nil

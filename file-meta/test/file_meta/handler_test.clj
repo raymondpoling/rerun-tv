@@ -133,7 +133,7 @@
       (is (= (:status response) 200))
       (is (= (parse-string (:body response))
              {"status" "ok","catalog_ids" ["TESTS0101002","TESTS0101003"]}))))
-  (testing "bulk update nonexistent records"
+  (testing "bulk update nonexistent records fails"
     (let [response
           (app (-> (mock/request :put "/series/test-series")
                    (mock/json-body
@@ -356,7 +356,7 @@
       (is (= (parse-string (:body response))
              {"status" "ok"
               "catalog_ids" ["NEWT00132015","NEWT00104004"]}))))
-  (testing "Cannot post existing series"
+  (testing "Cannot post existing series episodes"
     (let [response (app (-> (mock/request :post "/series/new-t")
                             (mock/json-body
                              {"series" {
@@ -369,10 +369,24 @@
                                          "season" 32
                                          "summary" "new episode"
                                          }]})))]
-      (is (= (:status response) 400))
+      (is (= (:status response) 200))
       (is (= (parse-string (:body response))
-             {"status" "failure"
-              "message" "Series new-t already exists"}))))
+             {"status" "ok"
+              "catalog_ids" []
+              "failures" ["NEWT00132015"]}))))
+  (testing "can post new episodes in series"
+    (let [response (app (-> (mock/request :post "/series/new-t")
+                            (mock/json-body
+                             {"series" {"name" "test-series"}
+                              "records" [{"episode_name" "another episode"
+                                          "episode" 44
+                                          "season" 44
+                                          "summary" "no summary"
+                                          }]})))]
+      (is (= (:status response) 200))
+      (is (= (parse-string (:body response))
+             {"status" "ok"
+              "catalog_ids" ["NEWT00144044"]}))))
   (testing "find previous series"
     (let [response (app (mock/request :get "/series/new-t"))]
       (is (= (:status response) 200))
@@ -384,7 +398,8 @@
                         }]
               "status" "ok"
               "catalog_ids"["NEWT00104004"
-                            "NEWT00132015"]}))))
+                            "NEWT00132015"
+                            "NEWT00144044"]}))))
   (testing "find previous series season episode"
     (let [response (app (mock/request :get "/series/new-t/32/15"))]
       (is (= (:status response) 200))

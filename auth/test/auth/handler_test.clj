@@ -1,11 +1,11 @@
 (ns auth.handler-test
-  (:require [clojure.test :refer :all]
+  (:require [clojure.test :refer [deftest is testing]]
             [ring.mock.request :as mock]
             [db.db :refer [initialize database]]
             [clojure.java.jdbc :as j]
             [auth.test-db :refer [create-h2-mem-tables]]
-            [auth.handler :refer :all]
-            [cheshire.core :refer :all]))
+            [auth.handler :refer [app]]
+            [cheshire.core :refer [parse-string]]))
 
 (deftest test-app
   (initialize)
@@ -52,7 +52,7 @@
           response (app (-> (mock/request :post "/validate/test-user")
                             (mock/json-body {:password "changed"})))]
       (is (some? pass))
-      (is (not (empty? pass)))
+      (is (seq pass))
       (is (= (count pass) 64))
       (is (not (= pass "changed")))
       (is (= (:status response) 200))

@@ -1,16 +1,17 @@
 (ns remote-call.omdb
   (:require [diehard.core :as dh]
-            [diehard.circuit-breaker :refer [state]]
-            [cheshire.core :refer :all]
             [common-lib.core :as clc]
             [clojure.tools.logging :as logger]
             [clj-http.client :as client]))
+
+(declare ckt-brkr)
 
 (dh/defcircuitbreaker ckt-brkr {:failure-threshold-ratio [8 10]
                               :delay-ms 1000})
 
 (defn lookup-episode [host apikey series season episode]
-  (logger/debug (format "Lookup up: http://%s/?apikey=%s&t=%s&season=%S&episode=%S"
+  (logger/debug
+   (format "Lookup up: http://%s/?apikey=%s&t=%s&season=%S&episode=%S"
     host apikey series season episode))
   (clc/log-on-error {:status "failed" :message "omdb service not available"}
     (let [resp (:body (client/get (str "http://" host "/" )

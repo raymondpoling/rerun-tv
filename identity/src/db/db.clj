@@ -1,6 +1,5 @@
 (ns db.db
-  (:require [clojure.java.jdbc :as j])
-  (:import java.security.MessageDigest))
+  (:require [clojure.java.jdbc :as j]))
 
 (def database (atom {:dbtype "mysql"
                :dbname "identity"

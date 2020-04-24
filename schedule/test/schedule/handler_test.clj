@@ -1,8 +1,8 @@
 (ns schedule.handler-test
-  (:require [clojure.test :refer :all]
+  (:require [clojure.test :refer [deftest is testing]]
             [ring.mock.request :as mock]
-            [schedule.handler :refer :all]
-            [cheshire.core :refer :all]
+            [schedule.handler :refer [app]]
+            [cheshire.core :refer [parse-string]]
             [schedule.test-db :refer [create-h2-mem-tables]]
             [db.db :refer [initialize]]))
 

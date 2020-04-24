@@ -1,12 +1,11 @@
 (ns playlist.handler
   (:require [ring.middleware.json :as json]
-            [compojure.core :refer :all]
+            [compojure.core :refer [DELETE GET POST PUT defroutes]]
             [compojure.route :as route]
-            [ring.util.response :refer [response not-found header status]]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
             [common-lib.core :as clc]
             [clojure.tools.logging :as logger]
-            [db.db :refer :all]
+            [db.db :as db]
             [org.httpkit.server :refer [run-server]])
   (:gen-class))
 
@@ -16,13 +15,13 @@
 
 (defroutes app-routes
   (GET "/" []
-    (clc/make-response 200 {:status :ok, :playlists (get-all-playlists)}))
+    (clc/make-response 200 {:status :ok, :playlists (db/get-all-playlists)}))
   (POST "/:name" [name]
     (fn [request]
       (try
         (let [data (:body request)]
-          (insert-series name)
-          (insert-playlist name (:playlist data))
+          (db/insert-series name)
+          (db/insert-playlist name (:playlist data))
           (clc/make-response 200 {:status "ok"}))
       (catch java.sql.SQLIntegrityConstraintViolationException e
         (invalid-request "POST" name e))
@@ -32,23 +31,23 @@
     (fn [request]
       (try
         (let [data (:body request)]
-          (replace-playlist name (:playlist data))
+          (db/replace-playlist name (:playlist data))
           (clc/make-response 200 {:status "ok"}))
         (catch java.sql.SQLIntegrityConstraintViolationException e
           (invalid-request "PUT" name e))
         (catch java.sql.SQLException e
           (invalid-request "PUT " name e)))))
   (DELETE "/:name" [name]
-    (delete-series name)
+    (db/delete-series name)
     (logger/warn (str "playlist '" name "' deleted"))
     (clc/make-response 200 {:status "ok"}))
   (GET "/:name" [name]
-    (if-let [items (not-empty (find-playlist name))]
+    (if-let [items (not-empty (db/find-playlist name))]
         (clc/make-response 200 {:status "ok", :items items})
         nil)) ; let not-found catch it
   (GET "/:name{[^/]+}/:idx" [name  idx]
     (logger/debug (str "looking up '" name "' '" idx "'"))
-    (if-let [item (find-item name idx)]
+    (if-let [item (db/find-item name idx)]
       (clc/make-response 200 {:status "ok", :item item})
       (do (logger/debug "Choosing to let Not found catch " name "/" idx)
         nil))) ; let not-found catch it
@@ -71,7 +70,7 @@
         password (or (System/getenv "DB_PASSWORD") "")
         host (or (System/getenv "DB_HOST") "localhost")
         port (Integer/parseInt (or (System/getenv "DB_PORT") "3306"))]
-        (initialize user password host port))
+        (db/initialize user password host port))
   (let [port (Integer/parseInt (or (System/getenv "PORT") "4001"))]
     (run-server app {:port port})
     (logger/info (str "Listening on port " port))))

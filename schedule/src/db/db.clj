@@ -1,6 +1,6 @@
 (ns db.db
   (:require [clojure.java.jdbc :as j]
-    [cheshire.core :refer :all]))
+    [cheshire.core :refer [generate-string parse-string]]))
 
 (def database (atom {:dbtype "mysql"
                :dbname "schedule"

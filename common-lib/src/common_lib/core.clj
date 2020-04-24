@@ -1,9 +1,10 @@
 (ns common-lib.core
   (:require [ring.util.response :refer [response header status]]
-            [clojure.tools.logging :as logger]))
+            [clojure.tools.logging :as logger]
+            [clojure.string :as cls]))
 
 (defn make-host [prefix default-port]
-  (let [upcase-prefix (clojure.string/upper-case prefix)
+  (let [upcase-prefix (cls/upper-case prefix)
         host (or (System/getenv (str upcase-prefix "_HOST"))
                   (str prefix ":" default-port))]
   [(keyword prefix) host]))

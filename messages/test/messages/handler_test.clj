@@ -1,12 +1,10 @@
 (ns messages.handler-test
-  (:require [clojure.test :refer :all]
+  (:require [clojure.test :refer [deftest is testing]]
             [ring.mock.request :as mock]
-            [db.db :refer [initialize database]]
-            [clojure.java.jdbc :as j]
-            [messages.handler :refer :all]
+            [db.db :refer [initialize]]
+            [messages.handler :refer [app]]
             [messages.test-db :refer [create-h2-mem-tables]]
-            [java-time :as jt]
-            [cheshire.core :refer :all]))
+            [cheshire.core :refer [parse-string]]))
 
 (def format-string "yyyy-MM-dd HH:mm:ss.SSS")
 

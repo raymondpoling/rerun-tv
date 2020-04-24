@@ -1,11 +1,10 @@
 (ns identity.handler-test
-  (:require [clojure.test :refer :all]
+  (:require [clojure.test :refer [deftest is testing]]
             [ring.mock.request :as mock]
-            [db.db :refer [initialize database]]
-            [clojure.java.jdbc :as j]
+            [db.db :refer [initialize]]
             [identity.test-db :refer [create-h2-mem-tables]]
-            [identity.handler :refer :all]
-            [cheshire.core :refer :all]))
+            [identity.handler :refer [app]]
+            [cheshire.core :refer [parse-string]]))
 
 (deftest test-app
   (initialize)

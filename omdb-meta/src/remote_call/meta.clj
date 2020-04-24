@@ -1,11 +1,11 @@
 (ns remote-call.meta
   (:require [diehard.core :as dh]
-            [diehard.circuit-breaker :refer [state]]
-            [cheshire.core :refer :all]
+            [cheshire.core :refer [generate-string]]
             [common-lib.core :as clc]
-            [clojure.tools.logging :as logger]
             [ring.util.codec :refer [url-encode]]
             [clj-http.client :as client]))
+
+(declare ckt-brkr)
 
 (dh/defcircuitbreaker ckt-brkr {:failure-threshold-ratio [8 10]
                               :delay-ms 1000})
@@ -13,17 +13,23 @@
 ;; following code should be used to check for finding nil values in a map
 ;; (every? some? (map second (into [] {:a 1 :b 2 :c 3})))
 
+(def series-pattern "http://%s/series/%s/%s/%s")
+
 (defn create-episode [host series season episode record]
-  (clc/log-on-error {:status "failed" :message "meta service not available"}
-    (client/post (str "http://" host "/series/" (url-encode series) "/" season "/" episode)
-                 (if record {:as :json
-                             :content-type :json
-                             :body (generate-string record)}
-                     {:as :json}))))
+  (clc/log-on-error
+   {:status "failed" :message "meta service not available"}
+   (client/post
+    (format series-pattern host (url-encode series) season episode)
+    (if record {:as :json
+                :content-type :json
+                :body (generate-string record)}
+        {:as :json}))))
 
 (defn update-episode [host series season episode data]
-  (clc/log-on-error {:status "failed" :message "meta service not available"}
-    (client/put (str "http://" host "/series/" (url-encode series) "/" season "/" episode)
+  (clc/log-on-error
+   {:status "failed" :message "meta service not available"}
+   (client/put (format series-pattern
+                    host (url-encode series) season episode)
       {:as :json
         :content-type :json
         :headers {"content-type" "application/json"}
@@ -31,38 +37,52 @@
         })))
 
 (defn update-series [host series data]
-  (clc/log-on-error {:status "failed" :message "meta service not available"}
-    (client/put (str "http://" host "/series/" (url-encode series))
+  (clc/log-on-error
+   {:status "failed" :message "meta service not available"}
+   (client/put (format "http://%s/series/%s" host (url-encode series))
       {:as :json :body (generate-string data)
         :headers {"content-type" "application/json"}})))
 
 (defn create-series [host series data]
   (clc/log-on-error
    {:status "failed" :message "meta service not available"}
-   (client/post (str "http://" host "/series/" (url-encode series))
+   (client/post (format "http://%s/series/%s" host (url-encode series))
                 {:as :json :body (generate-string data)
                  :headers {"content-type" "application/json"}})))
 
 (defn fetch-series [host series catalog_id_only]
-  (clc/log-on-error {:status "failed" :message "meta service not available"}
-    (:body (client/get (str "http://" host "/series/" (url-encode series))
-      (merge {:as :json} (if catalog_id_only {:query-params {:catalog_id_only "true"}}))))))
+  (clc/log-on-error
+   {:status "failed" :message "meta service not available"}
+    (:body (client/get (format "http://%s/series/%s" host (url-encode series))
+                       (merge {:as :json}
+                              (when catalog_id_only
+                                {:query-params {:catalog_id_only "true"}}))))))
 
 (defn get-episode [host series season episode catalog_id_only]
-  (clc/log-on-error {:status "failed" :message "meta service not available"}
-    (:body (client/get (str "http://" host "/series/" (url-encode series) "/" season "/" episode)
-      (merge {:as :json} (if catalog_id_only {:query-params {:catalog_id_only "true"}}))))))
+  (clc/log-on-error
+   {:status "failed" :message "meta service not available"}
+   (:body (client/get
+           (format series-pattern
+                host (url-encode series) season episode)
+           (merge {:as :json} (when catalog_id_only
+                                {:query-params {:catalog_id_only "true"}}))))))
 
 (defn delete-episode [host series season episode]
-  (clc/log-on-error {:status "failed" :message "meta service not available"}
-    (client/delete (str "http://" host "/series/" (url-encode series) "/" season "/" episode)
-      {:as :json})))
+  (clc/log-on-error
+   {:status "failed" :message "meta service not available"}
+   (client/delete (format series-pattern
+                          host (url-encode series) season episode)
+                  {:as :json})))
 
 (defn get-by-catalog-id [host catalog-id fields]
-  (clc/log-on-error {:status "failed" :message "meta service not available"}
-    (:body (client/get (str "http://" host "/catalog-id/" catalog-id (if fields (str "?fields="fields)))
+  (clc/log-on-error
+   {:status "failed" :message "meta service not available"}
+   (:body (client/get (format "http://%s/catalog-id/%s%s" host catalog-id
+                              (if fields (str "?fields="fields) ""))
       {:as :json :unexceptional-status #(or (= 200 %) (= 404 %))}))))
 
 (defn get-all-series [host]
-  (clc/log-on-error {:status "failed" :message "meta service not available"}
-    (:body (client/get (str "http://" host "/series") {:as :json}))))
+  (clc/log-on-error
+   {:status "failed" :message "meta service not available"}
+   (:body (client/get (format "http://%s/series" host)
+                      {:as :json}))))

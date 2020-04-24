@@ -1,6 +1,6 @@
 (ns common-lib.core-test
-  (:require [clojure.test :refer :all]
-            [common-lib.core :refer :all]))
+  (:require [clojure.test :refer [deftest is testing]]
+            [common-lib.core :refer [make-hosts]]))
 
 (deftest make-hosts-tests
   (testing "Make a list of hosts"

@@ -1,13 +1,16 @@
 (ns schedule-builder.handler
-  (:require [compojure.core :refer :all]
+  (:require [compojure.core :refer [GET POST PUT defroutes]]
             [compojure.route :as route]
-            [remote-call.playlist :refer [get-playlists get-playlist get-playlists-map]]
-            [remote-call.schedule :refer [get-schedule post-schedule put-schedule]]
+            [remote-call.playlist :refer [get-playlists
+                                          get-playlist
+                                          get-playlists-map]]
+            [remote-call.schedule :refer [get-schedule
+                                          post-schedule
+                                          put-schedule]]
             [remote-call.validate :refer [validate-schedule]]
             [ring.middleware.json :as json]
             [clojure.tools.logging :as logging]
             [common-lib.core :as clc]
-            [ring.util.response :refer [response not-found header status]]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
             [org.httpkit.server :refer [run-server]])
   (:gen-class))

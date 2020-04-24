@@ -1,20 +1,20 @@
 (ns omdb-meta.handler-test
-  (:require [clojure.test :refer :all]
+  (:require [clojure.test :refer [deftest is testing]]
             [ring.mock.request :as mock]
-            [omdb-meta.handler :refer :all]
-            [cheshire.core :refer :all])
-  (:use clj-http.fake))
+            [omdb-meta.handler :refer [app]]
+            [cheshire.core :refer [generate-string parse-string]]
+            [clj-http.fake :refer [with-fake-routes-in-isolation]]))
 
 (deftest omdb-meta-tests
   (testing "create a stub record"
     (with-fake-routes-in-isolation
       {"http://meta:4004/series/test-series/1/1"
-       (fn [request] {:status 200 :headers {}
+       (fn [_] {:status 200 :headers {}
                       :body (generate-string
                              {:status :ok
                               :catalog_ids ["TESTS0101001"]})})
        "http://omdb:8888/?apikey=&t=test-series&Season=1&Episode=1&type=episode"
-       (fn [request]
+       (fn [_]
          {:status 200 :headers {}
           :body (generate-string
                  {:Poster "http://blah.jpg"
@@ -37,7 +37,7 @@
   (testing "find a single record"
     (with-fake-routes-in-isolation
       {"http://meta:4004/series/test-series/1/1"
-       (fn [request] {:status 200 :headers {}
+       (fn [_] {:status 200 :headers {}
                       :body (generate-string
                              {:status :ok
                               :catalog_ids ["TESTS0101001"],
@@ -64,7 +64,7 @@
   (testing "find a single record's catalog id only"
     (with-fake-routes-in-isolation
       {"http://meta:4004/series/test-series/1/1?catalog_id_only=true"
-       (fn [request]
+       (fn [_]
          {:status 200 :headers {}
           :body (generate-string {:status :ok
                                   :catalog_ids ["TESTS0101001"]})})}
@@ -111,7 +111,7 @@
   (testing "find all records catalog_ids"
     (with-fake-routes-in-isolation
       {"http://meta:4004/series/test-series?catalog_id_only=true"
-       (fn [request]
+       (fn [_]
          {:status 200
           :body (generate-string
                  {:status "ok"
@@ -143,7 +143,7 @@
                     :headers {:content-type "application/json"}}
                    {:status 500})))}
        "http://omdb:8888/?apikey=&t=test-series&Season=1&Episode=1&type=episode"
-       (fn [request] {:status 200
+       (fn [_] {:status 200
                       :body (generate-string {:Poster "http://other.jpg"
                                               :Plot "Just another plog"
                                               :imdbID "tt3333"
@@ -203,7 +203,7 @@
   (testing "bulk post and enrich many records at once"
     (with-fake-routes-in-isolation
       {"http://omdb:8888/?apikey=&t=test-series&type=series"
-       (fn [request]
+       (fn [_]
          {:status 200
           :body (generate-string
                  {:Title "blah"
@@ -211,7 +211,7 @@
                   :Poster "http://com.com/jpg.jpg"
                   :imdbID "tt8998"})})
        "http://omdb:8888/?apikey=&t=test-series&Season=1&Episode=2&type=episode"
-       (fn [request]
+       (fn [_]
          {:status 200
           :body (generate-string
                  {:Title "another blah"
@@ -261,7 +261,7 @@
   (testing "find a single full record"
     (with-fake-routes-in-isolation
       {"http://meta:4004/series/test-series/1/1"
-       (fn [request]
+       (fn [_]
          {:status 200
           :body (generate-string
                  {:status :ok
@@ -289,7 +289,7 @@
                   }]})))))
   (testing "get list of available series"
     (with-fake-routes-in-isolation {"http://meta:4004/series"
-                                    (fn [request]
+                                    (fn [_]
                                       {:status 200
                                         :body (generate-string
                                           {:status :ok, :results ["test-serials", "test-serials2", "test-series"]})})}
@@ -298,13 +298,13 @@
         (is (= (parse-string (:body response)) {"status" "ok", "results" ["test-serials", "test-serials2", "test-series"]})))))
   (testing "delete a record"
     (with-fake-routes-in-isolation {"http://meta:4004/series/test-series/1/2"
-                                    {:delete (fn [request] {:status 200 :body (generate-string {:status :ok :catalog_ids ["TESTS0101002"]})})}}
+                                    {:delete (fn [_] {:status 200 :body (generate-string {:status :ok :catalog_ids ["TESTS0101002"]})})}}
       (let [response (app (mock/request :delete "/series/test-series/1/2"))]
         (is (= (:status response) 200))
         (is (= (parse-string (:body response)) {"status" "ok","catalog_ids" ["TESTS0101002"]})))))
   (testing "lookup by catalog id"
     (with-fake-routes-in-isolation {"http://meta:4004/catalog-id/TESTS0101001"
-                                    (fn [request] {:status 200
+                                    (fn [_] {:status 200
                                       :body (generate-string
                                         {:status :ok :catalog_ids ["TESTS0101001"]
                                         :records [{
@@ -329,7 +329,7 @@
           }]})))))
   (testing "lookup incomplete record by catalog id"
     (with-fake-routes-in-isolation {"http://meta:4004/catalog-id/TESTS0101004"
-                                    (fn [request] {:status 200
+                                    (fn [_] {:status 200
                                       :body (generate-string
                                         {:status :ok :catalog_ids ["TESTS0101004"]
                                         :records [{:episode_name "The Cat Returns 4",
@@ -338,10 +338,10 @@
                                           :series "test-series",
                                           :thumbnail "http://here.com/jump.jpg"}]})})
                                       "http://meta:4004/series/test-series/1/4"
-                                      (fn [request]
+                                      (fn [_]
                                         {:status 200 :body (generate-string {:status :ok :catalog_ids ["TESTS0101004"]})})
                                       "http://omdb:8888/?apikey=&t=test-series&Season=1&Episode=4&type=episode"
-                                      (fn [request] {
+                                      (fn [_] {
                                         :status 200
                                         :body (generate-string
                                           {:Plot "Definitely jumped the shark by now"
@@ -362,7 +362,7 @@
           }]})))))
   (testing "find specific fields of a second record by catalog_id"
     (with-fake-routes-in-isolation {"http://meta:4004/catalog-id/TESTS0101003?fields=summary"
-                                    (fn [requests]
+                                    (fn [_]
                                       {:status 200
                                         :body (generate-string
                                           {:status :ok,
@@ -381,7 +381,7 @@
       (is (= (:status response) 404))))
   (testing "not-found after delete"
     (with-fake-routes-in-isolation {"http://meta:4004/catalog-id/TESTS0101002"
-                                    (fn [request] {:status 404 :body (generate-string {:status "not found"})})}
+                                    (fn [_] {:status 404 :body (generate-string {:status "not found"})})}
       (let [response (app (mock/request :get "/catalog-id/TESTS0101002"))]
         (is (= (:status response) 404))))))
 
@@ -389,7 +389,7 @@
   (testing "lookup by imdbid"
     (with-fake-routes-in-isolation
       {"http://omdb:8888/?apikey=&i=tt6565&type=episode"
-       (fn [request]
+       (fn [_]
           {
            :status 200
            :body (generate-string
@@ -416,7 +416,7 @@
   (testing "lookup incomplete record by catalog id"
     (with-fake-routes-in-isolation
        {"http://omdb:8888/?apikey=&i=tt6533&type=episode"
-        (fn [request]
+        (fn [_]
           {
            :status 200
            :body (generate-string
@@ -443,7 +443,7 @@
   (testing "lookup by imdbid"
     (with-fake-routes-in-isolation
       {"http://omdb:8888/?apikey=&i=tt6565&type=series"
-       (fn [request]
+       (fn [_]
           {
            :status 200
            :body (generate-string
@@ -467,7 +467,7 @@
   (testing "lookup incomplete record by catalog id"
     (with-fake-routes-in-isolation
        {"http://omdb:8888/?apikey=&i=tt6533&type=series"
-        (fn [request]
+        (fn [_]
           {
            :status 200
            :body (generate-string

@@ -1,9 +1,8 @@
 (ns auth.handler
-  (:require [compojure.core :refer :all]
+  (:require [compojure.core :refer [POST defroutes]]
             [compojure.route :as route]
             [ring.middleware.json :as json]
-            [ring.util.response :refer [not-found]]
-            [db.db :refer :all]
+            [db.db :refer [change-password initialize new-user verify-password]]
             [clojure.tools.logging :as logger]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
             [common-lib.core :as clc]
@@ -17,8 +16,7 @@
 (defroutes app-routes
   (POST "/new/:user" [user]
     (fn [request]
-      (let [password (:password (:body request))
-            valid? (not (nil? password))]
+      (let [password (:password (:body request))]
           (try
             (new-user user password)
             (clc/make-response 200 {:status :ok})

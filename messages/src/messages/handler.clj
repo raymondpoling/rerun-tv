@@ -1,9 +1,8 @@
 (ns messages.handler
-  (:require [compojure.core :refer :all]
+  (:require [compojure.core :refer [GET POST defroutes]]
             [compojure.route :as route]
             [ring.middleware.json :as json]
-            [ring.util.response :refer [not-found]]
-            [db.db :refer :all]
+            [db.db :refer [get-events initialize save-event]]
             [clojure.tools.logging :as logger]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
             [common-lib.core :as clc]
@@ -17,7 +16,7 @@
       (let
         [date (jt/java-date (jt/instant))
          t (save-event author date title information)]
-         (logger/debug "Stored data: " author ": " date ": " title " - " information)
+         (logger/debug "Stored data: " author ": " date ": " title " - " information " - " t)
         (clc/make-response 200 {:status :ok}))
     (catch Exception e
       (logger/error "failed posting message: [" information "] " (.getMessage e))

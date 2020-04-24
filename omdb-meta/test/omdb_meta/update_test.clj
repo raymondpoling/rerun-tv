@@ -1,16 +1,15 @@
 (ns omdb-meta.update-test
-  (:require [clojure.test :refer :all]
-            [ring.mock.request :as mock]
-            [omdb-meta.update :refer :all]
-            [cheshire.core :refer :all])
-  (:use clj-http.fake))
+  (:require [clojure.test :refer [deftest is testing]]
+            [omdb-meta.update :refer [update-episode update-series]]
+            [cheshire.core :refer [generate-string]]
+            [clj-http.fake :refer [with-fake-routes-in-isolation]]))
 
 
 (deftest update-test-episode
   (testing "completely replace"
     (with-fake-routes-in-isolation
       {"http://omdb:8888/?apikey=&t=test-series&Season=1&Episode=1&type=episode"
-        (fn [request]
+        (fn [_]
           {:status 200
             :headers {}
               :body (generate-string
@@ -27,7 +26,7 @@
   (testing "partial replace"
     (with-fake-routes-in-isolation
       {"http://omdb:8888/?apikey=&t=test-series&Season=1&Episode=1&type=episode"
-        (fn [request]
+        (fn [_]
           {:status 200
             :headers {}
               :body (generate-string
@@ -44,7 +43,7 @@
   (testing "information not in response"
     (with-fake-routes-in-isolation
       {"http://omdb:8888/?apikey=&t=test-series&Season=1&Episode=1&type=episode"
-        (fn [request]
+        (fn [_]
           {:status 200
             :headers {}
               :body (generate-string
@@ -58,7 +57,7 @@
   (testing "error replace"
     (with-fake-routes-in-isolation
       {"http://omdb:8888/?apikey=&t=test-series&Season=1&Episode=1&type=episode"
-        (fn [request]
+        (fn [_]
           {:status 500
             :headers {}
               :body (generate-string
@@ -74,7 +73,7 @@
   (testing "completely replace"
     (with-fake-routes-in-isolation
       {"http://omdb:8888/?apikey=&t=test-series&type=series"
-        (fn [request]
+        (fn [_]
           {:status 200
             :headers {}
               :body (generate-string
@@ -89,7 +88,7 @@
   (testing "partial replace"
     (with-fake-routes-in-isolation
       {"http://omdb:8888/?apikey=&t=test-series&type=series"
-        (fn [request]
+        (fn [_]
           {:status 200
             :headers {}
               :body (generate-string
@@ -104,7 +103,7 @@
   (testing "information not in response"
     (with-fake-routes-in-isolation
       {"http://omdb:8888/?apikey=&t=test-series&type=series"
-        (fn [request]
+        (fn [_]
           {:status 200
             :headers {}
               :body (generate-string
@@ -116,7 +115,7 @@
   (testing "error replace"
     (with-fake-routes-in-isolation
       {"http://omdb:8888/?apikey=&t=test-series&type=series"
-        (fn [request]
+        (fn [_]
           {:status 500
             :headers {}
               :body (generate-string

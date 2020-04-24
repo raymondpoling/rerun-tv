@@ -1,8 +1,8 @@
 (ns omdb-meta.update
   (:require
-    [remote-call.omdb :refer :all]
-    [clojure.tools.logging :as logger]
-    [remote-call.meta :as meta]))
+   [remote-call.omdb :refer [lookup-episode
+                             lookup-series]]
+    [clojure.tools.logging :as logger]))
 
 (defn- need-update? [record in-map]
   (not (every? some? (map #(% record) (map first in-map)))))

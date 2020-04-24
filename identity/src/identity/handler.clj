@@ -1,9 +1,9 @@
 (ns identity.handler
-  (:require [compojure.core :refer :all]
+  (:require [compojure.core :refer [GET POST PUT defroutes]]
             [compojure.route :as route]
             [ring.middleware.json :as json]
-            [ring.util.response :refer [not-found]]
-            [db.db :refer :all]
+            [db.db :refer [add-role find-role find-roles find-user
+                           find-users initialize new-user update-user]]
             [clojure.tools.logging :as logger]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
             [common-lib.core :as clc]

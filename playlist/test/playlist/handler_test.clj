@@ -1,8 +1,8 @@
 (ns playlist.handler-test
-  (:require [clojure.test :refer :all]
+  (:require [clojure.test :refer [deftest is testing]]
             [ring.mock.request :as mock]
-            [playlist.handler :refer :all]
-            [cheshire.core :refer :all]
+            [playlist.handler :refer [app]]
+            [cheshire.core :refer [parse-string]]
             [playlist.test-db :refer [create-h2-mem-tables]]
             [db.db :refer [initialize]]))
 

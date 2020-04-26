@@ -1,7 +1,7 @@
 (ns remote-call.meta
   (:require [diehard.core :as dh]
             [common-lib.core :as clc]
-            [clj-http.client :as client]))
+            [redis-cache.core :as cache]))
 
 (declare ckt-brkr)
 
@@ -13,6 +13,4 @@
       (dh/with-circuit-breaker ckt-brkr
         (first
          (:records
-          (:body
-           (client/get (str "http://" host "/catalog-id/" catalog-id)
-                       {:as :json})) true)))))
+          (cache/redis-cache host (str "/catalog-id/" catalog-id)))))))

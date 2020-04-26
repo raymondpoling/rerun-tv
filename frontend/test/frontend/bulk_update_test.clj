@@ -21,6 +21,23 @@
           (is (get (:headers response) "Location")
               "http://localhost:4008/login.html"))))
 
+    (testing-with-log-markers
+     "if omdb down, no series"
+     (with-fake-routes-in-isolation
+       {"http://omdb:4011/series"
+        (fn [_]
+          (throw (Exception. "Must fail.")))
+        }
+       (let [response (app (-> (mock/request :get "/bulk-update.html")
+                               media-cookie))]
+         (is (= (:status response) 200))
+         (is (re-matches
+              (re-pattern
+               (str "(?s).*"
+                    "<select id=\"series\" name=\"series\">"
+                    "<option>not available</option>"
+                    "</select>.*"))
+              (:body response))))))
     (testing-with-log-markers "get basic service with media"
       (with-fake-routes-in-isolation
         {"http://omdb:4011/series"
@@ -38,22 +55,6 @@
                      "<option>one</option>"
                      "<option>two</option>"
                      "<option>three</option>"
-                     "</select>.*"))
-               (:body response))))))
-    (testing-with-log-markers "if omdb down, no series"
-      (with-fake-routes-in-isolation
-        {"http://omdb:4011/series"
-         (fn [_]
-           (throw (Exception. "Must fail.")))
-         }
-        (let [response (app (-> (mock/request :get "/bulk-update.html")
-                                media-cookie))]
-          (is (= (:status response) 200))
-          (is (re-matches
-               (re-pattern
-                (str "(?s).*"
-                     "<select id=\"series\" name=\"series\">"
-                     "<option>not available</option>"
                      "</select>.*"))
                (:body response))))))
     (testing-with-log-markers "Create new"

@@ -11,6 +11,7 @@
                  [common-lib "0.1.2"]
                  [org.clojure/tools.logging "0.6.0"]
                  [ch.qos.logback/logback-classic "1.2.3"]
+                 [redis-cache "0.0.1"]
                  [http-kit "2.1.16"]]
   :plugins [[lein-ring "0.12.5"]]
   :ring {:handler merge.handler/app}

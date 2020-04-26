@@ -4,7 +4,8 @@
             [common-lib.core :as clc]
             [ring.util.codec :refer [url-encode]]
             [clj-http.client :as client]
-            [clojure.tools.logging :as logger]))
+            [clojure.tools.logging :as logger]
+            [redis-cache.core :as cache]))
 
 (declare ckt-brkr)
 
@@ -12,48 +13,33 @@
                               :delay-ms 1000})
 
 (defn get-all-series [host]
-  (clc/log-on-error {:status "failed"}
-    (:results (:body (client/get (str "http://" host "/series") {:as :json})))))
+  (clc/log-on-error
+   {:status "failed"}
+   (let [t (cache/redis-cache host "/series")]
+     (logger/debug "t is" t "with type" (type t))
+     (:results t))))
 
 (defn bulk-update-series [host series update]
   (clc/log-on-error
    {:status "failed"}
    (let [url (str "http://" host "/series/" (url-encode series))]
      (logger/debug "url: " url)
-     (:body
-      (client/put url
-                  {:as :json
-                   :body (generate-string update)
-                   :headers {:content-type "application/json"}})))))
-
-(defn create-series [host series-name series]
-  (clc/log-on-error
-   {:status "failed" :message "omdb-meta service not available"}
-   (let [url (str "http://" host "/series/" (url-encode series-name))]
-     (logger/debug "create series url: " url)
-     (logger/debug "create series payload: " series)
-     (:body
-      (client/post url
-                   {:as :json
-                    :body (generate-string {:series series})
-                    :headers {:content-type "application/json"}})))))
-
-(defn create-episode [host series episode]
-  (clc/log-on-error
-   {:status "failed" :message "omdb-meta service not available"}
-   (let [url (str "http://" host "/series/" (url-encode series) "/" (:season episode) "/" (:episode episode))]
-     (logger/debug "url: " url)
-     (:body
-      (client/post url
-                   {:as :json
-                    :body (generate-string episode)
-                    :headers {:content-type "application/json"}})))))
+     (let [response (:body
+                     (client/put url
+                                 {:as :json
+                                  :body (generate-string update)
+                                  :headers {:content-type
+                                            "application/json"}}))]
+       (dorun (map #(cache/evict host (str "/catalog-id/" %))
+                   (:catalog_ids response)))
+       response))))
 
 (defn bulk-create-series [host series create]
   (clc/log-on-error
    {:status "failed"}
    (let [url (str "http://" host "/series/" (url-encode series))]
      (logger/debug "url: " url)
+     (cache/evict host "/series")
      (:body
       (client/post url
                   {:as :json
@@ -69,14 +55,21 @@
                   (:episode episode))]
      (logger/debug "URL: " url)
      (:body
-      (client/put url {:as :json
-                       :body (generate-string episode)
-                       :headers {:content-type "application/json"}})))))
+      (let [response
+            (client/put url {:as :json
+                             :body (generate-string episode)
+                             :headers {:content-type "application/json"}})]
+        (logger/debug "***********Evicting" host (:catalog_ids
+                                                  (:body response)))
+        (dorun (map #(cache/evict host
+                                  (str "/catalog-id/" %))
+                    (:catalog_ids (:body response))))
+        response)))))
 
 (defn get-meta-by-catalog-id [host id]
-  (clc/log-on-error {:status "failed" :message "Could not find item in catalog"}
-    (let [url (str "http://" host "/catalog-id/" id)]
-      (:body (client/get url {:as :json})))))
+  (clc/log-on-error
+   {:status "failed" :message "Could not find item in catalog"}
+   (cache/redis-cache host (format "/catalog-id/%s" id))))
 
 (defn get-meta-by-imdb-id [host id]
   (clc/log-on-error
@@ -93,6 +86,6 @@
 
 (defn get-series-episodes [host series]
   (clc/log-on-error {:status "failed" :message "meta host not available"}
-    (let [url (str "http://" host "/series/" (url-encode series))]
-      (logger/debug "meh " url)
-      (:body (client/get url {:as :json})))))
+    (let [path (format "/series/%s" (url-encode series))]
+      (logger/debug "meh " path)
+      (cache/redis-cache host path))))

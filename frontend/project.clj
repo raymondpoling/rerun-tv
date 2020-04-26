@@ -16,7 +16,8 @@
                  [clojure.java-time "0.3.2"]
                  [hiccup "1.0.5"]
                  [http-kit "2.3.0"]
-                 [com.taoensso/carmine "2.19.1"]]
+                 [com.taoensso/carmine "2.19.1"]
+                 [redis-cache "0.0.1"]]
   :plugins [[lein-ring "0.12.5"]]
   :ring {:handler frontend.handler/app}
   :profiles

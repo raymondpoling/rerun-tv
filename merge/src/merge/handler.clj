@@ -13,16 +13,16 @@
 (def hosts (clc/make-hosts ["playlist" 4001]
                            ["schedule" 4000]
                            ["locator" 4006]
-                           ["meta" 4004]))
+                           ["omdb" 4011]))
 
 (defroutes app-routes
   (GET "/:user/:schedule-name/:index" [user schedule-name index host protocol]
     (let [schedule-host (:schedule hosts)
           playlist-host (:playlist hosts)
           locator-host (:locator hosts)
-          meta-host (:meta hosts)
+          omdb-host (:omdb hosts)
           records (fetch schedule-host playlist-host locator-host
-                         meta-host index schedule-name
+                         omdb-host index schedule-name
                          host protocol)
           failure (filter #(= "failure" (:status %)) [index records])]
       (logger/info "Failures? " failure)

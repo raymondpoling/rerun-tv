@@ -2,7 +2,8 @@
   (:require [diehard.core :as dh]
             [cheshire.core :refer [generate-string]]
             [common-lib.core :as clc]
-            [clj-http.client :as client]))
+            [clj-http.client :as client]
+            [redis-cache.core :as cache]))
 
 (declare ckt-brkr)
 
@@ -12,17 +13,17 @@
 (defn get-locations [host catalog-id]
   (clc/log-on-error
    {:status "failed" :message "locator service not available"}
-   (let [resp (:body (client/get (str "http://" host "/catalog-id/" catalog-id)
-                                 {:as :json}))]
-     (println "RESP??? " resp)
+   (let [resp (cache/redis-cache host (str "/catalog-id/" catalog-id))]
      (:files resp))))
 
 (defn save-locations [host catalog-id locations]
   (clc/log-on-error
    {:status "failed" :message "locator service not available"}
-   (let [result (:body (client/put (str "http://" host "/catalog-id/" catalog-id)
+   (let [result (:body (client/put
+                        (format "http://%s/catalog-id/%s" host catalog-id)
                                    {:as :json
                                     :headers {:content-type "application/json"}
                                     :body (generate-string {:files locations})}))]
-     (println (format "For catalog ID %s got %s" catalog-id (str result)))
+     (dorun (map #(cache/evict host (str "/catalog-id/" %))
+                 (:catalog_ids result)))
      result)))

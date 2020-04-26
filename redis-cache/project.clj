@@ -1,4 +1,4 @@
-(defproject redis-cache "0.0.1"
+(defproject redis-cache "0.0.2-SNAPSHOT"
   :description "Standard caching for remote calls"
   :url "https://github.com/raymondpoling/rerun-tv"
   :license {:name "Eclipse Public License"

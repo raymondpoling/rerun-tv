@@ -9,6 +9,7 @@
    [clojure.string :as cls]))
 
 (defmacro testing-with-log-markers [string & body]
+  {:style/indent 1}
   `(testing ~string
      (logger/debug "starting " ~string)
      ~@body

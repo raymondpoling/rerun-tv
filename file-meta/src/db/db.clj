@@ -133,3 +133,12 @@
 (defn find-all-series []
   (j/query @database
            ["SELECT name FROM meta.series GROUP BY name ORDER BY name"]))
+
+(defn get-summary []
+  (j/query @database
+           [(str "SELECT count(DISTINCT name) AS series, "
+                 "count(DISTINCT (name,season)) AS seasons, "
+                 "count(*) AS episodes "
+                 "FROM meta.series "
+                 "JOIN meta.files "
+                 "ON series.id = files.series_id")]))

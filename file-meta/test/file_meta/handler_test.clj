@@ -429,4 +429,12 @@
                           "thumbnail" "http://whatever.com/t.jpg"
                           }]
               "status" "ok"
-              "catalog_ids"["NEWT00132015"]})))))
+              "catalog_ids"["NEWT00132015"]}))))
+  (testing "get summary object"
+    (let [response (app (mock/request :get "/summary"))]
+      (is (= (:status response) 200))
+      (is (= (parse-string (:body response))
+             {"status" "ok"
+              "episodes" 8
+              "seasons" 6
+              "series" 4})))))

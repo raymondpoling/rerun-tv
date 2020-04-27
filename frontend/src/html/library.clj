@@ -14,7 +14,8 @@
   (str (:series i) " S" (:season i) "E" (:episode i)))
 
 (defn make-episodes [episodes series-img role]
-  (map #(vector :article {:class "item" }
+  (map #(vector :article {:class "item"
+                          :id (format "S%sE%s" (:season %) (:episode %))}
     [:img {:src (if (not (or (empty? (:thumbnail %)) (= "N/A" (:thumbnail %)))) (:thumbnail %) series-img)}]
     [:ul {:class "textbox"}
       [:li [:b (:name %)]]

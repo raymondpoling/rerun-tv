@@ -49,8 +49,9 @@
             (show-regular k v)))
         episode)])
 
-(defn return-to-library [series]
-  [:a {:href (str "/library.html?series-name=" series)}
+(defn return-to-library [series season episode]
+  [:a {:href (format "/library.html?series-name=%s#S%sE%s"
+                     series season episode)}
    "Go Back to Library"])
 
 (defn make-update-page [episode files catalog-id role]
@@ -69,7 +70,9 @@
         [:textarea {:name "files" :id "files"} files]
         [:input {:value "Save" :type "submit" :name "mode"}]
         [:div {:class "spacer"}]
-        (return-to-library (:series episode))]]]))
+        (return-to-library (:series episode)
+                           (:season episode)
+                           (:episode episode))]]]))
 
 (defn should-default? [omdb-v]
   (or (= omdb-v "N/A") (nil? omdb-v)))
@@ -138,4 +141,6 @@
         [:textarea {:name "files" :id "files"} files]
         [:input {:value "Save" :type "submit" :name "mode"}]
         [:div {:class "spacer"}]
-        (return-to-library (:series episode))]]]))
+        (return-to-library (:series episode)
+                           (:season episode)
+                           (:episode episode))]]]))

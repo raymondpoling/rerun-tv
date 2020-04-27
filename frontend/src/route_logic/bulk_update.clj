@@ -1,7 +1,8 @@
 (ns route-logic.bulk-update
   (:require [remote-call.meta :refer [get-all-series
                                       bulk-update-series
-                                      bulk-create-series]]
+                                      bulk-create-series
+                                      get-meta-by-catalog-id]]
             [remote-call.locator :refer [save-locations]]
             [helpers.routes :refer [hosts write-message]]
             [html.bulk-update :refer [bulk-update]]
@@ -24,10 +25,10 @@
        (filter not-empty catalog-ids)))
 
 (defn save-pairs [pairs]
-  (doall (map #(let [[catalog-id record] %]
-                 (save-locations (:locator hosts)
-                                 catalog-id
-                                 (:locations record))) pairs)))
+  (map #(let [[catalog-id record] %]
+          (save-locations (:locator hosts)
+                          catalog-id
+                          (:locations record))) pairs))
 
 (defn make-or-update [series-name series-list records report update? session]
   (let [series (:series records)
@@ -41,9 +42,14 @@
                                      series-name
                                      records-no-location))
         record-map (make-record-map (:records records))
-        location-pairs (make-locatable record-map (:catalog_ids result))]
-    (save-pairs location-pairs)
-    (when (not-empty location-pairs)
+        location-pairs (make-locatable record-map (:catalog_ids result))
+        saved? (save-pairs location-pairs)
+        get-saved (map #(first
+                         (:records
+                          (get-meta-by-catalog-id
+                           (:omdb hosts)
+                           (first %)))) location-pairs)]
+    (when (every? #(= "ok" (:status %)) saved?)
       (write-message
        {:author "System"
         :title (str (:user session)
@@ -52,10 +58,11 @@
         (html [:ol
                (map
                 (fn [i] [:li
-                         (str "S" (:season i)
-                              "E" (:episode i)
-                              " " (:episode_name i))])
-                (map second location-pairs))])}))
+                         (str (:series i)
+                          "S" (:season i)
+                          "E" (:episode i)
+                          " " (:episode_name i))])
+                get-saved)])}))
     (bulk-update series-list result (:role session))))
 
 (defn bulk-update-logic [series update create?]

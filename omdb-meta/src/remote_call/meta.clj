@@ -86,3 +86,9 @@
    {:status "failed" :message "meta service not available"}
    (:body (client/get (format "http://%s/series" host)
                       {:as :json}))))
+
+(defn get-summary [host]
+  (clc/log-on-error
+   {:status "failed" :message "meta service not available"}
+   (:body (client/get (format "http://%s/summary" host)
+                      {:as :json}))))

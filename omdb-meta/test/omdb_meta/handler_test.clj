@@ -484,4 +484,20 @@
                            {"title" "Cat R4",
                             "imdbid" "tt6533",
                             "thumbnail" "http://here.org/other.jpg"
-                            }]}))))))
+                            }]})))))
+  (testing "meta passthrough for summary data"
+    (let [values {"status" "ok"
+                  "episodes" 200
+                  "seasons" 14
+                  "series" 7}]
+      (with-fake-routes-in-isolation
+        {"http://meta:4004/summary"
+         (fn [_] {:status 200
+                  :headers {:content-type "application/json"}
+                  :body (generate-string values)})
+         }
+      (let [response (app (mock/request :get "/summary"))]
+        (is (= (:status response) 200))
+        (is (= (parse-string
+                (:body response))
+               values)))))))

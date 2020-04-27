@@ -1,5 +1,6 @@
 (ns html.preview
   (:require [html.header :refer [header]]
+            [ring.util.codec :refer [url-encode]]
             [hiccup.page :refer [html5]]))
 
 (defn stylesheet [path]
@@ -44,8 +45,12 @@
                  [:li {:class "index"}
                   (get-in % [:playlist :name]) ": "
                   (get-in % [:playlist :index])]
-                 [:li (if (seq (:imdbid %))
-                        [:a {:href (str "http://imdb.com/title/" (:imdbid %))
+                 [:li (if (seq (:series %))
+                        [:a {:href (str "/library.html?series-name="
+                                        (url-encode (:series %))
+                                        "#" (format "S%sE%s"
+                                                    (:season %)
+                                                    (:episode %)))
                              :target "_blank"} (make-title %)]
                         (make-title %))]
                  [:li [:em (:episode_name %)]]]

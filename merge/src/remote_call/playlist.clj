@@ -2,6 +2,7 @@
   (:require [diehard.core :as dh]
             [common-lib.core :as clc]
             [clojure.tools.logging :as logger]
+            [ring.util.codec :refer [url-encode]]
             [clj-http.client :as client]))
 
 (declare ckt-brkr)
@@ -16,5 +17,5 @@
         (:item
          (:body
           (client/get
-           (str "http://" host "/" name "/" index)
+           (str "http://" host "/" (url-encode name) "/" index)
            {:as :json}))))))

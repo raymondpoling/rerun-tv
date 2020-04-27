@@ -1,6 +1,7 @@
 (ns remote-call.playlist
   (:require [diehard.core :as dh]
             [common-lib.core :as clc]
+            [ring.util.codec :refer [url-encode]]
             [clojure.tools.logging :as logger]
             [clj-http.client :as client]))
 
@@ -17,6 +18,6 @@
 (defn fetch-catalog-id [host playlist idx]
   (clc/log-on-error {:status "failed", :message "could not find catalog id"}
     (dh/with-circuit-breaker ckt-brkr
-      (let [url (str "http://" host "/" playlist "/" idx)]
+      (let [url (str "http://" host "/" (url-encode playlist) "/" idx)]
         (logger/debug "Looking up url: " url)
         (:body (client/get url {:as :json}))))))

@@ -190,6 +190,8 @@
          (if (= "True" (:Response response))
            (clc/make-response 200 {:status :ok :records [converted]})
            (clc/make-response 500 response))))
+  (GET "/summary" []
+       (clc/make-response 200 (meta/get-summary (:meta hosts))))
   (route/not-found (clc/make-response 404 {:status "not found"})))
 
 (def app

@@ -208,6 +208,11 @@
        (let [series (db/find-all-series)]
          (logger/debug "series " series)
          (clc/make-response 200 {:status :ok :results (map #(:name %) series)})))
+  (GET "/summary" []
+       (let [summary (first (db/get-summary))]
+         (logger/debug "Summary is: " summary)
+         (clc/make-response 200 (merge {:status :ok}
+                                       summary))))
   (route/not-found (clc/make-response 404 {:status "not found"})))
 
 (def app

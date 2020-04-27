@@ -137,7 +137,7 @@
 (defn get-summary []
   (j/query @database
            [(str "SELECT count(DISTINCT name) AS series, "
-                 "count(DISTINCT (name,season)) AS seasons, "
+                 "count(DISTINCT CONCAT(name,':',season)) AS seasons, "
                  "count(*) AS episodes "
                  "FROM meta.series "
                  "JOIN meta.files "

@@ -59,7 +59,7 @@
                (map
                 (fn [i] [:li
                          (str (:series i)
-                          "S" (:season i)
+                          " S" (:season i)
                           "E" (:episode i)
                           " " (:episode_name i))])
                 get-saved)])}))

@@ -89,3 +89,10 @@
     (let [path (format "/series/%s" (url-encode series))]
       (logger/debug "meh " path)
       (cache/redis-cache host path))))
+
+(defn get-summary [host]
+  (clc/log-on-error
+   {:status "failed" :message "meta host not available"}
+   (let [path (format "http://%s/summary" host)]
+     (logger/debug "Getting summary from " path)
+     (:body (client/get path {:as :json})))))

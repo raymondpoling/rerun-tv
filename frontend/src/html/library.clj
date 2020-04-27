@@ -44,15 +44,19 @@
                 (not-empty (:thumbnail (:series records))))
           [:img {:src (:thumbnail (:series records))}])
         [:p (:summary (:series records))[:br]
-       (when (and (not= (:imdbid (:series records)) "N/A")
-                (not-empty (:imdbid (:series records))))
-          [:a {:href (str "http://imdb.com/title/" (:imdbid (:series records)))
-               :target "_blank"} "IMDB"])]
+         (let [seasons (apply max (map :season (:records records)))
+               episodes (count (:records records))
+               avg-episodes (format "%.2f" (float (/ episodes seasons)))]
+           (format "There are %s episodes over %s seasons, for an average of %s episodes per seasons" episodes seasons avg-episodes))[:br]
+         (when (and (not= (:imdbid (:series records)) "N/A")
+                    (not-empty (:imdbid (:series records))))
+           [:a {:href (str "http://imdb.com/title/" (:imdbid (:series records)))
+                :target "_blank"} "IMDB"])]
         [:a {:href (str "/update-series.html?series-name=" series-name)} "Edit Series"]]
-        [:div {:class "episodes"}
-         (make-episodes (:records records)
-                        (if (and (not= (:thumbnail (:series records)) "N/A")
-                                 (not-empty (:thumbnail (:series records))))
-                          (:thumbnail (:series records))
-                          "/image/not-available.svg")
-                        role)]]]))
+       [:div {:class "episodes"}
+        (make-episodes (:records records)
+                       (if (and (not= (:thumbnail (:series records)) "N/A")
+                                (not-empty (:thumbnail (:series records))))
+                         (:thumbnail (:series records))
+                         "/image/not-available.svg")
+                       role)]]]))

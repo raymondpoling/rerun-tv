@@ -23,7 +23,8 @@
                                       get-series-episodes
                                       save-episode
                                       get-meta-by-imdb-id
-                                      get-series-by-imdb-id]]
+                                      get-series-by-imdb-id
+                                      get-summary]]
             [remote-call.messages :refer [get-messages]]
             [ring.util.response :refer [redirect]]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
@@ -81,10 +82,20 @@
      (login))
   (GET "/index.html" [start]
     (fn [{{:keys [role]} :session}]
-      (let [events (get-messages (:messages hosts) start)
-            adjusted-dates (map #(merge % {:posted (jt/format "YYYY-MM-dd HH:mm:ssz" (jt/with-zone-same-instant (jt/zoned-date-time (:posted %)) (jt/zone-id)))}) (:events events))]
+      (let [schedules (count (get-schedules (:schedule hosts)))
+            summary (merge (get-summary (:omdb hosts))
+                           {:schedules schedules})
+            events (get-messages (:messages hosts) start)
+            adjusted-dates (map
+                            #(merge % {:posted
+                                       (jt/format "YYYY-MM-dd HH:mm:ssz"
+                                                  (jt/with-zone-same-instant
+                                                    (jt/zoned-date-time
+                                                     (:posted %))
+                                                    (jt/zone-id)))})
+                            (:events events))]
         (logger/error "events host " (:messages hosts) " events? " adjusted-dates)
-        (make-index adjusted-dates role))))
+        (make-index adjusted-dates role summary))))
   (GET "/schedule-builder.html" [message]
     (fn [{{:keys [role]} :session}]
       (with-authorized-roles ["admin","media"]

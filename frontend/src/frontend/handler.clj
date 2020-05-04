@@ -114,9 +114,7 @@
                       (if (nil? got-sched)
                         (make-schedule-map {:name schedule-name
                                                :playlists
-                                               [{:name ""
-                                                 :length 1
-                                                 :type "playlist"}]} validity)
+                                               []} validity)
                         (make-schedule-map got-sched validity)))]
           (when (and (= "ok" (:status (valid? sched))) (not preview))
             (write-message

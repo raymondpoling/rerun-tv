@@ -1,4 +1,4 @@
-DROP TABLE schedule.schedule;
+CREATE SCHEMA schedule;
 
 CREATE TABLE schedule.schedule (
   id SERIAL,

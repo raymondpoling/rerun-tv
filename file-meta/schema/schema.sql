@@ -1,8 +1,4 @@
-DROP  TABLE meta.season_title;
-
-DROP  TABLE meta.files;
-
-DROP  TABLE meta.series;
+CREATE SCHEMA meta;
 
 CREATE TABLE meta.series (
   id SERIAL,

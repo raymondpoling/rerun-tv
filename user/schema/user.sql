@@ -1,6 +1,4 @@
-DROP TABLE user2.user;
-
-DROP TABLE user2.pointer;
+CREATE SCHEMA user2;
 
 CREATE TABLE user2.user (
   id SERIAL,

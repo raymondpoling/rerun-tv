@@ -1,12 +1,4 @@
-#CREATE SCHEMA playlist;
-
-DROP TABLE IF EXISTS playlist.playlist;
-
-DROP TABLE IF EXISTS playlist.name;
-
-#DROP INDEX by_names ON playlist.name;
-
-#DROP INDEX find_item ON playlist.playlist;
+CREATE SCHEMA playlist;
 
 CREATE TABLE playlist.name (
   id SERIAL,

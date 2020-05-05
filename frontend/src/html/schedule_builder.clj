@@ -13,7 +13,8 @@
     (let [longest (apply max (map first rows))]
       [longest (map #(conj (second %)
                            (when (not= 0 (- longest (first %)))
-                             [:td {:colspan (- longest (first %)) :class "filler"}]))
+                             [:td {:colspan (- longest (first %))
+                                   :class "filler"}]))
                     rows)])
     0))
 
@@ -53,16 +54,21 @@
            [:body
             [:div {:id "content"}
              (header "Build a Schedule" role)
-             (let [padded (padding (map #(hsb/render % true small 1) converted))]
-               [:div {:id "table-holder"}
+               [:div {:id "react"}
+                (let [padded (padding
+                              (map #(hsb/render % true small 1)
+                                   converted))]
+                  [:div {:id "table-holder"}
                 [:table {:class "schedule"}
                  [:thead
                   [:tr [:th {:scope "col" :class "first"} "Type: Length" [:br] "RR (Repitition Rate)"]
-                   [:th {:colspan (if (= 0 small) 1 (first padded))} "Playlists"]]]
+                   [:th {:colspan (if (= 0 small)
+                                    1
+                                    (first padded))} "Playlists"]]]
                  [:tbody (if (= 0 small)
                            [:tr [:td {:class "empty"} "Empty"]]
                            (second padded))]]])
-             [:div {:id "react"}
+
              [:div {:class "playlists"} (playlist-drop-down playlists)]
              [:div [:form {:method "post" :action "schedule-builder.html"}
                     [:textarea {:class (:status (hsb/valid? schedule))

@@ -1,0 +1,5 @@
+package tags
+
+class Routes {
+
+}

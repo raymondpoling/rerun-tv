@@ -12,39 +12,60 @@ class Content extends React.Component {
         this.dispatch = this.dispatch.bind(this);
         this.handleAdd = this.handleAdd.bind(this);
         this.handleDel = this.handleDel.bind(this);
+        this.handleButton = this.handleButton.bind(this);
         this.state = {
             schedule: props.schedule,
             history: [],
-            mode: props.mode
+            mode: props.mode,
+            visible:  {table:"block",
+                       builder:"none",
+                       json:"none"}
         };
+    }
+
+    handleButton(id) {
+        let update = {table:"none",
+                      builder:"none",
+                      json:"none"};
+        update[id] = "block";
+        console.log("update for " + id + " " + " is: " + JSON.stringify(this.state,null,2));
+        this.setState({visible:update});
     }
 
     render() {
         return (
             <div id="react">
-              <Schedule name={this.state.schedule.name}
-                        playlists={this.state.schedule.playlists}
-                        handlers={{
-                            handleUp: this.handleUp,
-                            handleDown: this.handleDown,
-                            handleAdd: this.handleAdd,
-                            handleDel: this.handleDel
-                        }} />
-              <form method="post" action="schedule-builder.html">
-                <textarea className={this.state.schedule.name}
-                          name="schedule-body"
-                          readOnly={true}
-                          value={JSON.stringify(this.state.schedule,null,2)} />
-                <input type="hidden"
-                       readOnly={true}
-                       name="mode"
-                       value={this.state.mode} />
-                <input type="hidden"
-                       readOnly={true}
-                       name="schedule-name"
-                       value={this.state.schedule.name} />
-                <input type="submit" value="Submit" />
-              </form>
+              <div onClick={() => this.handleButton("table")}>table</div>
+              <div onClick={() => this.handleButton("builder")}>builder</div>
+              <div onClick={() => this.handleButton("json")}>json</div>
+              <div style={{display: this.state.visible.table}}></div>
+              <div style={{display: this.state.visible.builder}}>
+                <Schedule name={this.state.schedule.name}
+                          playlists={this.state.schedule.playlists}
+                          handlers={{
+                              handleUp: this.handleUp,
+                              handleDown: this.handleDown,
+                              handleAdd: this.handleAdd,
+                              handleDel: this.handleDel
+                          }} />
+              </div>
+              <div style={{display: this.state.visible.json}}>
+                <form method="post" action="schedule-builder.html">
+                  <textarea className={this.state.schedule.name}
+                            name="schedule-body"
+                            readOnly={true}
+                            value={JSON.stringify(this.state.schedule,null,2)} />
+                  <input type="hidden"
+                         readOnly={true}
+                         name="mode"
+                         value={this.state.mode} />
+                  <input type="hidden"
+                         readOnly={true}
+                         name="schedule-name"
+                         value={this.state.schedule.name} />
+                  <input type="submit" value="Submit" />
+                </form>
+              </div>
             </div>
         );
     }
@@ -100,7 +121,7 @@ class Content extends React.Component {
         if(index == undefined) {
             find[1].push(object);
         } else {
-            find[1][index]['playlists'].unshift(object);
+            find[1][index]['playlists'].push(object);
         }
         this.setState({
             schedule: this.state.schedule,
@@ -259,10 +280,13 @@ function PlaylistHead(props) {
     const up_down = makeUpDown(props,true);
     return (
         <div className="playlist block">
-          <div className="header">
           {up_down}
-          <h3>Playlist {props.name} <Length type={props.type}
-                                            length={props.length} /></h3>
+          <div className="header">
+            <strong>Playlist {props.name}
+              <br/>
+              <Length type={props.type}
+                      length={props.length} />
+            </strong>
           </div>
           <ol/>
         </div>
@@ -277,13 +301,15 @@ function Merge(props) {
 
     return (
         <div className="merge block">
-          <div className="header">
           {up_down}
-          <h3>Merge <Length type={props.type}
-                            playlists={props.playlists}/></h3>
+          <div className="header">
+            <strong>Merge
+              <br/>
+              <Length type={props.type}
+                      playlists={props.playlists}/></strong>
+          </div>
           <MakeElement handlers={props.handlers}
                        index={props.index} />
-          </div>
           <ol>{result}</ol>
         </div>
     )
@@ -295,11 +321,13 @@ function Multi(props) {
 
     return (
         <div className="multi block">
-          <div className="header">
           {up_down}
-          <h3>Multi <Length type={props.type}
-                            step={props.step}
-                            playlist={props.playlist}/></h3>
+          <div className="header">
+            <strong>Multi
+              <br/>
+              <Length type={props.type}
+                      step={props.step}
+                      playlist={props.playlist}/></strong>
           </div>
           <ol>{result}</ol>
         </div>
@@ -313,13 +341,15 @@ function Complex(props) {
 
     return (
         <div className="complex block">
+          {up_down}
           <div className="header">
-            {up_down}
-            <h3>Complex <Length type={props.type}
-                                playlists={props.playlists}/></h3>
-            <MakeElement handlers={props.handlers}
-                         index={props.index} />
-            </div>
+            <strong>Complex
+              <br/>
+              <Length type={props.type}
+                      playlists={props.playlists}/></strong>
+          </div>
+          <MakeElement handlers={props.handlers}
+                       index={props.index} />
           <ol>{result}</ol>
         </div>
     )

@@ -34,20 +34,29 @@ class Content extends React.Component {
 
     render() {
         return (
-            <div id="react">
-              <div onClick={() => this.handleButton("table")}>table</div>
-              <div onClick={() => this.handleButton("builder")}>builder</div>
-              <div onClick={() => this.handleButton("json")}>json</div>
-              <div style={{display: this.state.visible.table}}></div>
+            <div>
+              <h2>Schedule: {this.state.schedule.name}</h2>
+              <ClickTab keyName="table"
+                        selected={this.state.visible["table"] == "block"}
+                        handleButton={this.handleButton} />
+              <ClickTab keyName="builder"
+                        selected={this.state.visible["builder"] == "block"}
+                        handleButton={this.handleButton} />
+              <ClickTab keyName="json"
+                        selected={this.state.visible["json"] == "block"}
+                        handleButton={this.handleButton}/>
+              <div style={{display: this.state.visible.table}}>
+                <MakeTable playlist={this.state.schedule.playlists} />
+              </div>
               <div style={{display: this.state.visible.builder}}>
-                <Schedule name={this.state.schedule.name}
-                          playlists={this.state.schedule.playlists}
-                          handlers={{
-                              handleUp: this.handleUp,
-                              handleDown: this.handleDown,
-                              handleAdd: this.handleAdd,
-                              handleDel: this.handleDel
-                          }} />
+                <Schedule
+                  playlists={this.state.schedule.playlists}
+                  handlers={{
+                      handleUp: this.handleUp,
+                      handleDown: this.handleDown,
+                      handleAdd: this.handleAdd,
+                      handleDel: this.handleDel
+                  }} />
               </div>
               <div style={{display: this.state.visible.json}}>
                 <form method="post" action="schedule-builder.html">
@@ -105,7 +114,7 @@ class Content extends React.Component {
     handleUp(index) {
         this.shuffle(index,-1);
         this.setState({schedule: this.state.schedule,
-                       history: this.state.history.concat([schedule])});
+                       history: this.state.history.concat([this.state.schedule])});
     }
 
     handleDown(index) {
@@ -139,6 +148,16 @@ class Content extends React.Component {
             history: this.state.history.concat(this.state.schedule)
         });
     }
+}
+
+function ClickTab(props) {
+    return(
+        <div
+          className={ props.selected ? "ClickTabSelected" : "ClickTab" }
+          onClick={() => props.handleButton(props.keyName)}>
+            {props.keyName.toUpperCase()}
+        </div>
+    );
 }
 
 function length(props) {
@@ -385,7 +404,6 @@ function Schedule(props) {
 
     return (
         <div id="schedule">
-          <h2>{props.name}</h2>
           <MakeElement handlers={props.handlers}
                        index={[]} />
           <ol className="schedule">
@@ -402,14 +420,11 @@ class MakeElement extends React.Component {
             selectValue: 'playlist',
             selectPlaylist: all_playlists[0].props.value
         };
-        console.log('playlist is? ' + JSON.stringify(this.state.selectPlaylist));
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handlePlaylistChange = this.handlePlaylistChange.bind(this);
         this.dispatch = this.dispatch.bind(this);
-        console.log("GRRRR" + Object.keys(props.handlers));
         this.handleAdd = props.handlers.handleAdd;
-        console.log("trying to make index at "+props.index);
         this.index = props.index;
     }
 

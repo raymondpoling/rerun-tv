@@ -17,7 +17,7 @@ textarea {
   margin: 0;
   padding: 0;
   overflow-x: auto;
-  margin: 2em auto 2em auto;
+  margin: 0 auto 2em auto;
   display: block;
 }
 
@@ -82,93 +82,3 @@ tr {
   background-color: lightgray;
 }
 
-#schedule > .schedule {
-    display: flex;
-    flex-flow: row;
-//    height: 27em;
-//    width: 98%;
-    padding: 0.5em;
-    margin: 0;
-    overflow-x: auto;
-}
-
-li {
-    margin: 1em;
-    background-color: lightgray;
-    border-radius: 0.5em;
-    width: 20em;
-}
-
-.block {
-    border: solid black 1px;
-    margin: 0.25em;
-    min-width: 24em;
-    max-width: 30em;
-    vertical-align: top;
-    display: inline-block;
-}
-
-.block > ol {
-    border: solid black 1px;
-    padding: 0.5em;
-    height: 20em;
-    overflow-y: auto;
-}
-
-.header {
-    height: 5em;
-    display: inline-block;
-}
-
-.block > h3 {
-    word-wrap: normal;
-    display: inline-block;
-}
-
-.block > h4 {
-    display: inline-block;
-}
-
-.upDown {
-    width: 8em;
-    background-color: darkgray;
-    border-radius: 0.25em;
-    margin-left: 0.5em;
-    margin-right: 0.5em;
-    display: inline-block;
-}
-
-.up {
-    background-color: green;
-    width: 0.5em;
-    padding: 0.25em 0.5em 0.25em 0.5em;
-    margin: 0.5em 0.5em 0.5em 0.5em;
-    border-radius: 1em;
-    display: inline-block;
-}
-
-.blank-up {
-    width: 0.5em;
-    padding: 0.25em 0.5em 0.25em 0.5em;
-    margin: 0.5em 0.5em 0.5em 0.5em;
-    border-radius: 1em;
-    display: inline-block;
-}
-
-.del {
-    background-color: yellow;
-    width: 0.5em;
-    padding: 0.25em 0.5em 0.25em 0.5em;
-    margin: 0.5em 0.5em 0.5em 0.5em;
-    border-radius: 1em;
-    display: inline-block;
-}
-
-.down {
-    background-color: red;
-    width: 0.5em;
-    padding: 0.25em 0.5em 0.25em 0.5em;
-    margin: 0.5em 0.5em 0.5em 0.5em;
-    border-radius: 1em;
-    display: inline-block;
-}

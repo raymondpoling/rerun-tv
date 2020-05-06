@@ -1,0 +1,113 @@
+#schedule > .schedule {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-evenly;
+    padding: 0.5em;
+    margin: 0;
+}
+
+li {
+    margin-bottom: 1em;
+    background-color: lightgray;
+    border-radius: 0.5em;
+    width: 12em;
+}
+
+.block {
+    border: solid black 1px;
+    min-width: 12em;
+    max-width: 20em;
+    vertical-align: top;
+    margin-bottom: 1em;
+    display: inline-block;
+}
+
+.block > ol {
+    border: solid black 1px;
+    padding: 0;
+    height: 8em;
+    overflow-y: auto;
+}
+
+.header {
+    height: 5em;
+    display: inline-block;
+}
+
+.block > h3 {
+    word-wrap: normal;
+    display: inline-block;
+}
+
+.block > h4 {
+    display: inline-block;
+}
+
+.upDown {
+    width: 8em;
+    background-color: darkgray;
+    border-radius: 0.25em;
+    margin-left: 0.5em;
+    margin-right: 0.5em;
+    display: inline-block;
+}
+
+.up {
+    background-color: green;
+    width: 0.5em;
+    padding: 0.25em 0.5em 0.25em 0.5em;
+    margin: 0.5em 0.5em 0.5em 0.5em;
+    border-radius: 1em;
+    display: inline-block;
+}
+
+.blank-up {
+    width: 0.5em;
+    padding: 0.25em 0.5em 0.25em 0.5em;
+    margin: 0.5em 0.5em 0.5em 0.5em;
+    border-radius: 1em;
+    display: inline-block;
+}
+
+.del {
+    background-color: yellow;
+    width: 0.5em;
+    padding: 0.25em 0.5em 0.25em 0.5em;
+    margin: 0.5em 0.5em 0.5em 0.5em;
+    border-radius: 1em;
+    display: inline-block;
+}
+
+.down {
+    background-color: red;
+    width: 0.5em;
+    padding: 0.25em 0.5em 0.25em 0.5em;
+    margin: 0.5em 0.5em 0.5em 0.5em;
+    border-radius: 1em;
+    display: inline-block;
+}
+
+
+.ClickTab {
+    width: 6em;
+    height: 2em;
+    margin: 0 2em 0 2em;
+    background-color: brown;
+    text-align: center;
+    border-radius: 1em 1em 0 0;
+    display: inline-block;
+}
+
+.ClickTabSelected {
+    width: 6em;
+    height: 2em;
+    margin: 0 2em 0 2em;
+    background-color: green;
+    text-align: center;
+    border-radius: 1em 1em 0 0;
+    display: inline-block;
+}
+
+.make > select {
+   font-size: 8pt;
+}

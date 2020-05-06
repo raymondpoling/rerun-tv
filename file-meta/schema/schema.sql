@@ -2,7 +2,7 @@ CREATE SCHEMA meta;
 
 CREATE TABLE meta.series (
   id SERIAL,
-  name VARCHAR(50),
+  name VARCHAR(100),
   catalog_prefix CHAR(7) UNIQUE NOT NULL,
   summary TEXT,
   thumbnail VARCHAR(255),

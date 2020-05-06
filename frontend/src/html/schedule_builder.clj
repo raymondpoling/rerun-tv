@@ -42,6 +42,7 @@
                     "href" "/favicon.ico"}]
             [:link {:rel "stylesheet" :href "/css/master.css"}]
             [:link {:rel "stylesheet" :href "/css/builder.css"}]
+            [:link {:rel "stylesheet" :href "/css/builder-react.css"}]
             [:script
              {:src "https://unpkg.com/react@16/umd/react.development.js"
               :crossorigin true}]
@@ -51,6 +52,8 @@
             [:script
              {:src "js/builder.js"}]
             [:title "ReRun TV - Build a Schedule"]]
+           [:script
+            {:src "js/builder-table.js"}]
            [:body
             [:div {:id "content"}
              (header "Build a Schedule" role)

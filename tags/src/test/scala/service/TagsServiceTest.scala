@@ -136,7 +136,7 @@ class TagsServiceTest extends Specification with NowAndLater {
 trait NowAndLater extends Specs2RouteTest with BeforeAfterAll {
   val url = "bolt://localhost:7687"
 
-  val driver: Driver[Future] = GraphDatabase.driver[Future](url,
+  protected val driver = GraphDatabase.driver[Future](url,
     AuthTokens.basic("neo4j",
       "testing"),Config.build().withoutEncryption().build())
 

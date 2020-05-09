@@ -19,3 +19,7 @@ libraryDependencies ++= Seq(
 )
 
 scalacOptions in Test ++= Seq("-Yrangepos")
+
+enablePlugins(JavaAppPackaging)
+
+test in assembly := {}

@@ -24,6 +24,9 @@ class Routes(tagsService: TagsService) extends SprayJsonSupport with DefaultJson
         HttpResponse(code, Seq(), HttpEntity(`application/json`, out))
     }
 
+    val ok = 200
+    val failure = 400
+
     def compute(author: String, nodeType: NodeType, tags: Option[String], ids: List[String]): Future[HttpResponse] =
         Future.sequence(tags.map(_.split(",").toList).getOrElse(List()).map(tag => Try(tagsService.addTag(
             AddTags(Author(author), Is, ID(ids.last, nodeType), Tags(List(tag))))) match {
@@ -33,12 +36,12 @@ class Routes(tagsService: TagsService) extends SprayJsonSupport with DefaultJson
         }))
           .map { _ =>
               val idString = ids.mkString("[\"", "\",\"", "\"]")
-              makeResponse(200,
+              makeResponse(ok,
                   s"""{"status":"ok","catalog_ids":$idString}""")
           }
           .recover {
               t: Throwable =>
-                  makeResponse(400,
+                  makeResponse(failure,
                       s"""{"status":"failed","messages":"${t.getMessage}"}""")
           }
 
@@ -87,12 +90,12 @@ class Routes(tagsService: TagsService) extends SprayJsonSupport with DefaultJson
                             author.map(Author)))
                           .map { ids =>
                               val quotedIds = ids.map(id => "\"" + id + "\"")
-                              makeResponse(200,
+                              makeResponse(ok,
                                   s"""{"status":"ok","catalog_ids":[${quotedIds.mkString(",")}]}""")
                           }
                           .recover {
                               t: Throwable =>
-                                  makeResponse(400,
+                                  makeResponse(failure,
                                       s"""{"status":"failed","messages":["${t.getMessage}"]}""")
                           })
                     }
@@ -107,13 +110,13 @@ class Routes(tagsService: TagsService) extends SprayJsonSupport with DefaultJson
                                   .map { tags =>
                                       val quotedTags = tags.map(t => "\"" + t + "\"")
                                       makeResponse(
-                                          200,
+                                          ok,
                                           s"""{"status":"ok","tags":[${quotedTags.mkString(",")}]}""")
                                   }
                                   .recover {
                                       t: Throwable =>
                                           makeResponse(
-                                              400,
+                                              failure,
                                               s"""{"status":"failed","messages":["${t.getMessage}"]}""")
                                   })
                             }
@@ -123,9 +126,9 @@ class Routes(tagsService: TagsService) extends SprayJsonSupport with DefaultJson
             path("constraints") {
                 post {
                     complete(Try(tagsService.createConstraints()) match {
-                        case Success(_) => makeResponse(200,
+                        case Success(_) => makeResponse(ok,
                             s"""{"status":"ok"}""")
-                        case Failure(t) => makeResponse(400,
+                        case Failure(t) => makeResponse(failure,
                             s"""{"status":"failed","messages":[${t.getMessage}]}""")
                     })
                 }
@@ -139,16 +142,39 @@ class Routes(tagsService: TagsService) extends SprayJsonSupport with DefaultJson
                               .map { tags =>
                                   val quotedTags = tags.map(t => "\"" + t + "\"")
                                   makeResponse(
-                                      200,
+                                      ok,
                                       s"""{"status":"ok","tags":[${quotedTags.mkString(",")}]}""")
                               }
                               .recover {
                                   t: Throwable =>
                                       makeResponse(
-                                          400,
+                                          failure,
                                           s"""{"status":"failed","messages":["${t.getMessage}"]}""")
                               })
                         }
+                }
+            }
+        }, {
+            path("delete" / ".*".r) {
+                catalog_id =>
+                parameters(Symbol("author"),Symbol("tags")) {
+                    (author, tags) =>
+                        get {
+                            complete(tagsService.deleteTags(DeleteTags(ID(catalog_id,All),Tags(tags), Author(author)))
+                              .map { tags =>
+                                  val quotedTags = tags.map(t => "\"" + t + "\"")
+                                  makeResponse(
+                                      ok,
+                                      s"""{"status":"ok","tags":[${quotedTags.mkString(",")}]}""")
+                              }
+                              .recover {
+                                  t: Throwable =>
+                                      makeResponse(
+                                          failure,
+                                          s"""{"status":"failed","messages":["${t.getMessage}"]}""")
+                              })
+                        }
+
                 }
             }
         }

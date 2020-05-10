@@ -4,6 +4,7 @@ import java.util.concurrent.TimeUnit
 
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.Specs2RouteTest
+import neotypes.Async.Id
 import neotypes.{Driver, GraphDatabase}
 import org.neo4j.driver.v1.{AuthTokens, Config}
 import org.specs2.mutable.Specification
@@ -262,11 +263,18 @@ class TagsServiceTest extends Specification with NowAndLater {
       }
     }
   }
+  "Deleting tags" should {
+    "return tags that were deleted" in {
+      Get("/delete/HOUSE0101002?author=TOM&tags=medical,procedural") ~> routes ~> check {
+        responseAs[String] shouldEqual """{"status":"ok","tags":["medical","procedural"]}"""
+      }
+    }
+  }
 }
 trait NowAndLater extends Specs2RouteTest with BeforeAfterAll {
   val url = "bolt://localhost:7687"
 
-  protected val driver = GraphDatabase.driver[Future](url,
+  protected val driver: Id[Driver[Future]] = GraphDatabase.driver[Future](url,
     AuthTokens.basic("neo4j",
       "testing"),Config.build().withoutEncryption().build())
 
@@ -280,7 +288,7 @@ trait NowAndLater extends Specs2RouteTest with BeforeAfterAll {
     println("Preparing constraints for testing!")
     Try(Await.result(tagsService.createConstraints(),Duration(20,TimeUnit.SECONDS))) match {
       case Failure(t) => t.printStackTrace()
-      case Success(s) =>
+      case Success(_) =>
     }
   }
 

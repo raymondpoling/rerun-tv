@@ -48,3 +48,5 @@ case class FindByTags(nodeType: NodeType, tags: Tags, author:Option[Author] = No
 case class FindTagsById(id:ID,author:Option[Author]=None)
 
 case class FindAll(author: Option[Author])
+
+case class DeleteTags(id: ID, tags: Tags, author: Author)

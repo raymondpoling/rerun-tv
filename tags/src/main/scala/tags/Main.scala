@@ -57,7 +57,7 @@ object Main {
     while(worked) {
       Thread.sleep(10 * 1000)
       val t = tagsService.checkConnection().map {
-        t =>
+        _ =>
           true
       }.recover {
         case t: Throwable => t.printStackTrace()

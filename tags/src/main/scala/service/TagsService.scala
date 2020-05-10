@@ -84,9 +84,9 @@ class TagsService(driver:Driver[Future]) {
   def findTagsById(findTagsById: FindTagsById): Future[List[String]] = {
     val author = findTagsById.author.map(a => s"{author:'${a.author}'}").getOrElse("")
     val string: String =
-      s"""MATCH ({catalog_id:'${findTagsById.id.id}'})-[:Is ${author}]->(tag:TAG)
+      s"""MATCH ({catalog_id:'${findTagsById.id.id}'})-[:Is $author]->(tag:TAG)
           WITH collect({tag:tag.tag}) AS direct_match
-          OPTIONAL MATCH ({catalog_id:'${findTagsById.id.id}'})-[*]->()-[:Is ${author}]->(tag:TAG)
+          OPTIONAL MATCH ({catalog_id:'${findTagsById.id.id}'})-[*]->()-[:Is $author]->(tag:TAG)
           WITH direct_match + collect({tag:tag.tag}) AS result_set
           UNWIND result_set AS row
           WITH row.tag AS tag
@@ -111,6 +111,19 @@ class TagsService(driver:Driver[Future]) {
     driver.readSession { session =>
       (c"" + query).query[String].list(session)
     }
+  }
+
+  def deleteTags(deleteTag:DeleteTags) : Future[List[String]] = {
+    Future.sequence(deleteTag.tags.tags.map {
+      tag =>
+        driver.writeSession { session =>
+          val query =
+            s"""MATCH (${deleteTag.id.id})-[r:Is {author:'${deleteTag.author.author}'}]->(tag:TAG {tag:'$tag'})
+               DELETE r
+               RETURN tag.tag"""
+          (c"" + query).query[String].list(session)
+        }
+    }).map(_.flatten.sorted.distinct)
   }
 
   def checkConnection(): Future[List[String]] = {

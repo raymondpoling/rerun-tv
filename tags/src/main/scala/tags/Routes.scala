@@ -159,7 +159,7 @@ class Routes(tagsService: TagsService) extends SprayJsonSupport with DefaultJson
                 catalog_id =>
                 parameters(Symbol("author"),Symbol("tags")) {
                     (author, tags) =>
-                        get {
+                        delete {
                             complete(tagsService.deleteTags(DeleteTags(ID(catalog_id,All),Tags(tags), Author(author)))
                               .map { tags =>
                                   val quotedTags = tags.map(t => "\"" + t + "\"")

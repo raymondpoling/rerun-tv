@@ -116,7 +116,8 @@
 (defn find-by-series [series-name]
   [(j/query @database [(str "select series.summary AS summary, "
                             "series.imdbid AS imdbid, "
-                            "series.thumbnail AS thumbnail "
+                            "series.thumbnail AS thumbnail, "
+                            "series.catalog_prefix AS catalog_id "
                             "FROM meta.series WHERE name = ?") series-name])
    (j/query @database
             [(str "SELECT catalog_prefix, "

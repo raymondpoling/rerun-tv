@@ -278,6 +278,7 @@
              {"status" "ok",
               "catalog_ids" ["TESTS0101001","TESTS0101003","TESTS0101004"]
               "records" [{"imdbid" "tt222222"
+                          "catalog_id" "TESTS01"
                           "thumbnail" "http://test-series.jpg"
                           "summary" "a test series i enjoy"}]}))))
   (testing "partial bulk update works"
@@ -304,6 +305,7 @@
              {"status" "ok",
               "catalog_ids" ["TESTS0201001"]
               "records" [{"imdbid" nil
+                          "catalog_id" "TESTS02"
                           "thumbnail" nil
                           "summary" nil}]}))))
   (testing "find partial specific episode by name"
@@ -393,7 +395,8 @@
       (is (= (parse-string (:body response))
              {"records" [{
                         "summary" "do save"
-                        "imdbid" nil
+                          "imdbid" nil
+                          "catalog_id" "NEWT001"
                           "thumbnail" "http://whatever.com/t.jpg"
                         }]
               "status" "ok"

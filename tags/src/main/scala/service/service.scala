@@ -43,7 +43,8 @@ case class ID(id:String,nodeType: NodeType)
 // Represents searches
 case class AddTags(author:Author, relationship:Relationship, id:ID, tags:Tags)
 
-case class FindByTags(nodeType: NodeType, tags: Tags)
+case class FindByTags(nodeType: NodeType, tags: Tags, author:Option[Author] = None)
 
-case class FindTagsById(id:ID,author:Option[Author])
+case class FindTagsById(id:ID,author:Option[Author]=None)
 
+case class FindAll(author: Option[Author])

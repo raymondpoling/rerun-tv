@@ -101,6 +101,68 @@ class TagsServiceTest extends Specification with NowAndLater {
       }
     }
   }
+  "Tags service looking up tags with authors" should {
+    "find a series based on a tag by ME" in {
+      Get("/find-by-tags?tags=sexy&type=SERIES&author=ME") ~> routes ~> check {
+        responseAs[String] shouldEqual """{"status":"ok","catalog_ids":["BGATA01"]}"""
+      }
+    }
+    "find a series based on a tag by Miss" in {
+      Get("/find-by-tags?tags=sexy&type=SERIES&author=Miss") ~> routes ~> check {
+        responseAs[String] shouldEqual """{"status":"ok","catalog_ids":[]}"""
+      }
+    }
+    "find a season based on a tag by JAMES" in {
+      Get("/find-by-tags?tags=less-sexy&type=SEASON&author=JAMES") ~> routes ~> check {
+        responseAs[String] shouldEqual """{"status":"ok","catalog_ids":["BGATA0101"]}"""
+      }
+    }
+    "find a season based on a tag by Miss" in {
+      Get("/find-by-tags?tags=less-sexy&type=SEASON&author=Miss") ~> routes ~> check {
+        responseAs[String] shouldEqual """{"status":"ok","catalog_ids":[]}"""
+      }
+    }
+    "find a series based on a tag by NOVICE" in {
+      Get("/find-by-tags?tags=not-sexy&type=EPISODE&author=NOVICE") ~> routes ~> check {
+        responseAs[String] shouldEqual """{"status":"ok","catalog_ids":["BGATA0101001"]}"""
+      }
+    }
+    "find a series based on a tag by Miss" in {
+      Get("/find-by-tags?tags=not-sexy&type=EPISODE&author=Miss") ~> routes ~> check {
+        responseAs[String] shouldEqual """{"status":"ok","catalog_ids":[]}"""
+      }
+    }
+    "without a result type, get all items for tags to series by ME" in {
+      Get("/find-by-tags?tags=sexy&author=ME") ~> routes ~> check {
+        responseAs[String] shouldEqual """{"status":"ok","catalog_ids":["BGATA01","BGATA0101","BGATA0101001"]}"""
+      }
+    }
+    "without a result type, get all items for tags to series by Miss" in {
+      Get("/find-by-tags?tags=sexy&author=Miss") ~> routes ~> check {
+        responseAs[String] shouldEqual """{"status":"ok","catalog_ids":[]}"""
+      }
+    }
+    "without a result type, get season and episode for tags to series by JAMES" in {
+      Get("/find-by-tags?tags=less-sexy&author=JAMES") ~> routes ~> check {
+        responseAs[String] shouldEqual """{"status":"ok","catalog_ids":["BGATA0101","BGATA0101001"]}"""
+      }
+    }
+    "without a result type, get season and episode for tags to series by NOVICE" in {
+      Get("/find-by-tags?tags=not-sexy&author=NOVICE") ~> routes ~> check {
+        responseAs[String] shouldEqual """{"status":"ok","catalog_ids":["BGATA0101001"]}"""
+      }
+    }
+    "can find the intersection of tags by TOM" in {
+      Get("/find-by-tags?tags=procedural,medical&author=TOM") ~> routes ~> check {
+        responseAs[String] shouldEqual """{"status":"ok","catalog_ids":["HOUSE0101002"]}"""
+      }
+    }
+    "can't find the intersection of tags when author not the same" in {
+      Get("/find-by-tags?tags=not-sexy,less-sexy,sexy&author=Me") ~> routes ~> check {
+        responseAs[String] shouldEqual """{"status":"ok","catalog_ids":[]}"""
+      }
+    }
+  }
   "Find tags by various ids" should {
     "find all tags associated with a series" in {
       Get("/find-by-catalog-id/BGATA01") ~> routes ~> check {
@@ -118,6 +180,58 @@ class TagsServiceTest extends Specification with NowAndLater {
       }
     }
   }
+  "Find tags by various ids with author" should {
+    "find all tags associated with a series by author Miss" in {
+      Get("/find-by-catalog-id/BGATA01?author=Miss") ~> routes ~> check {
+        responseAs[String] shouldEqual """{"status":"ok","tags":[]}"""
+      }
+    }
+    "find all tags associated with a series by author ME" in {
+      Get("/find-by-catalog-id/BGATA01?author=ME") ~> routes ~> check {
+        responseAs[String] shouldEqual """{"status":"ok","tags":["sexy"]}"""
+      }
+    }
+    "find all tags associated with a season" in {
+      Get("/find-by-catalog-id/BGATA0101") ~> routes ~> check {
+        responseAs[String] shouldEqual """{"status":"ok","tags":["less-sexy","sexy"]}"""
+      }
+    }
+    "find all tags associated with a season by Miss" in {
+      Get("/find-by-catalog-id/BGATA0101?author=Miss") ~> routes ~> check {
+        responseAs[String] shouldEqual """{"status":"ok","tags":[]}"""
+      }
+    }
+    "find all tags associated with a season by ME" in {
+      Get("/find-by-catalog-id/BGATA0101?author=ME") ~> routes ~> check {
+        responseAs[String] shouldEqual """{"status":"ok","tags":["sexy"]}"""
+      }
+    }
+    "find all tags associated with a season by JAMES" in {
+      Get("/find-by-catalog-id/BGATA0101?author=JAMES") ~> routes ~> check {
+        responseAs[String] shouldEqual """{"status":"ok","tags":["less-sexy"]}"""
+      }
+    }
+    "find all tags associated with a episode by JAMES" in {
+      Get("/find-by-catalog-id/BGATA0101001?author=JAMES") ~> routes ~> check {
+        responseAs[String] shouldEqual """{"status":"ok","tags":["less-sexy"]}"""
+      }
+    }
+    "find all tags associated with a episode by ME" in {
+      Get("/find-by-catalog-id/BGATA0101001?author=ME") ~> routes ~> check {
+        responseAs[String] shouldEqual """{"status":"ok","tags":["sexy"]}"""
+      }
+    }
+    "find all tags associated with a episode by MISS" in {
+      Get("/find-by-catalog-id/BGATA0101001?author=MISS") ~> routes ~> check {
+        responseAs[String] shouldEqual """{"status":"ok","tags":[]}"""
+      }
+    }
+    "find all tags associated with a episode by NOVICE" in {
+      Get("/find-by-catalog-id/BGATA0101001?author=NOVICE") ~> routes ~> check {
+        responseAs[String] shouldEqual """{"status":"ok","tags":["not-sexy"]}"""
+      }
+    }
+  }
   "Ensure properties are true" should {
     "ensure series and distinct series are the same" in {
       testUtil.countAll(SERIES) must be_==(testUtil.countAllDistinct(SERIES))
@@ -130,6 +244,22 @@ class TagsServiceTest extends Specification with NowAndLater {
     }
     "ensure tags and distinct distinct are the same" in {
       testUtil.countAll(Tag) must be_==(testUtil.countAllDistinct(Tag))
+    }
+  }
+  "Getting all tags" should {
+    "return all distinct tags" in {
+      Get("/all-tags") ~> routes ~> check {
+        val results = List("less-sexy","medical","not-sexy","procedural",
+          "sexy")
+          .map(t => "\"" + t + "\"")
+          .mkString(",")
+        responseAs[String] shouldEqual s"""{"status":"ok","tags":[$results]}"""
+      }
+    }
+    "return all distinct tags a particular user has attached" in {
+      Get("/all-tags?author=TOM") ~> routes ~> check {
+        responseAs[String] shouldEqual """{"status":"ok","tags":["medical","procedural"]}"""
+      }
     }
   }
 }
@@ -148,7 +278,7 @@ trait NowAndLater extends Specs2RouteTest with BeforeAfterAll {
 
   override def beforeAll() : Unit = {
     println("Preparing constraints for testing!")
-    Try(Await.result(tagsService.createConstraints(),Duration(10,TimeUnit.SECONDS))) match {
+    Try(Await.result(tagsService.createConstraints(),Duration(20,TimeUnit.SECONDS))) match {
       case Failure(t) => t.printStackTrace()
       case Success(s) =>
     }

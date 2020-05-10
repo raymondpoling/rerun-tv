@@ -50,15 +50,14 @@ object Main {
 
     val bindingFuture = Http().bindAndHandle(routes.routes, "0.0.0.0", port)
 
-    println(s"Server online at http://0.0.0.0:$port/\nPress RETURN to stop...")
+    println(s"Server online at http://0.0.0.0:$port/\n")
 
     var worked = true
 
     while(worked) {
       Thread.sleep(10 * 1000)
-      val t = tagsService.keepAlive().map {
+      val t = tagsService.checkConnection().map {
         t =>
-          println("t is? " + t)
           true
       }.recover {
         case t: Throwable => t.printStackTrace()
@@ -70,14 +69,12 @@ object Main {
           println(s"Worked is false")
           false
         case Success(true) =>
-          println("Worked is true")
           true
         case Failure(t) =>
           t.printStackTrace()
           println("Worked was really false!")
           false
       }
-      println("Working? " + worked)
     }
     println("Failed to contact neo4j, crashing!")
     Try(driver.close)

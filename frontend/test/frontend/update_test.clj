@@ -57,22 +57,17 @@
                (:body response)))
           (is (basic-matcher
                "<input id=\"season\" name=\"season\" value=\"2\">"
+               (:body response)))
+          (is (basic-matcher
+               (str "<textarea id=\"tags\" name=\"tags\"></textarea>")
                (:body response))))))
-    (testing "basic episode post"
+    (testing "basic episode post with tags"
       (logger/info "basic episode post")
-      (with-fake-routes-in-isolation
-        {"http://omdb:4011/catalog-id/AAAAA0102010"
-         {:get (fn [_] (make-response {:status "ok"
-                                 :records [{
-                                            :episode_name "new world order"
-                                            :imdbid "tt4567"
-                                            :summary "a brief summary"
-                                            :season 2
-                                            :episode 10
-                                            :thumbnail "http://jpg.com/jpg.jpg"}]}))
-          :post (fn [r]
+              (with-fake-routes-in-isolation
+          {"http://omdb:4011/catalog-id/AAAAA0102010"
+         {:post (fn [r]
                   (make-response
-                   {:status "ok"
+                             {:status "ok"
                     :catalog_ids ["AAAAA0103004"]
                     :records [{:episode_name (:episode_name (:body r))
                                :series (:series (:body r))

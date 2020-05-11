@@ -45,7 +45,10 @@
           (is (basic-matcher
                (str "<input id=\"thumbnail\" name=\"thumbnail\" "
                     "value=\"http://jpg.com/jpg.jpg\">")
-               (:body response))))))
+               (:body response)))
+          (is (basic-matcher
+               (str "<textarea id=\"tags\" name=\"tags\"></textarea>")
+              (:body response))))))
     (testing-with-log-markers "basic series post"
       (with-fake-routes-in-isolation
         {"http://omdb:4011/series/yellow"
@@ -63,32 +66,21 @@
                                :summary (:summary (:body r))
                                :thumbnail "N/A"}]}))}
          }
-        (let [response (app (-> (mock/request
-                                 :post
-                                 "/update-series.html?name=yellow")
-                                (mock/body {:series "yellow"
-                                            :imdbid "tt4343"
-                                            :summary "too yellow"
-                                            :thumbnail "N/A"
-                                            :mode "Save"
-                                            :files "http://crystalball/mnt/values.mkv\nfile://localhost/mnt/value.mkv"})
-                                media-cookie))]
-          (is (= (:status response) 200))
-          (is (basic-matcher
-               "<input id=\"imdbid\" name=\"imdbid\" value=\"tt4343\">"
-               (:body response)))
-          (is (basic-matcher
-               (str "<input id=\"name\" "
-                    "name=\"name\" value=\"yellow\"")
-               (:body response)))
-          (is (basic-matcher
-               (str "<textarea id=\"summary\" name=\"summary\">"
-                    "too yellow</textarea>")
-               (:body response)))
-          (is (basic-matcher
-               (str "<input id=\"thumbnail\" name=\"thumbnail\" "
-                    "value=\"N/A\">")
-               (:body response))))))
+        (let [response (app
+                        (->
+                         (mock/request
+                          :post
+                          "/update-series.html?name=yellow")
+                         (mock/body {:series "yellow"
+                                     :imdbid "tt4343"
+                                     :summary "too yellow"
+                                     :thumbnail "N/A"
+                                     :mode "Save"
+                                     :files "http://crystalball/mnt/values.mkv\nfile://localhost/mnt/value.mkv"})
+                         media-cookie))]
+          (is (= (:status response) 302))
+          (is (get (:headers response) "Location")
+                 "/update-series.html?name=yellow"))))
     (testing-with-log-markers "omdb lookup side-by-side"
       (with-fake-routes-in-isolation
         {"http://omdb:4011/imdbid/series/tt4343"

@@ -34,3 +34,6 @@ develop-jsx.sh
 run.sh
 build-all.sh
 compile-and-run.sh
+target/
+.idea/
+frontend/resources/public/js/

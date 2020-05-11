@@ -1,5 +1,5 @@
 (ns frontend.message-test
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [clojure.test :refer [deftest is]]
             [ring.mock.request :as mock]
             [frontend.handler :refer [app]]
             [clj-http.fake :refer [with-fake-routes-in-isolation]]

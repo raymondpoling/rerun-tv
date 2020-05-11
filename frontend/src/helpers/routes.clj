@@ -13,9 +13,9 @@
                          ["playlist" 4001]
                          ["builder" 4003]
                          ["omdb" 4011]
-                                        ;["omdb" 4004]
                          ["messages" 4010]
-                         ["locator" 4005]))
+                         ["locator" 4005]
+                         ["tags" 4014]))
 
 (defn write-message [{:keys [author title message]}]
   (add-message (:messages hosts)

@@ -54,7 +54,7 @@
                      series season episode)}
    "Go Back to Library"])
 
-(defn make-update-page [episode files catalog-id role]
+(defn make-update-page [episode files catalog-id tags role]
   (html5
     [:head
       [:meta {:charset "utf-8"}]
@@ -66,6 +66,8 @@
        (header "Update Episode" role)
        [:form {:method "post" :action "/update.html"}
         (make-list episode catalog-id)
+        [:label {:for "tags"} "Your Tags"]
+        [:textarea {:name "tags" :id "tags"} (cls/join ", " tags)]
         [:label {:for "files"} "File URLs"]
         [:textarea {:name "files" :id "files"} files]
         [:input {:value "Save" :type "submit" :name "mode"}]
@@ -125,7 +127,7 @@
                       (make-reg-comp k v omdb)))))
         episode)])
 
-(defn side-by-side [episode omdb files catalog-id role]
+(defn side-by-side [episode omdb files catalog-id tags role]
   (html5
     [:head
       [:meta {:charset "utf-8"}]
@@ -140,6 +142,7 @@
         [:label {:for "files"} "File URLs"]
         [:textarea {:name "files" :id "files"} files]
         [:input {:value "Save" :type "submit" :name "mode"}]
+        [:input {:type "hidden" :name "tags" :value tags}]
         [:div {:class "spacer"}]
         (return-to-library (:series episode)
                            (:season episode)

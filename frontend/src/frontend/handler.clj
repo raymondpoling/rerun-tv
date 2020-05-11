@@ -234,7 +234,7 @@
                     (add-tags    (:tags hosts) user (second diffs) catalog-ids))
                   (when (first diffs)
                     (delete-tags (:tags hosts) user (first diffs) catalog_id))
-                  (redirect (str "/update-series.html?series-name=" name)))
+                  (redirect (str "/update-series.html?name=" name)))
                 (let [omdb (first (:records
                                    (get-series-by-imdb-id (:omdb hosts)
                                                           imdbid)))]

@@ -47,7 +47,7 @@
   [:a {:href (str "/library.html?series-name=" series)}
    "Go Back to Library"])
 
-(defn make-series-update-page [series role]
+(defn make-series-update-page [series tags role]
   (html5
     [:head
       [:meta {:charset "utf-8"}]
@@ -59,6 +59,8 @@
        (header "Update Series" role)
        [:form {:method "post" :action "/update-series.html"}
         (make-list series)
+        [:label {:for "tags"} "Your Tags"]
+        [:textarea {:name "tags" :id "tags"} (cls/join ", " tags)]
         [:input {:value "Save" :type "submit" :name "mode"}]
         [:div {:class "spacer"}]
         (return-to-library (:name series))]]]))
@@ -108,7 +110,7 @@
                       (make-reg-comp k v omdb)))))
         series)])
 
-(defn series-side-by-side [series omdb role]
+(defn series-side-by-side [series omdb tags role]
   (html5
     [:head
       [:meta {:charset "utf-8"}]
@@ -121,5 +123,6 @@
        [:form {:method "post" :action "/update-series.html"}
         (make-options series omdb)
         [:input {:value "Save" :type "submit" :name "mode"}]
+        [:input {:value tags :type "hidden" :name "tags"}]
         [:div {:class "spacer"}]
         (return-to-library (:name series))]]]))

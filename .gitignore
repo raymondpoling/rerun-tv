@@ -23,3 +23,17 @@ env/
 */out.txt
 out.txt
 */.nrepl-report
+*/.nrepl-port
+node_modules
+tunnelling.sh
+__pycache__
+babel.sh
+release.sh
+*.yml
+develop-jsx.sh
+run.sh
+build-all.sh
+compile-and-run.sh
+target/
+.idea/
+frontend/resources/public/js/

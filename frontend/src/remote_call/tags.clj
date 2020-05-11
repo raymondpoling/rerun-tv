@@ -3,15 +3,15 @@
             [cheshire.core :refer [generate-string]]
             [common-lib.core :as clc]
             [clj-http.client :as client]
-            [clojure.string :as cls]))
+            [clojure.string :as cls]
+            [clojure.tools.logging :as logger]))
 
 (declare ckt-brkr)
 
 (dh/defcircuitbreaker ckt-brkr {:failure-threshold-ratio [8 10]
                                 :delay-ms 1000})
 
-(def standard-error {:status :failed
-                     :message "tags service not available"})
+(def standard-error [])
 
 (defn include-author? [options author?]
   (merge options (when author? {:author author?})))
@@ -36,7 +36,7 @@
            params (include-author?
                    (when type? {:type type?})
                    author?)]
-       (println "looking up: " url params)
+       (logger/trace "looking up: " url params)
      (:tags
       (:body
        (client/get url
@@ -49,7 +49,7 @@
    (let [url  (str "http://" host "/add/" (cls/join "/" catalog_ids))
          params {:tags (cls/join "," tags)
                  :author author}]
-     (println "Adding: " url params)
+     (logger/trace "Adding: " url params)
    (dh/with-circuit-breaker ckt-brkr
      (:tags (:body
              (client/put
@@ -63,7 +63,7 @@
    (let [url (str "http://" host "/delete/" catalog_id)
          params {:tags (cls/join "," tags)
                  :author author}]
-     (println "Deleting: " url params)
+     (logger/trace "Deleting: " url params)
    (dh/with-circuit-breaker ckt-brkr
      (:tags (:body
              (client/delete

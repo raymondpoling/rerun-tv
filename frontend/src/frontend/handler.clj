@@ -205,9 +205,10 @@
                  tags (fetch-tags (:tags hosts) (:catalog_id series)
                                   :author? user
                                   :type? "SERIES")]
-             (println "series is: " series)
+             (logger/debug "series is: " series)
              (hsu/make-series-update-page series tags role)))))
-  (POST "/update-series.html" [name imdbid thumbnail summary mode catalog_id tags]
+  (POST "/update-series.html" [name imdbid thumbnail summary
+                               mode catalog_id tags]
         (with-authorized-roles ["admin","media"]
           (fn [{{:keys [role user]} :session}]
             (let [series-update {:series {:name name
@@ -217,7 +218,8 @@
                   left (set (fetch-tags (:tags hosts) catalog_id
                                    :author? user
                                    :type? "SERIES"))
-                  right (set (map cls/trim (cls/split tags #",")))
+                  right (if tags (set (map cls/trim (cls/split tags #",")))
+                            #{})
                   diffs (cld/diff left right)
                   patterns [#".{7}" #".{7}.{2}" #".{7}.{2}.{3}"]
                   catalog-ids (filter some?
@@ -265,13 +267,14 @@
                   left (set (fetch-tags (:tags hosts) catalog-id
                                         :author? user
                                         :type? "EPISODE"))
-                  right (set (map cls/trim (cls/split tags #",")))
+                  right (if tags (set (map cls/trim (cls/split tags #",")))
+                            #{})
                   diffs (cld/diff left right)
                   patterns [#".{7}" #".{7}.{2}" #".{7}.{2}.{3}"]
                   catalog-ids (filter some?
                                       (map #(re-find % catalog-id)
                                            patterns))]
-              (println "diffs: " left right "\n" diffs)
+              (logger/debug "diffs: " left right "\n" diffs)
               (if (= "Save" mode)
                 (do
                   (logger/debug "RECORD? " record)
@@ -322,6 +325,6 @@
 (defn -main []
   (let [port (Integer/parseInt (or (System/getenv "PORT") "4008"))]
     (run-server app {:port port})
-    (println "YOHO HERE!!!!"
+    (logger/info "Connecting to redis server: "
              (System/getenv redis-var))
     (logger/info (str "Listening on port " port))))

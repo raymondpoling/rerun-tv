@@ -1,23 +1,37 @@
 #schedule > .schedule {
     display: flex;
+    background-color: lightgray;
     flex-flow: row wrap;
     justify-content: space-evenly;
+    align-items: center;
     padding: 0.5em;
     margin: 0;
 }
 
-li {
+.hidden > ol > li {
     margin-bottom: 1em;
     background-color: lightgray;
     border-radius: 0.5em;
-    width: 12em;
+    /* width: 12em; */
+}
+
+.hidden > ul {
+    /* padding: 0.5em; */
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    display: inline-block;
+}
+
+.hidden > ul > li {
+    paddin: 0;
 }
 
 .block {
     border: solid black 1px;
     min-width: 12em;
-    max-width: 20em;
-    vertical-align: top;
+    max-width: 24em;
+    /* vertical-align: top; */
     margin-bottom: 1em;
     display: inline-block;
 }
@@ -25,12 +39,12 @@ li {
 .block > ol {
     border: solid black 1px;
     padding: 0;
-    height: 8em;
-    overflow-y: auto;
+    display: inline-block;
 }
 
 .header {
     height: 5em;
+    padding: 0.5em;
     display: inline-block;
 }
 
@@ -44,45 +58,57 @@ li {
 }
 
 .upDown {
-    width: 8em;
+    width: 6em;
     background-color: darkgray;
     border-radius: 0.25em;
     margin-left: 0.5em;
     margin-right: 0.5em;
+    vertical-align: top;
     display: inline-block;
 }
 
 .up {
     background-color: green;
-    width: 0.5em;
-    padding: 0.25em 0.5em 0.25em 0.5em;
-    margin: 0.5em 0.5em 0.5em 0.5em;
+    width: 1em;
+    padding: 0;
+    margin: 0.25em 0.25em 0.25em 0.25em;
     border-radius: 1em;
     display: inline-block;
 }
 
 .blank-up {
-    width: 0.5em;
-    padding: 0.25em 0.5em 0.25em 0.5em;
-    margin: 0.5em 0.5em 0.5em 0.5em;
+    width: 1em;
+    padding: 0;
+    margin: 0.25em 0.25em 0.25em 0.25em;
     border-radius: 1em;
+    border: 0;
+    background: transparent;
     display: inline-block;
 }
 
 .del {
     background-color: yellow;
-    width: 0.5em;
-    padding: 0.25em 0.5em 0.25em 0.5em;
-    margin: 0.5em 0.5em 0.5em 0.5em;
+    width: 1em;
+    padding: 0;
+    margin: 0.25em 0.25em 0.25em 0.25em;
+    border-radius: 1em;
+    display: inline-block;
+}
+
+.collExp {
+    background-color: yellow;
+    width: 1em;
+    padding: 0;
+    margin: 0.25em 0.25em 0.25em 0.25em;
     border-radius: 1em;
     display: inline-block;
 }
 
 .down {
     background-color: red;
-    width: 0.5em;
-    padding: 0.25em 0.5em 0.25em 0.5em;
-    margin: 0.5em 0.5em 0.5em 0.5em;
+    width: 1em;
+    padding: 0;
+    margin: 0.25em 0.25em 0.25em 0.25em;
     border-radius: 1em;
     display: inline-block;
 }

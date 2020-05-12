@@ -23,6 +23,7 @@ textarea {
 
 table {
     border-collapse: collapse;
+    background-color: lightgray;
 }
 
  td {

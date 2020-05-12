@@ -32,13 +32,12 @@ function HeaderRow(props) {
           <tr>
             <th className="first" scope="col">Type: Length
               <br/>RR (Repitition Rate)</th>
-            <th colspan={props.maxLength}>Playlists</th>
+            <th colSpan={props.maxLength}>Playlists</th>
           </tr>
         </thead>);
 }
 
 function Head(props) {
-    console.log("props? " + JSON.stringify(props));
     let name = props.obj.type.charAt(0).toUpperCase() + props.obj.type.slice(1);
     return (
         <th className="first" scope="row">{name} {props.obj.name}: {length(props.obj)}
@@ -52,20 +51,20 @@ function colSize(obj,divisor) {
 }
 
 function PlaylistTD(props) {
-    return (<td colspan={colSize(props.obj,props.divisor)}>{props.obj.name}:
+    return (<td colSpan={colSize(props.obj,props.divisor)}>{props.obj.name}:
             {length(props.obj)}</td>);
 }
 
 function MergeTD(props) {
-    return (<td colspan={colSize(props.obj,props.divisor)}></td>);
+    return (<td colSpan={colSize(props.obj,props.divisor)}></td>);
 }
 
 function ComplexTD(props) {
     const out = props.obj.playlists.map(
         (a) =>
             <MakeRow obj={a} medianLength={props.medianLength/props.obj.playlists.length} divisor={props.divisor} />);
-    return (<td colspan={colSize(props.obj,props.divisor)}>
-            <table>{out}</table>
+    return (<td colSpan={colSize(props.obj,props.divisor)}>
+            <table><tbody>{out}</tbody></table>
             </td>);
 }
 
@@ -87,7 +86,6 @@ function MakeBody(props) {
 }
 
 function tds(props,medianLength,divisor) {
-    console.log("props.type is: " + props.type);
     return {
         playlist: <PlaylistTD obj={props} medianLength={medianLength} divisor={divisor} />,
         merge: <MergeTD obj={props} medianLength={medianLength}
@@ -119,12 +117,9 @@ function MakeRow(props) {
 }
 
 function MakeTable(props) {
-    console.log("What are playlist? " + props.playlist);
     const lengths = props.playlist.map(length);
     const maxLength = lengths.reduce((a,b) => Math.max(a,b));
-    console.log("Length? " + (Math.floor(maxLength/2)));
     const medianLength = lengths.sort()[Math.floor(lengths.length/2)];
-    console.log("median length: " + medianLength);
     return (
         <ErrorBoundary>
           <div id="table-holder">

@@ -118,7 +118,7 @@ function MakeRow(props) {
 
 function MakeTable(props) {
     const lengths = props.playlist.map(length);
-    const maxLength = lengths.reduce((a,b) => Math.max(a,b));
+    const maxLength = lengths.reduce((a,b) => Math.max(a,b),0);
     const medianLength = lengths.sort()[Math.floor(lengths.length/2)];
     return (
         <ErrorBoundary>

@@ -107,34 +107,32 @@
            (let [schedule-names (get-schedules (:schedule hosts))]
              (schedule-builder-get schedule-names message role)))))
   (POST "/schedule-builder.html" [schedule-name schedule-body preview mode]
-        (with-authorized-roles ["admin","media"]
-          (fn [{{:keys [user role]} :session}]
-            (let [playlists (get-playlists (:playlist hosts))
-                  validity (if preview
-                             #(validate-schedule (:builder hosts) %)
-                             #(send-schedule (:builder hosts) mode schedule-name %))
-                  got-sched (get-schedule (:schedule hosts) schedule-name)
-                  sched (if (not-empty schedule-body)
-                          (make-schedule-string schedule-body validity)
-                          (if (nil? got-sched)
-                            (make-schedule-map {:name schedule-name
-                                                :playlists
-                                                [{:name ""
-                                                  :length 1
-                                                  :type "playlist"}]} validity)
-                            (make-schedule-map got-sched validity)))]
-              (when (and (= "ok" (:status (valid? sched))) (not preview))
-                (write-message
-                 {:author "System"
-                  :title (str "Schedule " schedule-name " " mode "d!")
-                  :message (str "A schedule has been " (cls/lower-case mode) "d by " user ", "
-                                (html [:a {:href
-                                           (str "/preview.html?schedule="
-                                                schedule-name)}
-                                       " check it out!"]))}))
-              (if (and (= mode "Create") got-sched)
-                (redirect (str "/schedule-builder.html?message=Schedule with name '" schedule-name "' already exists"))
-                (schedule-builder sched schedule-name playlists mode role))))))
+    (with-authorized-roles ["admin","media"]
+      (fn [{{:keys [user role]} :session}]
+        (let [playlists (get-playlists (:playlist hosts))
+              validity (if preview
+                #(validate-schedule (:builder hosts) %)
+                #(send-schedule (:builder hosts) mode schedule-name %))
+              got-sched (get-schedule (:schedule hosts) schedule-name)
+              sched (if (not-empty schedule-body)
+                      (make-schedule-string schedule-body validity)
+                      (if (nil? got-sched)
+                        (make-schedule-map {:name schedule-name
+                                               :playlists
+                                               []} validity)
+                        (make-schedule-map got-sched validity)))]
+          (when (and (= "ok" (:status (valid? sched))) (not preview))
+            (write-message
+               {:author "System"
+                :title (str "Schedule " schedule-name " " mode "d!")
+                :message (str "A schedule has been " (cls/lower-case mode) "d by " user ", "
+                              (html [:a {:href
+                                         (str "/preview.html?schedule="
+                                              schedule-name)}
+                                     " check it out!"]))}))
+          (if (and (= mode "Create") got-sched)
+            (redirect (str "/schedule-builder.html?message=Schedule with name '" schedule-name "' already exists"))
+            (schedule-builder sched schedule-name playlists mode role))))))
   (POST "/login" [username password]
         (logger/debug "hosts map is? " hosts)
         (let [auth (validate-user
@@ -234,7 +232,7 @@
                     (add-tags    (:tags hosts) user (second diffs) catalog-ids))
                   (when (first diffs)
                     (delete-tags (:tags hosts) user (first diffs) catalog_id))
-                  (redirect (str "/update-series.html?name=" name)))
+                  (redirect (str "/update-series.html?series-name=" name)))
                 (let [omdb (first (:records
                                    (get-series-by-imdb-id (:omdb hosts)
                                                           imdbid)))]

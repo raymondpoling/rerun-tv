@@ -17,12 +17,13 @@ textarea {
   margin: 0;
   padding: 0;
   overflow-x: auto;
-  margin: 2em auto 2em auto;
+  margin: 0 auto 2em auto;
   display: block;
 }
 
 table {
     border-collapse: collapse;
+    background-color: lightgray;
 }
 
  td {
@@ -81,3 +82,4 @@ tr {
 .filler {
   background-color: lightgray;
 }
+

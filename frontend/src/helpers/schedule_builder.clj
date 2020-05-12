@@ -22,9 +22,9 @@
   ScheduleType
   (render [self row? small divisor] (if row?
     (let [render (render self false small divisor)
-          len (int (Math/floor (/ (first render) divisor)))]
+          len (Math/round (float (/ (first render) divisor)))]
       [len (vec (concat (make-row "playlist" length (pretty-divide length small)) (second render)))])
-    (let [len (int (Math/floor (/ length divisor)))]
+    (let [len (Math/round (float (/ length divisor)))]
       [len (list
         [:td {:colspan len}
           [:span {:class "name"} name]

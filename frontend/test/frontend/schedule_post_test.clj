@@ -89,20 +89,10 @@
                space?
                [object-start "\"name\"" ":" "\"two\","
                 "\"playlists\"" ":" list-start
-                object-start "\"name\"" ":" "\"\","
-                "\"length\"" ":" "1,"
-                "\"type\"" ":" "\"playlist\""
-                object-stop list-stop object-stop])
+                list-stop object-stop])
               (:body response)))
          (is (basic-matcher
-              "<tr class=\"playlist\">"
-              (:body response)))
-         (is (basic-matcher
-              "<th class=\"first\" scope=\"row\">Playlist: 1<br>RR: 1.00</th>"
-              (:body response)))
-         (is (basic-matcher
-              (str "<td colspan=\"1\"><span class=\"name\"></span>"
-                   "<br><span class=\"count\">Count: 1</span></td>")
+              "<tr><td class=\"empty\">Empty</td></tr>"
               (:body response)))
          (is (basic-matcher
               (str

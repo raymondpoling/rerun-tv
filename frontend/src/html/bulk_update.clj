@@ -6,7 +6,10 @@
   (html5
     [:head
       [:meta {:charset "utf-8"}]
-      [:link {:rel "stylesheet" :href "/css/master.css"}]
+     [:link {:rel "stylesheet" :href "/css/master.css"}]
+     [:link {"rel" "icon" 
+             "type" "image/ico" 
+             "href" "/favicon.ico"}]
      [:link {:rel "stylesheet" :href "/css/builder.css"}]
      [:link {:rel "stylesheet" :href "/css/bulk.css"}]
       [:title "ReRun TV - Update Series"]]

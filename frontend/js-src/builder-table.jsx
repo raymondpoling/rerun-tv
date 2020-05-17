@@ -51,19 +51,19 @@ function colSize(obj,divisor) {
 }
 
 function PlaylistTD(props) {
-    return (<td colSpan={colSize(props.obj,props.divisor)}>{props.obj.name}:
+    return (<td key={props.obj.id} colSpan={colSize(props.obj,props.divisor)}>{props.obj.name}:
             {length(props.obj)}</td>);
 }
 
 function MergeTD(props) {
-    return (<td colSpan={colSize(props.obj,props.divisor)}></td>);
+    return (<td key={props.obj.id} colSpan={colSize(props.obj,props.divisor)}></td>);
 }
 
 function ComplexTD(props) {
     const out = props.obj.playlists.map(
         (a) =>
-            <MakeRow obj={a} medianLength={props.medianLength/props.obj.playlists.length} divisor={props.divisor} />);
-    return (<td colSpan={colSize(props.obj,props.divisor)}>
+            <MakeRow key={a.id} obj={a} medianLength={props.medianLength/props.obj.playlists.length} divisor={props.divisor} />);
+    return (<td key={props.obj.id} colSpan={colSize(props.obj,props.divisor)}>
             <table><tbody>{out}</tbody></table>
             </td>);
 }
@@ -75,7 +75,7 @@ function MultiTD(props) {
 
 function MakeBody(props) {
     const rows = props.playlist
-          .map((a) => <MakeRow obj={a} medianLength={props.medianLength} divisor={props.divisor} />);
+          .map((a) => <MakeRow key={a.id} obj={a} medianLength={props.medianLength} divisor={props.divisor} />);
     return (
         <tbody>
           <ErrorBoundary>
@@ -87,11 +87,11 @@ function MakeBody(props) {
 
 function tds(props,medianLength,divisor) {
     return {
-        playlist: <PlaylistTD obj={props} medianLength={medianLength} divisor={divisor} />,
-        merge: <MergeTD obj={props} medianLength={medianLength}
+        playlist: <PlaylistTD obj={props} key={props.id} medianLength={medianLength} divisor={divisor} />,
+        merge: <MergeTD obj={props} key={props.id} medianLength={medianLength}
         divisor={divisor} />,
-        multi: <MultiTD obj={props} medianLength={medianLength} divisor={divisor} />,
-        complex: <ComplexTD obj={props} medianLength={medianLength} divisor={divisor} />
+        multi: <MultiTD obj={props} key={props.id} medianLength={medianLength} divisor={divisor} />,
+        complex: <ComplexTD obj={props} key={props.id} medianLength={medianLength} divisor={divisor} />
     }[props.type];
 }
 
@@ -108,7 +108,7 @@ function MakeRow(props) {
     const out = tableDispatch(props.obj).map((a) =>tds(a,props.medianLength,props.divisor));
     return (
         <ErrorBoundary>
-          <tr className={props.obj.type}>
+          <tr className={props.obj.type} key={props.obj.id}>
             <Head obj={props.obj} medianLength={props.medianLength} divisor={props.divisor} />
             {out}
           </tr>

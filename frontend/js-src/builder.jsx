@@ -2,17 +2,17 @@
 
 const e = React.createElement;
 
-Object.defineProperty(String.prototype, 'hashCode', {
-    value: function() {
-        var hash = 0, i, chr;
-        for (i = 0; i < this.length; i++) {
-            chr   = this.charCodeAt(i);
-            hash  = ((hash << 5) - hash) + chr;
-            hash |= 0; // Convert to 32bit integer
-        }
-        return hash;
+class Counter {
+    constructor() {
+        this.id = 0;
     }
-});
+
+    nextId() {
+        let current = this.id;
+        this.id = this.id + 1;
+        return current;
+    }
+}
 
 class Content extends React.Component {
     constructor(props) {
@@ -26,15 +26,36 @@ class Content extends React.Component {
         this.handleDel = this.handleDel.bind(this);
         this.handleButton = this.handleButton.bind(this);
         this.multiChange = this.multiChange.bind(this);
+        this.counter = new Counter();
+
+        let addId = (obj) => {
+            let toReturn = Object.assign({},obj);
+            toReturn.id = this.counter.nextId();
+            if(obj.type == 'playlist') {
+                console.log("Giving id " + toReturn.id + " to " + obj.name);
+                return toReturn;
+            } else if (obj.type == 'multi') {
+                toReturn.playlist = addId(toReturn.playlist);
+                return toReturn;
+            } else {
+                toReturn.playlists = toReturn.playlists.map(addId);
+                return toReturn;
+            }
+        };
+
         this.state = {
-            schedule: props.schedule,
+            schedule: addId(props.schedule),
             history: [],
             mode: props.mode,
             visible:  {table:"none",
                        builder:"block",
                        json:"none"}
         };
+
+
     }
+
+
 
     handleButton(id) {
         let update = {table:"none",
@@ -68,7 +89,8 @@ class Content extends React.Component {
                       handleDown: this.handleDown,
                       handleAdd: this.handleAdd,
                       handleDel: this.handleDel,
-                      multiChange: this.multiChange
+                      multiChange: this.multiChange,
+                      addId: this.addId
                   }} />
               </div>
               <div style={{display: this.state.visible.json}}>
@@ -76,7 +98,8 @@ class Content extends React.Component {
                   <textarea className={this.state.schedule.name}
                             name="schedule-body"
                             readOnly={true}
-                            value={JSON.stringify(this.state.schedule,null,2)} />
+                            value={JSON.stringify(this.state.schedule,null,2)}
+                  />
                   <input type="hidden"
                          readOnly={true}
                          name="mode"
@@ -140,6 +163,7 @@ class Content extends React.Component {
         find = index.length > 0 ? this.walk(index) :
             [undefined,this.state.schedule.playlists];
         index = find[0];
+        object.id = this.counter.nextId();
         if(index == undefined) {
             find[1].push(object);
         } else {
@@ -171,6 +195,15 @@ class Content extends React.Component {
         tochange['start'] = start;
         this.setState({schedule: this.state.schedule,
                        history: this.state.history.concat(this.state.schedule)});
+    }
+
+    addId(index,id) {
+        const find = this.walk(index);
+        index = find[0];
+        find[1][index].id = id;
+        this.setState({
+            schedule: this.state.schedule 
+        });
     }
 
 }
@@ -269,65 +302,57 @@ function CollapseExpand(props) {
     />);
 }
 
-function dispatch(handlers,index,lastIndex,obj) {
+function dispatch(handlers,index,lastIndex,obj,id) {
     return {
-        'playlist': (<Playlist
-              index={index}
-        key={(index.toString() + obj.name +
-              length(obj).toString).hashCode()}
-        lastIndex={lastIndex}
-        handlers={handlers}
-        type={obj.type}
-        name={obj.name}
-        length={obj.length} />),
+        'playlist': (<Playlist index={index}
+                               key={obj.id+index}
+                               lastIndex={lastIndex}
+                               handlers={handlers}
+                               type={obj.type}
+                               name={obj.name}
+                               length={obj.length} />),
         'merge': (<Merge type={obj.type}
-                                    index={index}
-                                    key={(index.toString() +
-                                          length(obj).toString).hashCode()}
-                                    lastIndex={lastIndex}
-                                    handlers={handlers}
-                                    playlists={obj.playlists} />),
+                         index={index}
+                         key={obj.id+index}
+                         lastIndex={lastIndex}
+                         handlers={handlers}
+                         playlists={obj.playlists} />),
         'multi': (<Multi playlist={obj.playlist}
-                            index={index}
-                         key={(index.toString() + obj.start + obj.step +
-                                  length(obj).toString).hashCode()}
-                            handlers={handlers}
-                            lastIndex={lastIndex}
-                            type={obj.type}
-                            start={obj.start}
-                            step={obj.step} />),
+                         index={index}
+                         key={obj.id+index}
+                         handlers={handlers}
+                         lastIndex={lastIndex}
+                         type={obj.type}
+                         start={obj.start}
+                         step={obj.step} />),
         'complex': (<Complex type={obj.type}
-                                 index={index}
-                                 key={(index.toString() +
-                                       length(obj).toString).hashCode()}
-                                 lastIndex={lastIndex}
-                                 handlers={handlers}
-                                 playlists={obj.playlists}
-                  />)
+                             index={index}
+                             key={obj.id+index}
+                             lastIndex={lastIndex}
+                             handlers={handlers}
+                             playlists={obj.playlists}
+                    />)
     }[obj.type];
 }
 
-function schedule_dispatch(handlers,index,lastIndex,obj) {
+function schedule_dispatch(handlers,index,lastIndex,obj,id) {
     return {
         'playlist': (<PlaylistHead type={obj.type}
-                                         index={index}
-                                         key={(index + obj.name + length(obj)
-                                               .toString()).hashCode()}
-                                         lastIndex={lastIndex}
-                                         handlers={handlers}
-                                         name={obj.name}
-                                         length={obj.length} />),
+                                   index={index}
+                                   key={obj.id+index}
+                                   lastIndex={lastIndex}
+                                   handlers={handlers}
+                                   name={obj.name}
+                                   length={obj.length} />),
         'merge': (<Merge type={obj.type}
                          index={index}
-                         key={(index + obj.type + 
-                               length(obj)).hashCode()}
+                         key={obj.id+index}
                          lastIndex={lastIndex}
                          handlers={handlers}
                          playlists={obj.playlists}/>),
         'multi': (<Multi playlist={obj.playlist}
                          index={index}
-                         key={index.toString() + obj.start + obj.step +
-                              length(obj).toString().hashCode()}
+                         key={obj.id+index}
                          lastIndex={lastIndex}
                          handlers={handlers}
                          type={obj.type}
@@ -335,7 +360,7 @@ function schedule_dispatch(handlers,index,lastIndex,obj) {
                          step={obj.step} />),
         'complex': (<Complex type={obj.type}
                              index={index}
-                             key={index + length(obj).toString().hashCode()}
+                             key={obj.id+index}
                              lastIndex={lastIndex}
                              handlers={handlers}
                              playlists={obj.playlists}
@@ -383,6 +408,7 @@ class Merge extends React.Component {
             hidden: true
         };
         this.handleClick = this.handleClick.bind(this);
+        this.counter = new Counter();
     }
 
     handleClick() {
@@ -393,7 +419,8 @@ class Merge extends React.Component {
         const props = this.state.props;
         const result = make_indexed_elements(props,
                                              props.index,
-                                             props.playlists.length-1);
+                                             props.playlists.length-1,
+                                             this.counter);
         const up_down = makeUpDown(props,true,
                                    this.state.hidden ?
                                    'expand' :
@@ -430,6 +457,7 @@ class Multi extends React.Component {
         this.handleClick = this.handleClick.bind(this);
         // this.handleStep = this.handleStep.bind(this);
         // this.handleStart = this.handleStart.bind(this);
+        this.counter = new Counter();
     }
 
     handleClick() {
@@ -446,7 +474,7 @@ class Multi extends React.Component {
 
     render() {
         const props = this.state.props;
-        const result = make_indexed_elements(props,props.index,0);
+        const result = make_indexed_elements(props,props.index,0,this.counter);
         const up_down = makeUpDown(props,true,
                                    this.state.hidden ?
                                    'expand' :
@@ -471,7 +499,7 @@ class Multi extends React.Component {
                                               parseInt(evt.target.value),
                                               this.state.start)}
                          onChange={(evt) => this.handleStep(evt)}
-                                   />
+                  />
                   <br/>
                   <label htmlFor="start">Start: </label>
                   <input name="start" type="text"
@@ -502,6 +530,7 @@ class Complex extends React.Component {
             hidden: true
         };
         this.handleClick = this.handleClick.bind(this);
+        this.counter = new Counter();
     }
 
     handleClick() {
@@ -511,7 +540,7 @@ class Complex extends React.Component {
     render() {
         const props = this.state.props;
         const result = make_indexed_elements(props, props.index,
-                                             props.playlists.length-1);
+                                             props.playlists.length-1,this.counter);
         const index = props.index;
         const up_down = makeUpDown(props,true,
                                    this.state.hidden ?
@@ -538,7 +567,7 @@ class Complex extends React.Component {
     }
 }
 
-function make_indexed_elements(props,index,lastIndex) {
+function make_indexed_elements(props,index,lastIndex,counter) {
     const result = [];
     if(undefined != props.playlist) {
         let t = index.slice();
@@ -556,14 +585,23 @@ function make_indexed_elements(props,index,lastIndex) {
     return result;
 }
 
-function Schedule(props) {
+class Schedule extends React.Component {
+    constructor(props) {
+        super(props);
+        this.counter = new Counter();
+        this.state = {props: props};
+    }
+
+    render() {
+        const props = this.state.props;
     const result = [];
     const lastIndex = props.playlists.length-1;
     for (let i in props.playlists) {
         result.push(schedule_dispatch(props.handlers
                                       ,[i]
-                                      ,lastIndex,
-                                      props.playlists[i]));
+                                      ,lastIndex
+                                      ,props.playlists[i]
+                                      ,this.counter));
     }
 
     return (
@@ -576,7 +614,7 @@ function Schedule(props) {
         </div>
     );
 }
-
+}
 class MakeElement extends React.Component {
     constructor(props) {
         super(props);

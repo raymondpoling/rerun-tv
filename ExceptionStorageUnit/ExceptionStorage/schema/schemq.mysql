@@ -1,0 +1,23 @@
+CREATE SCHEMA exception;
+
+CREATE TABLE exception.tests (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(20) NOT NULL,
+  `cron` char(14) DEFAULT NULL,
+  UNIQUE KEY `id` (`id`),
+  UNIQUE KEY `by_name` (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+
+CREATE TABLE exception.results (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `date` datetime NOT NULL,
+  `test_id` bigint(20) unsigned NOT NULL,
+  `passFail` tinyint(1) NOT NULL,
+  `remediationSucceeded` tinyint(1) NOT NULL,
+  `statusMessage` text,
+  UNIQUE KEY `id` (`id`),
+  KEY `test_id` (`test_id`),
+  KEY `by_date_id` (`date`,`test_id`),
+  CONSTRAINT `results_ibfk_1` FOREIGN KEY (`test_id`) REFERENCES `tests` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;

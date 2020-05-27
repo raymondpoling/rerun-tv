@@ -507,7 +507,7 @@ class Multi extends React.Component {
                          onBlur = {(evt) =>
                                    props.handlers
                                    .multiChange(props.index,
-                                                props.step,
+                                                this.state.step,
                                                 parseInt(evt.target.value))}
                          onChange={(evt) => this.handleStart(evt)}
                   />

@@ -465,11 +465,11 @@ class Multi extends React.Component {
     }
 
     handleStep(evt) {
-        this.setState({step:evt.target.value});
+        this.setState({step:parseInt(evt.target.value)});
     }
 
     handleStart(evt) {
-        this.setState({start:evt.target.value});
+        this.setState({start:parseInt(evt.target.value)});
     }
 
     render() {

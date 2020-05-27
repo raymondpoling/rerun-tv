@@ -37,14 +37,16 @@
 (defn bulk-create-series [host series create]
   (clc/log-on-error
    {:status "failed"}
-   (let [url (str "http://" host "/series/" (url-encode series))]
+   (let [url (str "http://" host "/series/" (url-encode series))
+         result (:body
+                 (client/post url
+                              {:as :json
+                               :body (generate-string create)
+                               :headers {:content-type "application/json"}}))]
      (logger/debug "url: " url)
      (cache/evict host "/series")
-     (:body
-      (client/post url
-                  {:as :json
-                   :body (generate-string create)
-                   :headers {:content-type "application/json"}})))))
+     (cache/evict host "/series/" (url-encode series))
+     result)))
 
 (defn save-episode [host series episode]
   (clc/log-on-error

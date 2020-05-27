@@ -38,15 +38,14 @@
   (clc/log-on-error
    {:status "failed"}
    (let [url (str "http://" host "/series/" (url-encode series))
-         result (:body
-                 (client/post url
+         result (client/post url
                               {:as :json
                                :body (generate-string create)
-                               :headers {:content-type "application/json"}}))]
+                               :headers {:content-type "application/json"}})]
      (logger/debug "url: " url)
      (cache/evict host "/series")
-     (cache/evict host "/series/" (url-encode series))
-     result)))
+     (cache/evict host (str "/series/" (url-encode series)))
+     (:body result))))
 
 (defn save-episode [host series episode]
   (clc/log-on-error

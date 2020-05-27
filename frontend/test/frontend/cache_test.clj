@@ -95,7 +95,7 @@
                          :catalog_ids ["TEST04301001"]
                          :results ["a" "b" "c"]})})
         "http://omdb:4011/series/test"
-        (fn [_] {:status 200 :body {}}) ;; not actually used
+        (fn [_] {:status 200 :body "{}"}) ;; not actually used
         }
        (let [to-save {:records [{:episode_name "notTest1"
                                  :summary "something else"

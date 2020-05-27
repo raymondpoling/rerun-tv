@@ -4,7 +4,7 @@
    [clojure.string :as cls]))
 
 (defn pretty-divide [upper lower]
-  (format "%.2f" (float (/ upper lower))))
+  (format "%.2f" (/ (double upper) (double lower))))
 
 (defn make-row [class length rr & extra]
   (list :tr {:class class}
@@ -22,9 +22,9 @@
   ScheduleType
   (render [self row? small divisor] (if row?
     (let [render (render self false small divisor)
-          len (Math/round (float (/ (first render) divisor)))]
+          len (Math/round (/ (double (first render)) (double divisor)))]
       [len (vec (concat (make-row "playlist" length (pretty-divide length small)) (second render)))])
-    (let [len (Math/round (float (/ length divisor)))]
+    (let [len (Math/round (/ (double length) (double divisor)))]
       [len (list
         [:td {:colspan len}
           [:span {:class "name"} name]
@@ -43,7 +43,8 @@
             (make-row "merge" (length self) (pretty-divide (length self) small))
             (map second render)))])
       (let [render (map #(render % false small divisor) playlists)]
-        [(reduce + (map first render)) (vec (reduce concat (map second render)))])))
+        [(try (reduce + (map first render)) (catch ArithmeticException _ ##Inf))
+         (vec (reduce concat (map second render)))])))
   (length [self] (reduce + (map #(length %) playlists))))
 
 (defrecord Multi [playlist step]
@@ -65,13 +66,15 @@
               "Step: " step [:br]
               "RR: " (pretty-divide (length self) small)])
               (second render))])))
-  (length [self] (float (/ (length playlist) step))))
+  (length [self]  (/ (double (length playlist)) (double step))))
 
 (defrecord Complex [playlists]
   ScheduleType
   (render [self row? small divisor]
     (if row?
-      (let [render (map #(render % true (/ small (count playlists)) divisor)
+      (let [render (map #(render % true (/ (double small)
+                                           (double (count playlists)))
+                                 divisor)
                         playlists)]
         [(length self) (vec
               (concat
@@ -82,7 +85,9 @@
                           small))
                (list [:td {:colspan (length self)}
                       [:table (map second render)]])))])
-      (let [render (map #(render % true (/ small (count playlists)) divisor)
+      (let [render (map #(render % true (/ (double small)
+                                           (double (count playlists)))
+                                 divisor)
                         playlists)]
         [(length self)
          (list [:td {:colspan (apply max (map length playlists))} [:table (map second render)]])])))

@@ -573,6 +573,49 @@
                "<br><span class=\"count\">Count: 12</span></td>")
               (:body response))))))
     (testing-with-log-markers
+     "media pulls table with just multi, divide by zero error"
+     (with-fake-routes-in-isolation
+       (merge standard-routes
+              {"http://schedule:4000/two"
+               (fn [_] (make-response
+                        {:status "ok"
+                         :schedule {
+                                    :name "two"
+                                    :playlists
+                                    [{:type "multi"
+                                      :step 0
+                                      :start 1
+                                      :playlist {:type "merge"
+                                                 :playlists
+                                                 [{:type "playlist"
+                                                   :name "e"
+                                                   :length 42}
+                                                  {:type "playlist"
+                                                   :name "a"
+                                                   :length 12}]}}]}
+                         }))})
+       (let [response (app (-> (mock/request
+                                :post
+                                "/schedule-builder.html")
+                               media-cookie
+                               (mock/body {:schedule-name "two"
+                                           :preview "true"
+                                           :mode "Update"})))]
+         (is (= (:status response) 200))
+         (is (basic-matcher
+               "<tr class=\"multi\">.*</tr>"
+              (:body response)))
+         (is (basic-matcher
+              (str
+               "<th class=\"first\" scope=\"row\">"
+               "Multi: Infinity<br>RR: NaN<br>Step: 0</th>")
+              (:body response)))
+         (is (basic-matcher
+              (str
+               "<td colspan=\"9223372036854775807\"><span class=\"name\">e</span>"
+               "<br><span class=\"count\">Count: 42</span></td>")
+              (:body response))))))
+    (testing-with-log-markers
      "media pulls table with just complex"
      (with-fake-routes-in-isolation
        (merge standard-routes

@@ -65,4 +65,4 @@
             formats (when (= (:status r) "ok")
                       (:formats r))]
         (make-preview-page sched schedule-list (- idx 1)
-                           update frames formats role)))))
+                           update frames formats select-format role)))))

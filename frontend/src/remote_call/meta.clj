@@ -32,6 +32,7 @@
                                             "application/json"}}))]
        (dorun (map #(cache/evict host (str "/catalog-id/" %))
                    (:catalog_ids response)))
+       (cache/evict host (str "/series/" (url-encode series)))
        response))))
 
 (defn bulk-create-series [host series create]

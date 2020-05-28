@@ -44,9 +44,9 @@
                 (not-empty (:thumbnail (:series records))))
           [:img {:src (:thumbnail (:series records))}])
         [:p (:summary (:series records))[:br]
-         (let [seasons (apply max (map :season (:records records)))
+         (let [seasons (apply max (cons 0 (map :season (:records records))))
                episodes (count (:records records))
-               avg-episodes (format "%.2f" (float (/ episodes seasons)))]
+               avg-episodes (format "%.2f"  (/ (double episodes) (double seasons)))]
            (format "There are %s episodes over %s seasons, for an average of %s episodes per seasons" episodes seasons avg-episodes))[:br]
          (when (and (not= (:imdbid (:series records)) "N/A")
                     (not-empty (:imdbid (:series records))))

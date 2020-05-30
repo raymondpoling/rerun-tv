@@ -46,7 +46,7 @@ namespace ExceptionStorageTest
             };
             var result = new ResultIdFree {
                 Date = DateTime.Now,
-                Test = test,
+                Test = test.Name,
                 PassFail = false,
                 RemediationSucceeded = false,
                 StatusMessage = "Failed to even run"
@@ -86,7 +86,7 @@ namespace ExceptionStorageTest
             };
             var result = new ResultIdFree {
                 Date = DateTime.Now,
-                Test = test,
+                Test = test.Name,
                 PassFail = false,
                 RemediationSucceeded = false,
                 StatusMessage = "Failed to even run twice"
@@ -116,7 +116,7 @@ namespace ExceptionStorageTest
             
             var viewResult = Assert.IsType<Result<ResultIdFree>>(actualResult);
             Assert.True(viewResult.status == "ok", "Test was not ok!");
-            Assert.True(viewResult.results.First().Test.Name == test.Name, "Wrong name: " + viewResult.results.First().Test.Name);
+            Assert.True(viewResult.results.First().Test == test.Name, "Wrong name: " + viewResult.results.First().Test);
             Assert.True(viewResult.results.Count == 1, "Wrong Length " + viewResult.results.Count);
         }
 
@@ -131,21 +131,21 @@ namespace ExceptionStorageTest
             };
             var result1 = new ResultIdFree {
                 Date = DateTime.Now,
-                Test = test,
+                Test = test.Name,
                 PassFail = false,
                 RemediationSucceeded = false,
                 StatusMessage = "Failed to even run twice"
             };
             var result2 = new ResultIdFree {
                 Date = DateTime.Now,
-                Test = test,
+                Test = test.Name,
                 PassFail = false,
                 RemediationSucceeded = false,
                 StatusMessage = "Failed to even run twice"
             };
             var result3 = new ResultIdFree {
                 Date = DateTime.Now,
-                Test = test,
+                Test = test.Name,
                 PassFail = false,
                 RemediationSucceeded = false,
                 StatusMessage = "Failed to even run twice"
@@ -175,7 +175,7 @@ namespace ExceptionStorageTest
             
             var viewResult = Assert.IsType<Result<ResultIdFree>>(actualResult);
             Assert.True(viewResult.status == "ok", "Test was not ok!");
-            Assert.True(viewResult.results.First().Test.Name == test.Name, "Wrong name: " + viewResult.results.First().Test.Name);
+            Assert.True(viewResult.results.First().Test == test.Name, "Wrong name: " + viewResult.results.First().Test);
             Assert.True(viewResult.results.Count == 3, "Wrong Length " + viewResult.results.Count);
         }
     }

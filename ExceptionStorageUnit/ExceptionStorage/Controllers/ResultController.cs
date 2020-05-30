@@ -11,8 +11,20 @@ using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace ExceptionStorage.Controllers
 {
+    [ApiController]
+    [Route("{*url}", Order = 999)]
+    public class NotFoundController : ControllerBase
+    {
 
-   
+        public Result1 CatchAll()
+        {
+            return new Result1
+                {
+                    status = "not found"
+                };
+        }
+    }
+
     [ApiController]
     [Route("[controller]")]
     public class ResultController : ControllerBase
@@ -29,17 +41,13 @@ namespace ExceptionStorage.Controllers
         [HttpGet("{name}")]
         public IResult Get(string name)
         {
-            Console.WriteLine("Looking for: " + name);
             using (var context = new exceptionContext())
             {
                 var records = context.Results
                     .Where(s => s.Test.Name == name)
                     .Include(s => s.Test)
                     .Select(s => new ResultIdFree {
-                        Test = new TestIdFree {
-                            Name = s.Test.Name,
-                            Cron = s.Test.Cron
-                        },
+                        Test =  s.Test.Name,
                         Date = s.Date,
                         PassFail = s.PassFail > 0,
                         RemediationSucceeded = s.RemediationSucceeded > 0,
@@ -71,9 +79,7 @@ namespace ExceptionStorage.Controllers
         {
             using (var context = new exceptionContext())
             {
-                Console.WriteLine("Name: " + obj.StatusMessage);
-                
-                if (obj.Test.Name == name)
+                if (obj.Test == name)
                 {
                     var test = context.Tests
                         .Where(s => s.Name == name)
@@ -100,5 +106,13 @@ namespace ExceptionStorage.Controllers
                 }
             }
         }
+        [Route("{*url}", Order = 999)]
+        public Result1 CatchAll()
+            {
+                return new Result1
+                    {
+                        status = "not found"
+                    };
+            }
     }
 }

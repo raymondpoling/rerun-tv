@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using System.Configuration;
+using Microsoft.Extensions.Configuration;
 
 namespace ExceptionStorage.ExceptionModels
 {
@@ -21,23 +22,19 @@ namespace ExceptionStorage.ExceptionModels
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            try {
-                var s =  Microsoft
-   .Extensions
-   .Configuration
-   .ConfigurationExtensions
-   .GetConnectionString(this.Configuration, "MySql");
-                foreach (object i in s) {
-                    Console.WriteLine("Connection string: " + i.ToString());
-                }
-                
-            } catch (Exception e) {
-                Console.WriteLine("Failed?" + e.ToString());
-            }
             
             if (!optionsBuilder.IsConfigured)
             {
-                    optionsBuilder.UseMySQL(ConfigurationManager.ConnectionStrings["MySql"].ConnectionString);
+                var t = "";
+               try {
+                    t = Environment.GetEnvironmentVariable("DB_STRING");
+                } catch (Exception e) {
+                    t = "";
+                }
+                if ((t is null) || t.Equals("")) {
+                     t = "server=localhost;port=3306;user=exception_user;password=exception;database=exception";
+                }
+                optionsBuilder.UseMySQL(t);
             }
         }
 

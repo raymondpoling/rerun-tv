@@ -25,7 +25,6 @@ namespace ExceptionStorage.Controllers
         [HttpGet("{name}")]
         public IResult Get(string name)
         {
-            Console.WriteLine("Looking for: " + name);
             using (var context = new exceptionContext())
             {
                 var records = context.Tests
@@ -44,7 +43,6 @@ namespace ExceptionStorage.Controllers
                 }
                 else
                 {
-                    Console.WriteLine("333333333333Got test id free: " + records);
                     return new Result<TestIdFree>
                     {
                         status = "ok",
@@ -60,9 +58,7 @@ namespace ExceptionStorage.Controllers
         {
             using (var context = new exceptionContext())
             {
-                Console.WriteLine("Name: " + obj.Name);
-                Console.WriteLine("Cron: " + obj.Cron);
-
+                
                 if (obj.Name == name)
                 {
                     context.Add(obj);
@@ -81,5 +77,23 @@ namespace ExceptionStorage.Controllers
                 }
             }
         }
+
+        [Route("{*url}", Order = 999)]
+        public Result<TestIdFree> CatchAll()
+            {
+                 using (var context = new exceptionContext())
+            {
+                 var records = context.Tests
+                    .Select(obj => new TestIdFree {
+                        Name = obj.Name,
+                        Cron = obj.Cron
+                    })
+                    .ToList<TestIdFree>();
+                return new Result<TestIdFree> {
+                    status = "ok",
+                    results = records
+                };
+            }
+            }
     }
 }

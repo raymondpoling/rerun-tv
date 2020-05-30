@@ -18,7 +18,7 @@ namespace ExceptionStorage.Controllers
     {
         public DateTime Date { get; set; }
 
-        public TestIdFree Test { get; set; }
+        public string Test { get; set; }
         public bool PassFail { get; set; }
         public bool RemediationSucceeded { get; set; }
         public string StatusMessage { get; set; }

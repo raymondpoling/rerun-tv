@@ -54,7 +54,7 @@ namespace ExceptionStorageTest
 
             //Assert
             var viewResult = Assert.IsType<Result1>(actionResult);
-            Console.WriteLine("X: " + viewResult);
+            
             Assert.True(viewResult.status == "ok", "Test was not ok!");
         }
 
@@ -77,12 +77,33 @@ namespace ExceptionStorageTest
             var actualResult = testController.Get(testName);
 
             //Assert
-            Console.WriteLine("XXXXXXXXXXXXX: " + actualResult);
             
             var viewResult = Assert.IsType<Result<TestIdFree>>(actualResult);
-            Console.WriteLine("X2222222222222: " + viewResult);
+            
             Assert.True(viewResult.status == "ok", "Test was not ok!");
             Assert.True(viewResult.results.First().Name == testName, "Wrong name: " + viewResult.results.First().Name);
+        }
+
+
+        [Fact]
+        public void GetAllTests()
+        {
+            //...
+
+            //Act
+            var testController = new TestController(
+                _loggerMock.Object
+                );
+
+            testController.ControllerContext.HttpContext = _contextMock.Object;
+            var actualResult = testController.CatchAll();
+
+            //Assert
+            
+            var viewResult = Assert.IsType<Result<TestIdFree>>(actualResult);
+            
+            Assert.True(viewResult.status == "ok", "Test was not ok!");
+            Assert.True(viewResult.results.Count() > 0, "No tests exist?: " + String.Join(", ",viewResult.results.Select(s => s.Name)));
         }
     }
 }

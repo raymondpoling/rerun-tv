@@ -20,43 +20,42 @@ module TestSchedule =
 module TestPlaylist =
     let private catalogIdDoesNotExist = "Catalog ID does not exist"
     let catalogIds (playlist : JObject) (verifier : string -> bool) =
-        let ids = playlist.Value<JArray>("catalog-ids")
-                    .Values<JToken>()
-                    .Select(fun s -> s.Value<string>())
-                    .Where(fun t -> not (verifier t))
-        match List.ofSeq(ids) with
-            | [] -> 
-                Success
-            | t -> 
-                Failures(Message catalogIdDoesNotExist, Errors t)
+        let ids = query { for id in playlist.Value<JArray>("catalog-ids").Values<JToken>() do
+                            where (not (verifier (id.Value<string>())))
+                            select (id.Value<string>())} |> List.ofSeq
+        if(List.isEmpty(ids)) then
+            Success
+        else
+            Failures(Message catalogIdDoesNotExist, Errors ids)
 
 module LocationComparison =
-    let private matchRoot (roots : string list) (locations : string list) : seq<string * seq<string>> =
-        locations |> Seq.groupBy(fun t -> roots.Where(fun s -> (t.Contains(s))).First())
-    let private allRoots (roots : string list) (groups : seq<string * seq<string>>) = 
-        roots.Length = groups.Count()
+    let private matchRoot (roots : string seq) (locations : string seq) = 
+        query { for root in roots do
+                for location in locations do
+                where  (location.StartsWith(root))
+                groupValBy location root into u
+                select (u.Key,(seq u) |> Seq.map (fun t -> t.Replace(u.Key,"")))}
+    let private allRoots (roots : string seq) (groups : 'a seq) = 
+        (roots.Count()) = (groups.Count())
     let private oneForEach (groups : seq<string * seq<string>>) = 
         let checkGroups = List.ofSeq(groups) |> List.filter(fun t -> (snd t).Count() = 1)
         groups.Count() = checkGroups.Length
-    let private withoutRoot (item : string * seq<string>)=
-        let (root,aList) = item
-        aList.Select(fun s -> (new Regex(root)).Replace(s,"")).First()
-    let private rootlessList (aList : seq<string * seq<string>>) = 
-        aList.Select(fun s -> withoutRoot(s))
-    let private allRootlessEqual aList = match aList with
-        | hd::tl -> tl |> List.forall(fun s -> s = hd)
+    let private matchRootless (groups : seq<string * seq<string>>) =
+        let toCheck = groups.Select(fun t -> snd t).SelectMany(fun u -> u)
+        let first = toCheck.First()
+        toCheck |> Seq.forall(fun u -> first = u)
     let private doesNotMatch = "Files do not match."
     let private missingRoots = "Mismatched roots."
     let compareLocations (roots : string list) (locations : JArray) : Result =
-        let listLocations = List.ofSeq(locations.Select(fun u -> u.Value<string>()).ToList<string>())
-        let errors = List.ofSeq(listLocations)
+        let listLocations = query {for location in locations do
+                                   select (location.Value<string>()) } 
+        let errors = listLocations |> List.ofSeq
         let groups = matchRoot roots listLocations
-        let rootless = List.ofSeq(rootlessList groups)
         if(not (oneForEach groups)) then
             Failures(Message missingRoots, Errors errors)
-        else if(not (allRoots roots groups)) then
+        elif(not (allRoots roots groups)) then
             Failures(Message missingRoots, Errors errors)
-        else if(not (allRootlessEqual rootless)) then
+        elif(not (matchRootless groups)) then
             Failures(Message doesNotMatch, Errors errors)
         else
             Success

@@ -16,7 +16,7 @@ let ``Valid schedule?``() =
     Assert.Equal(actual, Success)
 
 [<Fact>]
-let ``Inalid schedule?``() = 
+let ``Invalid schedule?``() = 
     let input = new JObject(
                     new JProperty("status",new JValue("failed")),
                     new JProperty("messages",new JArray(new JValue("Does not exist"))))

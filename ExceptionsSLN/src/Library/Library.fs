@@ -59,3 +59,26 @@ module LocationComparison =
             Failures(Message doesNotMatch, Errors errors)
         else
             Success
+
+module TestPlaylistSeries =
+    type CorrectionResult = {left : Set<string>; right : Set<string>; center : Set<string>}
+    let playlistSeriesTest (series : JObject) (playlist : JObject) =
+        let toErrors = fun cr -> ["left: " + String.Join(", ", cr.left);
+                                    "right: " + String.Join(", ", cr.right);
+                                    "center: " + String.Join(", ", cr.center)]
+        let convertToCatalogSet = 
+            fun (toConvert : JObject) -> 
+                let array : JArray = toConvert.Value<JArray>("catalog-ids")
+                query {for i in array do
+                        select (i.Value<string>())} |> Set.ofSeq
+        let message = "Series playlist and series do not match"
+        let seriesSet = convertToCatalogSet series
+        let playlistSet = convertToCatalogSet playlist
+        let left = seriesSet - playlistSet
+        let right = playlistSet - seriesSet
+        let center = (playlistSet + seriesSet) - left - right
+        if(left.IsEmpty && right.IsEmpty) then
+            Success
+        else
+            let result = {left=left;right=right;center=center}
+            Failures(Message message, Errors (toErrors result))

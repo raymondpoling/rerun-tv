@@ -11,6 +11,8 @@
     <Compile Include="ScheduleTests.fs" />
     <Compile Include="PlaylistTests.fs" />
     <Compile Include="LocationTests.fs" />
+    <Compile Include="CorrectLocationsTests.fs" />
+    <Compile Include="PlaylistSeriesTest.fs" />
     <!-- <Compile Include="Program.fs" /> -->
   </ItemGroup>
 

@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <Compile Include="Types.fs" />
+    <Compile Include="CorrectLibrary.fs" />
     <Compile Include="Library.fs" />
   </ItemGroup>
 

@@ -22,6 +22,7 @@ namespace ExceptionStorage.Controllers
         public bool PassFail { get; set; }
         public bool RemediationSucceeded { get; set; }
         public string StatusMessage { get; set; }
+        public string Args { get; set; }
     }
 
     public interface IResult

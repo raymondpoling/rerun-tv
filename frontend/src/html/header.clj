@@ -24,8 +24,12 @@
    (role-matches
     role
     ["admin" "media"]
-      [:a {:href "schedule-builder.html"} "Build Schedule"])
-    [:a {:href "/logout"} "Logout"]
+    [:a {:href "schedule-builder.html"} "Build Schedule"])
+   (role-matches
+    role
+    ["admin" "media"]
+    [:a {:href "exception.html"} "Exceptions"])
+   [:a {:href "/logout"} "Logout"]
   ])
 
 (defn header [page-title role]

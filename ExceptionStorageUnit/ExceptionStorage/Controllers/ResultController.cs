@@ -51,7 +51,8 @@ namespace ExceptionStorage.Controllers
                         Date = s.Date,
                         PassFail = s.PassFail > 0,
                         RemediationSucceeded = s.RemediationSucceeded > 0,
-                        StatusMessage = s.StatusMessage
+                        StatusMessage = s.StatusMessage,
+                        Args = s.Args
                     })
                     .Take(10)
                     .ToList<ResultIdFree>();
@@ -77,6 +78,7 @@ namespace ExceptionStorage.Controllers
         [HttpPost("{name}")]
         public Result1 Post(string name, [FromBody] ResultIdFree obj)
         {
+            _logger.LogInformation("Object that is being deserialized: " + obj.ToString());
             using (var context = new exceptionContext())
             {
                 if (obj.Test == name)
@@ -89,7 +91,8 @@ namespace ExceptionStorage.Controllers
                         Test = test,
                         PassFail = obj.PassFail ? (byte)1 : (byte)0,
                         RemediationSucceeded = obj.RemediationSucceeded ? (byte)1 : (byte)0,
-                        StatusMessage = obj.StatusMessage
+                        StatusMessage = obj.StatusMessage,
+                        Args = obj.Args
                     });
                     context.SaveChanges();
                     return new Result1

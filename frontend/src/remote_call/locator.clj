@@ -24,6 +24,5 @@
                                    {:as :json
                                     :headers {:content-type "application/json"}
                                     :body (generate-string {:files locations})}))]
-     (dorun (map #(cache/evict host (str "/catalog-id/" %))
-                 (:catalog_ids result)))
+     (cache/evict host (str "/catalog-id/" catalog-id))
      result)))

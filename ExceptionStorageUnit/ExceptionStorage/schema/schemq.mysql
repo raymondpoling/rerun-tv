@@ -16,6 +16,7 @@ CREATE TABLE exception.results (
   `passFail` tinyint(1) NOT NULL,
   `remediationSucceeded` tinyint(1) NOT NULL,
   `statusMessage` text,
+  `args` text,
   UNIQUE KEY `id` (`id`),
   KEY `test_id` (`test_id`),
   KEY `by_date_id` (`date`,`test_id`),

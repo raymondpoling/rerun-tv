@@ -15,7 +15,8 @@
                          ["omdb" 4011]
                          ["messages" 4010]
                          ["locator" 4005]
-                         ["tags" 4014]))
+                         ["tags" 4015]
+                         ["exception" 4014]))
 
 (defn write-message [{:keys [author title message]}]
   (add-message (:messages hosts)

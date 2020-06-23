@@ -1,0 +1,10 @@
+.exception-holder {
+    margin: auto;
+    padding: 2em;
+    display: block;
+    vertical-align: top;
+}
+
+td {
+    border: 1px dashed brown;
+}

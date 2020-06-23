@@ -50,7 +50,7 @@
     [:th "Arguments"]
     [:th "Rerun"]]
    [:tbody
-    (map #(make-row test %) (reverse results))]])
+    (map #(make-row test %)  results)]])
 
 (defn exception-page [test-set role]
   (html5

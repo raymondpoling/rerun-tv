@@ -54,6 +54,7 @@ namespace ExceptionStorage.Controllers
                         StatusMessage = s.StatusMessage,
                         Args = s.Args
                     })
+                    .OrderByDescending(s => s.Date)
                     .Take(10)
                     .ToList<ResultIdFree>();
                 if (!records.Any())

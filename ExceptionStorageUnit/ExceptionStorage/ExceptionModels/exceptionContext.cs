@@ -73,6 +73,8 @@ namespace ExceptionStorage.ExceptionModels
 
                 entity.Property(e => e.StatusMessage).HasColumnName("statusMessage");
 
+                entity.Property(e => e.Args).HasColumnName("args");
+
                 entity.Property(e => e.TestId)
                     .HasColumnName("test_id")
                     .HasColumnType("bigint(20) unsigned");

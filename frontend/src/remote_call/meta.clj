@@ -5,7 +5,8 @@
             [ring.util.codec :refer [url-encode]]
             [clj-http.client :as client]
             [clojure.tools.logging :as logger]
-            [redis-cache.core :as cache]))
+            [redis-cache.core :as cache]
+            [remote-call.pubsub :as pubsub]))
 
 (declare ckt-brkr)
 
@@ -46,6 +47,7 @@
      (logger/debug "url: " url)
      (cache/evict host "/series")
      (cache/evict host (str "/series/" (url-encode series)))
+     (pubsub/run-tests [:series_playlist [series]] [:schedule_validity []])
      (:body result))))
 
 (defn save-episode [host series episode]

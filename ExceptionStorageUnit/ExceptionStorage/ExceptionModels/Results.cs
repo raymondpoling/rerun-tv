@@ -11,7 +11,7 @@ namespace ExceptionStorage.ExceptionModels
         public byte PassFail { get; set; }
         public byte RemediationSucceeded { get; set; }
         public string StatusMessage { get; set; }
-
+        public string Args { get; set; }
         public virtual Tests Test { get; set; }
     }
 }

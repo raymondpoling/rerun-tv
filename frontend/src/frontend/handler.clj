@@ -1,11 +1,14 @@
 (ns frontend.handler
   (:require [compojure.core :refer [defroutes GET POST]]
             [compojure.route :as route]
+            [cheshire.core :refer :all]
             [helpers.routes :refer [hosts with-authorized-roles write-message]]
             [ring.middleware.json :as json]
             [route-logic.message :refer [set-message get-message]]
             [route-logic.bulk-update :as rlbu]
             [route-logic.preview-logic :as rlpl]
+            [remote-call.exception :as except]
+            [remote-call.pubsub :as pubsub]
             [remote-call.identity :refer [fetch-user
                                           fetch-users
                                           fetch-roles
@@ -36,6 +39,7 @@
             [html.series-update :as hsu]
             [html.login :refer [login]]
             [html.index :refer [make-index]]
+            [html.exception :refer [exception-page]]
             [html.schedule-builder :refer [schedule-builder]]
             [html.schedule-builder-get :refer [schedule-builder-get]]
             [html.user-management :refer [user-management]]
@@ -251,6 +255,40 @@
                                   :author? user
                                   :type? "EPISODE")]
              (make-update-page episode files catalog-id tags role)))))
+  (GET "/exception.html" []
+       (with-authorized-roles ["admin","media"]
+         (fn [{{:keys [role]} :session}]
+           (let [exception-host (:exception hosts)
+                 all-tests (except/get-all-tests
+                            exception-host)
+                 all-results (map
+                              #(vector
+                                %
+                                (except/get-test-results exception-host %))
+                              all-tests)]
+             (println "Results: " all-tests)
+             (exception-page all-results role)))))
+  (POST "/exception.html" [test args]
+        (with-authorized-roles ["admin","media"]
+          (fn [{{:keys [role]} :session}]
+            (let [exception-host (:exception hosts)
+                  reverse-map (into {} (map (fn [[a b]] [b a]) pubsub/tests))
+                  test_key (get reverse-map test)
+                  arguments (or (filter not-empty
+                                        (map cls/trim
+                                             (cls/split args #",")))
+                                [])
+                  all-tests (except/get-all-tests
+                             exception-host)
+                  all-results (map
+                               #(vector
+                                 %
+                                 (except/get-test-results exception-host %))
+                               all-tests)]
+              (println "Reverse map: " reverse-map)
+              (println "Results: " test test_key arguments)
+              (pubsub/run-tests [test_key arguments])
+              (redirect "/exception.html")))))
   (POST "/update.html"
         [catalog-id series episode_name episode season
          summary imdbid thumbnail files mode tags]
@@ -281,6 +319,8 @@
                                   catalog-id
                                   (map cls/trim
                                        (cls/split files #"\n")))
+                  (pubsub/run-tests [:root_locations [series]]
+                                    [:locations [series]])
                    (when (second diffs)
                     (add-tags    (:tags hosts) user (second diffs) catalog-ids))
                   (when (first diffs)

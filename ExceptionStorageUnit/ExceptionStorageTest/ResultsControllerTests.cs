@@ -134,21 +134,24 @@ namespace ExceptionStorageTest
                 Test = test.Name,
                 PassFail = false,
                 RemediationSucceeded = false,
-                StatusMessage = "Failed to even run twice"
+                StatusMessage = "Failed to even run twice",
+                Args = "[]"
             };
             var result2 = new ResultIdFree {
                 Date = DateTime.Now,
                 Test = test.Name,
                 PassFail = false,
                 RemediationSucceeded = false,
-                StatusMessage = "Failed to even run twice"
+                StatusMessage = "Failed to even run twice",
+                Args = "[\"one\",\"two\"]"
             };
             var result3 = new ResultIdFree {
                 Date = DateTime.Now,
                 Test = test.Name,
                 PassFail = false,
                 RemediationSucceeded = false,
-                StatusMessage = "Failed to even run twice"
+                StatusMessage = "Failed to even run twice",
+                Args = "[\"two\",\"three\"]"
             };
 
             //...
@@ -176,6 +179,7 @@ namespace ExceptionStorageTest
             var viewResult = Assert.IsType<Result<ResultIdFree>>(actualResult);
             Assert.True(viewResult.status == "ok", "Test was not ok!");
             Assert.True(viewResult.results.First().Test == test.Name, "Wrong name: " + viewResult.results.First().Test);
+            Assert.True(viewResult.results.First().Args == "[]", "Wrong args: " + viewResult.results.First().Args);
             Assert.True(viewResult.results.Count == 3, "Wrong Length " + viewResult.results.Count);
         }
     }

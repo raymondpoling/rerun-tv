@@ -8,3 +8,22 @@
 td {
     border: 1px dashed brown;
 }
+
+.navigation > a {
+    background-color: #F0EAD6;
+    color: black;
+    text-decoration: none;
+    padding: 1em;
+    margin: 0.2em;
+    display: inline-block;
+    text-align: center;
+    border-radius: 2em;
+    font-size: 1em;
+    width: 10em;
+    vertical-align: middle;
+}
+
+.navigation > a:hover {
+    color: #F0EAD6;
+    background-color: lightblue;
+}

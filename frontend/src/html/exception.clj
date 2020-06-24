@@ -4,10 +4,16 @@
             [clojure.string :as cls]
             [cheshire.core :refer [parse-string]]))
 
+(defn make-links [tests]
+  (let [sorted (sort tests)]
+    [:div {:class "navigation"}
+     (map #(vector :a {:href (str "#" %)} %) sorted)]))
+
 (defn run-new-form [test]
   [:form
    {:action "exception.html"
-    :method :post}
+    :method :post
+    :id test}
    [:h3 (str test ": Run")]
    [:input {:name "args"
             :type :text}]
@@ -63,9 +69,10 @@
    [:body
     [:div {:id "content"}
      (header "ReRun TV - Exceptions" role)
+     (make-links (map first test-set))
      (map #(let [[test results] %]
               [:div {:class "exception-holder"}
                (run-new-form test)
                [:br]
                (make-test-results test results)])
-     test-set)]]))
+     (sort-by first test-set))]]))

@@ -28,6 +28,10 @@
    (role-matches
     role
     ["admin" "media"]
+    [:a {:href "playlist-builder.html"} "Build Playlist"])
+   (role-matches
+    role
+    ["admin" "media"]
     [:a {:href "exception.html"} "Exceptions"])
    [:a {:href "/logout"} "Logout"]
   ])

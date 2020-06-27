@@ -23,7 +23,10 @@
                                       delete-tags]]
             [remote-call.locator :refer [get-locations save-locations]]
             [remote-call.validate :refer [validate-user create-auth]]
-            [remote-call.playlist :refer [get-playlists]]
+            [remote-call.playlist :refer [get-playlists
+                                          get-playlist
+                                          post-playlist
+                                          put-playlist]]
             [remote-call.meta :refer [get-all-series
                                       bulk-update-series
                                       get-meta-by-catalog-id
@@ -46,6 +49,7 @@
             [html.library :refer [make-library]]
             [html.update :refer [make-update-page side-by-side]]
             [html.bulk-update :refer [bulk-update]]
+            [html.playlist :refer [playlist-get playlist-page]]
             [helpers.schedule-builder :refer [make-schedule-map
                                               make-schedule-string
                                               valid?]]
@@ -137,6 +141,50 @@
           (if (and (= mode "Create") got-sched)
             (redirect (str "/schedule-builder.html?message=Schedule with name '" schedule-name "' already exists"))
             (schedule-builder sched schedule-name playlists mode role))))))
+  (GET "/playlist-builder.html" []
+       (with-authorized-roles ["admin" "media"]
+         (fn [{{:keys [role]} :session}]
+           (let [playlists (filter #(not (cls/includes? % ":SYSTEM"))
+                                   (map :name (get-playlists
+                                               (:playlist hosts))))]
+             (println "Playlists: " playlists)
+             (playlist-get playlists role)))))
+  (POST "/playlist-builder.html" [name items mode]
+       (with-authorized-roles ["admin" "media"]
+         (fn [{{:keys [role user]} :session}]
+           (let [playlists (filter #(not (cls/includes? % ":SYSTEM"))
+                                   (map :name (get-playlists
+                                               (:playlist hosts))))
+                 item-list (cls/join
+                            "\n"
+                            (get-playlist (:playlist hosts)
+                                          name))]
+             (logger/debug "mode " mode
+                           " item-list " item-list
+                           " name " name
+                           " items " items)
+           (case [mode
+                  (empty? items)]
+             ["Create" false] (if (empty? item-list)
+                               (do
+                                 (post-playlist (:playlist hosts) name items)
+                                 (playlist-page name items "Update" role))
+                               (redirect "/playlist-builder.html"))
+             ["Create" true] (if (empty? item-list)
+                                (playlist-page name items "Create" role)
+                                (redirect "/playlist-builder.html"))
+             ["Update" false] (if (empty? item-list)
+                               (redirect "/playlist-builder.html")
+                               (do
+                                 (println "PUtting items: " item-list)
+                                 (put-playlist (:playlist hosts) name items)
+                                 (playlist-page name items "Update" role)))
+             ["Update" true] (if (empty? item-list)
+                               (do (println "empty istemlist? ")
+                                (redirect "/playlist-builder.html"))
+                                (do
+                                  (playlist-page name item-list "Update" role)))
+             (playlist-get playlists role))))))
   (POST "/login" [username password]
         (logger/debug "hosts map is? " hosts)
         (let [auth (validate-user

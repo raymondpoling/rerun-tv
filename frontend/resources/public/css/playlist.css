@@ -6,4 +6,6 @@ textarea {
 
 form {
     padding: 2em;
+    vertical-align: top;
+    display: inline-block;
 }

@@ -20,7 +20,8 @@
             [remote-call.tags :refer [fetch-all-tags
                                       fetch-tags
                                       add-tags
-                                      delete-tags]]
+                                      delete-tags
+                                      find-by-tags]]
             [remote-call.locator :refer [get-locations save-locations]]
             [remote-call.validate :refer [validate-user create-auth]]
             [remote-call.playlist :refer [get-playlists
@@ -147,44 +148,61 @@
            (let [playlists (filter #(not (cls/includes? % ":SYSTEM"))
                                    (map :name (get-playlists
                                                (:playlist hosts))))]
-             (println "Playlists: " playlists)
              (playlist-get playlists role)))))
-  (POST "/playlist-builder.html" [name items mode]
+  (POST "/playlist-builder.html" [name items mode tags search type?
+                                  search-items]
        (with-authorized-roles ["admin" "media"]
          (fn [{{:keys [role user]} :session}]
            (let [playlists (filter #(not (cls/includes? % ":SYSTEM"))
                                    (map :name (get-playlists
                                                (:playlist hosts))))
+                 items (str items (when search-items
+                                    (str "\n"
+                                         (cls/join "\n"
+                                                   (flatten [search-items])))))
                  item-list (cls/join
                             "\n"
                             (get-playlist (:playlist hosts)
-                                          name))]
+                                          name))
+                 search-results (find-by-tags (:tags hosts)
+                                              tags
+                                              :author? user
+                                              :type? type?)
+                 enriched-results (map #(get-meta-by-catalog-id
+                                         (:omdb hosts) %) search-results)]
              (logger/debug "mode " mode
                            " item-list " item-list
                            " name " name
                            " items " items)
-           (case [mode
-                  (empty? items)]
-             ["Create" false] (if (empty? item-list)
-                               (do
-                                 (post-playlist (:playlist hosts) name items)
-                                 (playlist-page name items "Update" role))
-                               (redirect "/playlist-builder.html"))
-             ["Create" true] (if (empty? item-list)
-                                (playlist-page name items "Create" role)
-                                (redirect "/playlist-builder.html"))
-             ["Update" false] (if (empty? item-list)
-                               (redirect "/playlist-builder.html")
-                               (do
-                                 (println "PUtting items: " item-list)
-                                 (put-playlist (:playlist hosts) name items)
-                                 (playlist-page name items "Update" role)))
-             ["Update" true] (if (empty? item-list)
-                               (do (println "empty istemlist? ")
-                                (redirect "/playlist-builder.html"))
-                                (do
-                                  (playlist-page name item-list "Update" role)))
-             (playlist-get playlists role))))))
+             (if search
+               (playlist-page name items mode tags enriched-results role)
+               (case [mode
+                      (empty? items)]
+                 ["Create" false] (if (empty? item-list)
+                                    (do
+                                      (post-playlist (:playlist hosts)
+                                                     name items)
+                                      (playlist-page name items "Update"
+                                                     tags enriched-results role))
+                                    (redirect "/playlist-builder.html"))
+                 ["Create" true] (if (empty? item-list)
+                                   (playlist-page name items "Create"
+                                                  tags enriched-results role)
+                                   (redirect "/playlist-builder.html"))
+                 ["Update" false] (if (empty? item-list)
+                                    (redirect "/playlist-builder.html")
+                                    (do
+                                      (put-playlist (:playlist hosts)
+                                                    name items)
+                                      (playlist-page name items "Update"
+                                                     tags enriched-results role)))
+                 ["Update" true] (if (empty? item-list)
+                                   (do 
+                                       (redirect "/playlist-builder.html"))
+                                   (do
+                                     (playlist-page name item-list "Update"
+                                                    tags enriched-results role)))
+                 (playlist-get playlists role)))))))
   (POST "/login" [username password]
         (logger/debug "hosts map is? " hosts)
         (let [auth (validate-user
@@ -314,7 +332,6 @@
                                 %
                                 (except/get-test-results exception-host %))
                               all-tests)]
-             (println "Results: " all-tests)
              (exception-page all-results role)))))
   (POST "/exception.html" [test args]
         (with-authorized-roles ["admin","media"]
@@ -333,8 +350,6 @@
                                  %
                                  (except/get-test-results exception-host %))
                                all-tests)]
-              (println "Reverse map: " reverse-map)
-              (println "Results: " test test_key arguments)
               (pubsub/run-tests [test_key arguments])
               (redirect "/exception.html")))))
   (POST "/update.html"

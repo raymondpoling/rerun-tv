@@ -37,7 +37,6 @@
      (let [url (str "http://" host "/" (url-encode name))
            item-list (cls/split items #"\n")]
        (logger/debug "Looking up url: " url)
-       (println "items: " items)
        (:body (client/post url {:as :json
                                 :headers {:content-type "application/json"}
                                 :body  (generate-string
@@ -51,7 +50,6 @@
      (let [url (str "http://" host "/" (url-encode name))
            item-list (cls/split items #"\n")]
        (logger/debug "Looking up url: " url)
-       (println "items: " items)
        (:body (client/put url {:as :json
                                :headers {:content-type "application/json"}
                                :body  (generate-string

@@ -77,11 +77,12 @@
   (clc/log-on-error
    standard-error
    (let [url (str "http://" host "/find-by-tags")
-         params [[:tags (cls/join "," tags)]
-                 (when author? [:author author?])
-                 (when type? [:type type?])]]
+         params (into {} [[:tags (cls/join "," (map cls/trim
+                                                    (cls/split tags #",")))]
+                          (when author? [:author author?])
+                          (when type? [:type type?])])]
      (dh/with-circuit-breaker ckt-brkr
-       (logger/debug "finding by: " tags " type: " type " author: " author)
+       (logger/debug "finding by: " tags " type: " type " author: " author?)
        (:catalog_ids (:body (client/get
                              url
                              {:as :json

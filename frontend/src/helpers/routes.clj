@@ -16,7 +16,8 @@
                          ["messages" 4010]
                          ["locator" 4005]
                          ["tags" 4015]
-                         ["exception" 4014]))
+                         ["exception" 4014]
+                         ["deletion" 4016]))
 
 (defn write-message [{:keys [author title message]}]
   (add-message (:messages hosts)

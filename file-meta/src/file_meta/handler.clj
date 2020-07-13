@@ -188,6 +188,14 @@
                                                    catalog_id
                                                    season
                                                    episode)]})))
+  (DELETE "/catalog-id/:catalog_id" [catalog_id]
+          (try
+            (let [response (db/delete-by-catalog-id catalog_id)]
+              (clc/make-response 200 {:status :ok
+                                      :catalog_ids [response]}))
+            (catch Exception e
+              (clc/make-response 400 {:status :failed
+                                      :messages (.getMessage e)}))))
   (GET "/catalog-id/:catalog_id" [catalog_id]
        (if (= 12 (count catalog_id))
          (fn [request]

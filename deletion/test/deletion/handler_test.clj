@@ -62,11 +62,17 @@
     (let [response (app (mock/request :get "/nominate"))]
       (is (= (:status response) 200))
       (is (= (:outstanding (parse-string (:body response) true))
-             [{:type "playlist", :name "a-test"}
-              {:type "schedule", :name "a-schedule"}
-              {:type "series", :name "BGATA01"}
-              {:type "season", :name "BGATA0103"}
-              {:type "episode", :name "BGATA0102001"}]))))
+             [{:type "playlist", :name "a-test", :status "NOM",
+               :maker "some-media-user", :reason1 "no longer used"}
+              {:type "schedule", :name "a-schedule", :status "NOM",
+               :maker "ms", :reason1 "didn't create right"}
+              {:type "series", :name "BGATA01", :status "NOM",
+               :maker "another-media", :reason1 "failed upload"}
+              {:type "season", :name "BGATA0103", :status "NOM",
+               :maker "another-media", :reason1 "season shouldn't exist"}
+              {:type "episode", :name "BGATA0102001", :status "NOM",
+               :maker "a-media",
+               :reason1 "episode was moved to another season"}]))))
 
   (testing "reject playlist"
     (let [response (app (-> (mock/request :post "/reject/playlist/a-test")
@@ -110,9 +116,13 @@
     (let [response (app (mock/request :get "/nominate"))]
       (is (= (:status response) 200))
       (is (= (:outstanding (parse-string (:body response) true))
-             [{:type "series", :name "BGATA01"}
-              {:type "season", :name "BGATA0103"}
-              {:type "episode", :name "BGATA0102001"}]))))
+             [{:type "series", :name "BGATA01", :status "NOM",
+               :maker "another-media", :reason1 "failed upload"}
+              {:type "season", :name "BGATA0103", :status "NOM",
+               :maker "another-media", :reason1 "season shouldn't exist"}
+              {:type "episode", :name "BGATA0102001", :status "NOM",
+               :maker "a-media",
+               :reason1 "episode was moved to another season"}]))))
 
   (testing "get recent"
     (let [response (app (mock/request :get "/recent"))]
@@ -122,31 +132,36 @@
                :type "episode",
                :maker "a-media",
                :checker nil,
-               :reason "episode was moved to another season",
+               :reason1 "episode was moved to another season",
+               :reason2 nil,
                :status "NOM"}
               {:name "BGATA0103",
                :type "season",
                :maker "another-media",
                :checker nil,
-               :reason "season shouldn't exist",
+               :reason1 "season shouldn't exist",
+               :reason2 nil,
                :status "NOM"}
               {:name "BGATA01",
                :type "series",
                :maker "another-media",
                :checker nil,
-               :reason "failed upload",
+               :reason1 "failed upload",
+               :reason2 nil,
                :status "NOM"}
               {:name "a-schedule",
                :type "schedule",
                :maker "ms",
                :checker "admin2",
-               :reason "didn't create right\nAnother user does use this",
+               :reason1 "didn't create right",
+               :reason2 "Another user does use this",
                :status "REJ"}
               {:name "a-test",
                :type "playlist",
                :maker "some-media-user",
                :checker "admin1",
-               :reason "no longer used\n*I* use this!",
+               :reason1 "no longer used",
+               :reason2 "*I* use this!",
                :status "REJ"}]))))
 
   (testing "delete a series"
@@ -183,7 +198,9 @@
     (let [response (app (mock/request :get "/nominate"))]
       (is (= (:status response) 200))
       (is (= (:outstanding (parse-string (:body response) true))
-             [{:type "episode", :name "BGATA0102001"}]))))
+             [{:type "episode", :name "BGATA0102001",
+               :maker "a-media", :status "NOM",
+               :reason1 "episode was moved to another season"}]))))
 
   (testing "cannot both create and delete nomination"
     (with-fake-routes-in-isolation

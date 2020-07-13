@@ -13,6 +13,7 @@
      [:type "VARCHAR(20) NOT NULL"]
      [:maker "VARCHAR(20) NOT NULL"]
      [:checker "VARCHAR(20)"]
-     [:reason "VARCHAR(150)"]
+     [:reason1 "VARCHAR(150)"] ; Maker reason
+     [:reason2 "VARCHAR(150)"] ; Checker reason
      [:status "CHAR(3) NOT NULL"]]))
   (j/execute! @database ["CREATE INDEX by_status ON deletion.record(status)"]))

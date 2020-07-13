@@ -27,3 +27,10 @@ form > h2 {
   padding: 0;
   margin: 0em 0em 0.5em;
 }
+
+textarea {
+    width: 95%;
+    height: 5em;
+    display: inline-block;
+    margin: auto;
+}

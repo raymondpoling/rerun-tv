@@ -83,8 +83,7 @@
    [:head
     [:meta {:charset "utf-8"}]
     [:link {:rel "stylesheet" :href "/css/master.css"}]
-    [:link {:rel "stylesheet" :href "/css/builder.css"}]
-    [:link {:rel "stylesheet" :href "/css/playlist.css"}]
+    [:link {:rel "stylesheet" :href "/css/builder-select.css"}]
     [:title "ReRun TV - Playlist Builder"]]
    [:body
     [:div {:id "content"}
@@ -115,4 +114,13 @@
       [:input {:type "submit"
                :name "mode"
                :value "Create"
-               :class "box-center"}]]]]))
+               :class "box-center"}]]
+     (when (= role "media")
+       [:form {:method "get" :action "/nominate.html" :class "box"}
+        [:h2 {:class "box-center"} "Delete Playlist"]
+        (vec (concat (list :select
+                           {:name "a-name"
+                            :class "box-center"})
+                     (map #(vector :option %) playlist-names)))
+        [:input {:type "hidden" :name "atype" :id "atype" :value "playlist"}]
+        [:input {:type "submit" :value "Nominate"}]])]]))

@@ -29,6 +29,15 @@
           [:h2 {:class "box-center"} "Create Schedule"]
           [:input {:type "text" :name "schedule-name" :class "box-center"}]
           [:input {:type "hidden" :name "preview" :value "true"}]
-          [:input {:type "submit" :name "mode" :value "Create" :class "box-center"}]]
+         [:input {:type "submit" :name "mode" :value "Create" :class "box-center"}]]
+       (when (= role "media")
+         [:form {:method "get" :action "/nominate.html" :class "box"}
+          [:h2 {:class "box-center"} "Delete Schedule"]
+          (vec (concat (list :select
+                             {:name "a-name"
+                              :class "box-center"})
+                       (schedule-options schedule-names)))
+          [:input {:type "hidden" :name "atype" :id "atype" :value "schedule"}]
+          [:input {:type "submit" :value "Nominate"}]])
        [:div {:id "message" :style (when (not message) "display:none")}
         (when message message)]]]))

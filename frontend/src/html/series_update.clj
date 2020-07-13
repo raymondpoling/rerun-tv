@@ -63,7 +63,12 @@
         [:textarea {:name "tags" :id "tags"} (cls/join ", " tags)]
         [:input {:value "Save" :type "submit" :name "mode"}]
         [:div {:class "spacer"}]
-        (return-to-library (:name series))]]]))
+        (return-to-library (:name series))
+        (when (= role "media")
+          [:a {:href (format "/nominate.html?atype=series&a-name=%s"
+                             (:catalog_id series))
+               :style "float:right;display:inline-block"}
+           "Nominate series for deletion?"])]]]))
 
 (defn should-default? [omdb-v]
   (or (= omdb-v "N/A") (nil? omdb-v)))

@@ -440,4 +440,33 @@
              {"status" "ok"
               "episodes" 8
               "seasons" 6
-              "series" 4})))))
+              "series" 4}))))
+  (testing "delete season by catalog-id"
+    (let [response (app (mock/request :delete "/catalog-id/NEWT00132"))]
+      (is (= (:status response) 200))
+      (is (= (parse-string (:body response))
+             {"status" "ok"
+              "catalog_ids"["NEWT00132"]}))))
+  (testing "not-found after delete season by catalog-id"
+    (let [response (app (mock/request :get "/catalog-id/NEWT0013215"))]
+      (is (= (:status response) 404))))
+  (testing "delete episode by catalog-id"
+    (let [response (app (mock/request :delete "/catalog-id/NEWT00144044"))]
+      (is (= (:status response) 200))
+      (is (= (parse-string (:body response))
+             {"status" "ok"
+              "catalog_ids"["NEWT00144044"]}))))
+  (testing "not-found after delete episode by catalog-id"
+    (let [response (app (mock/request :get "/catalog-id/NEWT00144044"))]
+      (is (= (:status response) 404))))
+  (testing "delete series by catalog-id"
+    (let [response (app (mock/request :delete "/catalog-id/NEWT001"))]
+      (is (= (:status response) 200))
+      (is (= (parse-string (:body response))
+             {"status" "ok"
+              "catalog_ids"["NEWT001"]}))))
+  (testing "not-found after delete series by catalog-id"
+    (let [response (app (mock/request :get "/series/new-t"))]
+      (is (= (:status response) 200))
+      (is (= (parse-string (:body response))
+             {"records" [],"status" "ok","catalog_ids" []})))))

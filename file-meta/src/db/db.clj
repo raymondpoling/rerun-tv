@@ -143,3 +143,42 @@
                  "FROM meta.series "
                  "JOIN meta.files "
                  "ON series.id = files.series_id")]))
+
+(defn- find-by-catalog-prefix [catalog-prefix]
+  (:id
+   (first
+    (j/query
+     @database [(str "SELECT id FROM meta.series WHERE catalog_prefix = ?")
+                catalog-prefix]))))
+
+(defn- delete-series [catalog-id]
+  (j/delete!
+   @database "meta.series"
+   ["catalog_prefix = ?" catalog-id])
+  catalog-id)
+
+(defn- delete-season [catalog-id season]
+  (let [id (find-by-catalog-prefix catalog-id)]
+    (j/delete!
+     @database "meta.files"
+     ["series_id = ? AND season = ?" id (Integer/parseInt season)])
+    (str catalog-id season)))
+
+(defn- delete-episode [catalog-id season episode]
+  (let [id (find-by-catalog-prefix catalog-id)]
+    (j/delete!
+     @database "meta.files"
+     ["series_id = ? AND season = ? AND episode = ?"
+      id
+      (Integer/parseInt season)
+      (Integer/parseInt episode)])
+    (str catalog-id season episode)))
+
+(defn delete-by-catalog-id [catalog-id]
+  (let [pat #"(\w{7})(\w{2})?(\w{3})?"
+        [_ series season episode] (re-matches pat catalog-id)]
+    (cond
+      (and series season episode) (delete-episode series season episode)
+      (and series season) (delete-season series season)
+      (and series) (delete-series series)
+      :else (throw (Exception. (str "Bad catalog-id " catalog-id))))))

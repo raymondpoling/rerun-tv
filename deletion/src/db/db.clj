@@ -15,18 +15,18 @@
 
 (defn- get-nominations [t1]
   (j/query t1
-           [(str "SELECT type, name "
+           [(str "SELECT * "
                  "FROM deletion.record "
                  "WHERE status = 'NOM' "
                  "FOR UPDATE")]))
 
 (defn create-record [atype a-name user reason]
   (j/with-db-transaction [t1 @database]
-    (let [values (get-nominations t1)
+    (let [values (map #(select-keys % [:type :name]) (get-nominations t1))
           record {:name a-name
                   :maker user
                   :type atype
-                  :reason reason
+                  :reason1 reason
                   :status "NOM"}]
       (if (not-any? #(= {:type atype :name a-name} %) values)
         (j/insert! t1 "deletion.record"
@@ -34,7 +34,8 @@
         (throw (Exception. "Nomination already exists."))))))
 
 (defn get-outstanding []
-  (get-nominations @database))
+  (map #(select-keys % [:name :type :maker :status :reason1])
+       (get-nominations @database)))
 
 (defn get-records []
   (map #(dissoc % :id)
@@ -43,7 +44,7 @@
 
 (defn reject [atype a-name user reason]
   (j/with-db-transaction [t1 @database]
-    (let [record (first (j/query t1 [(str "SELECT id, reason, maker "
+    (let [record (first (j/query t1 [(str "SELECT id, maker "
                                           "FROM deletion.record "
                                           "WHERE type = ? "
                                           "AND name = ? "
@@ -55,13 +56,13 @@
         (j/update! t1 "deletion.record"
                    {:status "REJ"
                     :checker user
-                    :reason (str (:reason record) "\n" reason)}
+                    :reason2 reason}
                    ["id = ?" (:id record)])
         (throw (Exception. "No nominating record exists."))))))
 
 (defn execute [atype a-name user reason fun]
   (j/with-db-transaction [t1 @database]
-    (let [record (first (j/query t1 [(str "SELECT id, reason, maker "
+    (let [record (first (j/query t1 [(str "SELECT id, maker "
                                           "FROM deletion.record "
                                           "WHERE type = ? "
                                           "AND name = ? "
@@ -70,11 +71,13 @@
       (when (= (:maker record) user)
         (throw (Exception. "Nominator cannot also delete.")))
       (if (not-empty record)
-        (do
-          (fun atype a-name)
-          (j/update! t1 "deletion.record"
-                     {:status "EXE"
-                      :checker user
-                      :reason (str (:reason record) "\n" reason)}
-                     ["id = ?" (:id record)]))
+        (let [response (fun atype a-name)]
+          (if (= (:status response) "ok")
+            (j/update! t1 "deletion.record"
+                       {:status "EXE"
+                        :checker user
+                        :reason2 reason}
+                       ["id = ?" (:id record)])
+            (throw (Exception. (str "Issue deleting record: "
+                                    (:message response))))))
         (throw (Exception. "No nominating record exists."))))))

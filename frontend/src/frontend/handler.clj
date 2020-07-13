@@ -7,6 +7,7 @@
             [route-logic.message :refer [set-message get-message]]
             [route-logic.bulk-update :as rlbu]
             [route-logic.preview-logic :as rlpl]
+            [remote-call.deletion :as deletion]
             [remote-call.exception :as except]
             [remote-call.pubsub :as pubsub]
             [remote-call.identity :refer [fetch-user
@@ -43,6 +44,8 @@
             [html.series-update :as hsu]
             [html.login :refer [login]]
             [html.index :refer [make-index]]
+            [html.nomination :refer [nomination-page]]
+            [html.deletion :refer [deletion-page]]
             [html.exception :refer [exception-page]]
             [html.schedule-builder :refer [schedule-builder]]
             [html.schedule-builder-get :refer [schedule-builder-get]]
@@ -399,6 +402,60 @@
                                 catalog-id
                                 tags
                                 role)))))))
+  (GET "/nominate.html" [atype a-name]
+       (with-authorized-roles ["media"]
+         (fn [{{:keys [role]} :session}]
+           (nomination-page atype a-name nil role))))
+  (POST "/nominate.html" [atype a-name reason]
+        (with-authorized-roles ["media"]
+          (fn [{{:keys [role user]} :session}]
+            (let [response
+                  (deletion/nominate (:deletion hosts)
+                                     atype
+                                     a-name
+                                     user
+                                     reason)]
+              (if (= "ok" (:status response))
+                (nomination-page atype
+                                 a-name
+                                 (format "Nominated %s %s" atype a-name)
+                                 role)
+                (nomination-page atype
+                                 a-name
+                                 (:message response)
+                                 role))))))
+  (GET "/deletion.html" []
+       (with-authorized-roles ["admin"]
+         (fn [{{:keys [user role]} :session }]
+           (let [nominations (:outstanding
+                              (deletion/get-nominations (:deletion hosts)))
+                 recent (:records (deletion/get-recent (:deletion hosts)))]
+             (deletion-page nominations recent nil role)))))
+  (POST "/deletion.html" [atype a-name exe-or-rej reason]
+        (with-authorized-roles ["admin"]
+          (fn [{{:keys [user role]} :session}]
+            (let [response  (case exe-or-rej
+                              "Reject" (deletion/reject (:deletion hosts)
+                                                        atype
+                                                        a-name
+                                                        user
+                                                        reason)
+                              "Delete" (deletion/execute (:deletion hosts)
+                                                         (:omdb hosts)
+                                                         atype
+                                                         a-name
+                                                         user
+                                                         reason)
+                             {:status :failed
+                              :message (format "Illegal request: %s"
+                                               exe-or-rej)})
+                  message (when (not= "ok" (:status response))
+                            (:message response))
+                  nominations (:outstanding
+                               (deletion/get-nominations (:deletion hosts)))
+                  recent (:records
+                          (deletion/get-recent (:deletion hosts)))]
+              (deletion-page nominations recent message role)))))
   (route/files "public")
   (route/not-found "Not Found"))
 

@@ -74,7 +74,12 @@
         [:div {:class "spacer"}]
         (return-to-library (:series episode)
                            (:season episode)
-                           (:episode episode))]]]))
+                           (:episode episode))
+        (when (= role "media")
+          [:a {:href
+               (format "/nominate.html?atype=episode&a-name=%s" catalog-id)
+               :style "float:right;display:inline-block"}
+           "Request deletion?"])]]]))
 
 (defn should-default? [omdb-v]
   (or (= omdb-v "N/A") (nil? omdb-v)))

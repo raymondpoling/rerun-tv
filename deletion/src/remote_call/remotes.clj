@@ -1,7 +1,8 @@
 (ns remote-call.remotes
   (:require [diehard.core :as dh]
             [common-lib.core :as clc]
-            [clj-http.client :as client]))
+            [clj-http.client :as client]
+            [cheshire.core :refer [parse-string]]))
 
 (declare ckt-brkr)
 
@@ -25,6 +26,7 @@
    {:status :failure :message "could not execute deletion"}
    (dh/with-circuit-breaker ckt-brkr
      (let [url (url atype a-name)]
-       (:body
-        (client/delete url))))))
+       (parse-string
+        (:body
+         (client/delete url)) true)))))
 

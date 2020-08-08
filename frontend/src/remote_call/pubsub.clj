@@ -6,7 +6,8 @@
             :remote_locations "REMOTE LOCATIONS"
             :schedule_validity "SCHEDULE VALIDITY"
             :series_playlist "SERIES PLAYLIST"
-            :playlist_ids "PLAYLIST IDS"})
+            :playlist_ids "PLAYLIST IDS"
+            :ensure_tags "ENSURE TAGS"})
 
 (def redis-var "REDIS_URI")
 

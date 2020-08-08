@@ -13,7 +13,7 @@ def create_test(test):
     '''Create a test if it does not yet exist in database.'''
     print("making test: " + test)
     requests.post(url=EXCEPTION_SERVER + "test/" + test,
-                  json={'Cron':'', 'Name':test})
+                      json={'Cron':'', 'Name':test})
 
 def post_report(jsondoc):
     '''Publish the report to the database.'''

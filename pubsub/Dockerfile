@@ -19,6 +19,7 @@ ENV LOCATOR_HOST $LOCATOR_HOST
 ENV PLAYLIST_HOST $PLAYLIST_HOST
 ENV SCHEDULE_HOST $SCHEDULE_HOST
 ENV BUILDER_HOST $BUILDER_HOST
+ENV TAGS_HOST $TAGS_HOST
 
 COPY exception_reporting.py exception_reporting.py
 COPY root_locations.py root_locations.py
@@ -27,5 +28,6 @@ COPY playlist_check.py playlist_check.py
 COPY remote_locations.py remote_locations.py
 COPY schedule.py schedule.py
 COPY series_playlists.py series_playlists.py
+COPY ensure_tags.py ensure_tags.py
 
 CMD ["python", "messages.py"]

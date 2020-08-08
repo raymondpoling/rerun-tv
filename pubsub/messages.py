@@ -12,6 +12,7 @@ import root_locations
 import remote_locations
 import series_playlists
 import playlist_check
+import ensure_tags
 
 REDIS_SERVER = os.environ.get("REDIS_SERVER")
 REDIS_PORT = os.environ.get("REDIS_PORT")
@@ -33,7 +34,8 @@ def select_test(name):
         root_locations.TEST: root_locations.run,
         remote_locations.TEST: remote_locations.run,
         series_playlists.TEST: series_playlists.run,
-        playlist_check.TEST: playlist_check.run
+        playlist_check.TEST: playlist_check.run,
+        ensure_tags.TEST: ensure_tags.run
     }.get(name, lambda x: print("Test not found: " + name +
                                 "\n\targs: " + str(x)))
 
@@ -52,7 +54,7 @@ def main():
             arguments = j['args']
             print("testing: " + str(test) + " args: " + str(arguments))
             selected = select_test(test)
-            print("selectwed? " + str(selected))
+            print("selected? " + str(selected))
             selected(arguments)
             print("??? " + str(j), flush=True)
         except BaseException:

@@ -1,12 +1,18 @@
+html {
+    min-height: 100vh;
+}
+
 body {
+    min-height: 100vh;
   background-color: lightblue;
   margin: 0;
   padding: 0;
 }
 
 #content {
-  width: 80%;
-  /* height: 100em; */
+    width: 80%;
+    min-height: 100vh;
+  height: 100%;
   margin: auto;
   padding: 1em 0em 3em 0em;
   background-color: white;

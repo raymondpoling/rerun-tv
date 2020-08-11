@@ -37,7 +37,7 @@
           (invalid-request "PUT" name e))
         (catch java.sql.SQLException e
           (invalid-request "PUT " name e)))))
-  (DELETE "/:name" [name]
+  (DELETE "/:name{[^/]+}" [name]
     (db/delete-series name)
     (logger/warn (str "playlist '" name "' deleted"))
     (clc/make-response 200 {:status "ok"}))

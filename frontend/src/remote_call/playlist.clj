@@ -35,7 +35,7 @@
    {:status "failed", :message "failed to save playlist"}
    (dh/with-circuit-breaker ckt-brkr
      (let [url (str "http://" host "/" (url-encode name))
-           item-list (cls/split items #"\n")]
+           item-list (map cls/trim (cls/split items #"\n"))]
        (logger/debug "Looking up url: " url)
        (:body (client/post url {:as :json
                                 :headers {:content-type "application/json"}
@@ -48,7 +48,7 @@
    {:status "failed", :message "failed to save playlist"}
    (dh/with-circuit-breaker ckt-brkr
      (let [url (str "http://" host "/" (url-encode name))
-           item-list (cls/split items #"\n")]
+           item-list (map cls/trim (cls/split items #"\n"))]
        (logger/debug "Looking up url: " url)
        (:body (client/put url {:as :json
                                :headers {:content-type "application/json"}

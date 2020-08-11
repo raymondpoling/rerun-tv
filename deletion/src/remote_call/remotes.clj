@@ -1,6 +1,7 @@
 (ns remote-call.remotes
   (:require [diehard.core :as dh]
             [common-lib.core :as clc]
+            [ring.util.codec :refer [url-encode]]
             [clj-http.client :as client]
             [cheshire.core :refer [parse-string]]))
 
@@ -15,8 +16,8 @@
 
 (defn- url [atype a-name]
   (case atype
-    "playlist" (str "http://" (:playlist hosts) "/" a-name)
-    "schedule" (str "http://" (:schedule hosts) "/" a-name)
+    "playlist" (str "http://" (:playlist hosts) "/" (url-encode a-name))
+    "schedule" (str "http://" (:schedule hosts) "/" (url-encode a-name))
     "episode" (str "http://" (:meta hosts) "/catalog-id/" a-name)
     "season" (str "http://" (:meta hosts) "/catalog-id/" a-name)
     "series" (str "http://" (:meta hosts) "/catalog-id/" a-name)))

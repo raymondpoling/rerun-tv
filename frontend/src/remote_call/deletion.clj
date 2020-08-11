@@ -16,7 +16,9 @@
   (clc/log-on-error
    {:status "failed" :message "deletion service not available"}
    (dh/with-circuit-breaker ckt-brkr
-     (let [url (str "http://" server "/nominate/" atype "/" a-name)]
+     (let [url (str "http://" server
+                    "/nominate/" atype
+                    "/" (url-encode a-name))]
        (:body (client/post
                url
                {:unexceptional-status #(or (= 200 %)
@@ -49,7 +51,9 @@
   (clc/log-on-error
    {:status "failed" :message "deletion service not available"}
    (dh/with-circuit-breaker ckt-brkr
-     (let [url (str "http://" server "/execute/" atype "/" a-name)
+     (let [url (str "http://" server
+                    "/execute/" atype
+                    "/" (url-encode a-name))
            series (:series (first (:records
                           (get-meta-by-catalog-id meta-server a-name))))
            response (:body (client/post
@@ -73,7 +77,7 @@
   (clc/log-on-error
    {:status "failed" :message "deletion service not available"}
    (dh/with-circuit-breaker ckt-brkr
-     (let [url (str "http://" server "/reject/" atype "/" a-name)]
+     (let [url (str "http://" server "/reject/" atype "/" (url-encode a-name))]
        (:body (client/post
                url
                {:unexceptional-status #(or (= 200 %)

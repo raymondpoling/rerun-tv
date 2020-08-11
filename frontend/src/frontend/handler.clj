@@ -148,21 +148,20 @@
   (GET "/playlist-builder.html" []
        (with-authorized-roles ["admin" "media"]
          (fn [{{:keys [role]} :session}]
-           (let [playlists (filter #(not (cls/includes? % ":SYSTEM"))
-                                   (map :name (get-playlists
-                                               (:playlist hosts))))]
+           (let [playlists (map :name (get-playlists
+                                       (:playlist hosts)))]
              (playlist-get playlists role)))))
   (POST "/playlist-builder.html" [name items mode tags search type?
                                   search-items]
        (with-authorized-roles ["admin" "media"]
          (fn [{{:keys [role user]} :session}]
-           (let [playlists (filter #(not (cls/includes? % ":SYSTEM"))
-                                   (map :name (get-playlists
-                                               (:playlist hosts))))
-                 items (str items (when search-items
-                                    (str "\n"
-                                         (cls/join "\n"
-                                                   (flatten [search-items])))))
+           (let [playlists (map :name (get-playlists (:playlist hosts)))
+                 items (str items
+                            (when search-items
+                              (str "\n"
+                                   (cls/join
+                                    "\n"
+                                    (flatten [search-items])))))
                  item-list (cls/join
                             "\n"
                             (get-playlist (:playlist hosts)

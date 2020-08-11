@@ -58,7 +58,8 @@
    [:body
     [:div {:id "content"}
      (header "Execute/Reject Deletion" role)
-     (nomination-table nominations)
+     (when (not= 0 (count nominations))
+       (nomination-table nominations))
      (recent-table recent )
      [:div {:id "message"
             :style (when (not message) "display:none")}

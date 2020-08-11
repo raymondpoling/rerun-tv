@@ -93,7 +93,10 @@
       (vec (concat (list :select
                          {:name "name"
                           :class "box-center"})
-                   (map #(vector :option %) playlist-names)))
+                   (map #(vector :option %)
+                        (filter #(not
+                                  (cls/includes? % ":SYSTEM"))
+                                playlist-names))))
       [:input {:type "hidden"
                :name "preview"
                :value "true"}]

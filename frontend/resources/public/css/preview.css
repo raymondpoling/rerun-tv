@@ -3,8 +3,14 @@
     overflow-x: auto;
 }
 
+#column-holder {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
 .column {
-  width: 33%;
+  width: 19%;
   margin: 1em 0 0 0;
   display: inline-flex;
   vertical-align: top;

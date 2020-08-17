@@ -60,9 +60,9 @@
                                                   user
                                                   sched
                                                   {:index %})) true))
-                        (range (- idx 1) (+ idx 2)))
+                        (range (- idx 2) (+ idx 3)))
             r (:body (fetch-formats (:format hosts)))
             formats (when (= (:status r) "ok")
                       (:formats r))]
-        (make-preview-page sched schedule-list (- idx 1)
+        (make-preview-page sched schedule-list (- idx 2)
                            update frames formats select-format role)))))

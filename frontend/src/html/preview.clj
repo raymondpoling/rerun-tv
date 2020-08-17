@@ -78,7 +78,8 @@
         [:div {:id "content"}
           (header "Schedule Preview" role)
          (form options midpoint update formats select-format)
+         [:div {:id "column-holder"}
          (map (fn [[items idx]] (preview-column
                                  schedule items idx
                                  (when (= idx midpoint) true)))
-                cols)]])))
+              cols)]]])))

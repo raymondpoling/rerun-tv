@@ -73,6 +73,7 @@
            "files.imdbid AS imdbid, "
            "CASE "
            "WHEN files.thumbnail is NULL OR files.thumbnail = '' "
+           "  OR files.thumbnail = 'N/A' "
            "THEN series.thumbnail "
            "ELSE files.thumbnail END AS thumbnail "
            "FROM meta.series JOIN meta.files "

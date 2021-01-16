@@ -65,6 +65,8 @@
             [clojure.data :as cld])
   (:gen-class))
 
+(def redirect-url (or (System/getenv "REDIRECT_URL") "login.html"))
+
 (defn wrap-redirect [function]
   (fn [request]
     (if (not (or (:user (:session request))
@@ -74,7 +76,7 @@
         (logger/info "Going to login ->")
         (logger/info "uri: " (:uri request) " is matching? " (= "/login" (:uri request)))
         (logger/info "going to login.html")
-        (redirect "login.html"))
+        (redirect redirect-url))
       (do
         (logger/info "continuing request")
         (logger/info "- uri: " (:uri request) " is matching? " (= "/login" (:uri request)))

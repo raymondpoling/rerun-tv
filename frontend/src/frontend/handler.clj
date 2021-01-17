@@ -62,10 +62,14 @@
             [taoensso.carmine.ring :refer [carmine-store]]
             [org.httpkit.server :refer [run-server]]
             [clojure.string :as cls]
-            [clojure.data :as cld])
+            [clojure.data :as cld]
+            [common-lib.core :as clc])
   (:gen-class))
 
-(def redirect-url (or (System/getenv "REDIRECT_URL") "login.html"))
+(def redirect-path (or (System/getenv "REDIRECT_URL") ""))
+
+(defn redirect-url [path]
+  (redirect (str redirect-path path)))
 
 (defn wrap-redirect [function]
   (fn [request]
@@ -76,7 +80,7 @@
         (logger/info "Going to login ->")
         (logger/info "uri: " (:uri request) " is matching? " (= "/login" (:uri request)))
         (logger/info "going to login.html")
-        (redirect redirect-url))
+        (redirect-url "/login.html"))
       (do
         (logger/info "continuing request")
         (logger/info "- uri: " (:uri request) " is matching? " (= "/login" (:uri request)))
@@ -145,7 +149,7 @@
                                               schedule-name)}
                                      " check it out!"]))}))
           (if (and (= mode "Create") got-sched)
-            (redirect (str "/schedule-builder.html?message=Schedule with name '" schedule-name "' already exists"))
+            (redirect-url (str "/schedule-builder.html?message=Schedule with name '" schedule-name "' already exists"))
             (schedule-builder sched schedule-name playlists mode role))))))
   (GET "/playlist-builder.html" []
        (with-authorized-roles ["admin" "media"]
@@ -188,13 +192,13 @@
                                                      name items)
                                       (playlist-page name items "Update"
                                                      tags enriched-results role))
-                                    (redirect "/playlist-builder.html"))
+                                    (redirect-url "/playlist-builder.html"))
                  ["Create" true] (if (empty? item-list)
                                    (playlist-page name items "Create"
                                                   tags enriched-results role)
-                                   (redirect "/playlist-builder.html"))
+                                   (redirect-url "/playlist-builder.html"))
                  ["Update" false] (if (empty? item-list)
-                                    (redirect "/playlist-builder.html")
+                                    (redirect-url "/playlist-builder.html")
                                     (do
                                       (put-playlist (:playlist hosts)
                                                     name items)
@@ -202,12 +206,12 @@
                                                      tags enriched-results role)))
                  ["Update" true] (if (empty? item-list)
                                    (do 
-                                       (redirect "/playlist-builder.html"))
+                                       (redirect-url "/playlist-builder.html"))
                                    (do
                                      (playlist-page name item-list "Update"
                                                     tags enriched-results role)))
                  (playlist-get playlists role)))))))
-  (POST "/login" [username password]
+  (POST "/login" [username password no-redirect]
         (logger/debug "hosts map is? " hosts)
         (let [auth (validate-user
                     (:auth hosts)
@@ -217,11 +221,14 @@
           (if (= "ok" (:status auth))
             (let [user (fetch-user (:identity hosts) username)]
               (logger/info "Logged in " username)
-              (-> (redirect "/index.html ")
-                  (assoc :session (dissoc user :status))))
-            (redirect "/login.html"))))
+              (if (not no-redirect)
+                (-> (redirect-url "/index.html")
+                    (assoc :session (dissoc user :status)))
+                (-> (clc/make-response 200 {:status :ok})
+                    (assoc :session (dissoc user :status)))))
+            (redirect-url "/login.html"))))
   (GET "/logout" []
-       (-> (redirect "/login.html")
+       (-> (redirect-url "/login.html")
            (assoc :session {:user nil})))
   (GET "/bulk-update.html" []
        (with-authorized-roles ["admin","media"]
@@ -246,12 +253,12 @@
                              new-user
                              " got "
                              (create-auth (:auth hosts) new-user new-password)))
-          (redirect "/user-management.html")))
+          (redirect-url "/user-management.html")))
   (POST "/role" [update-user update-role]
         (logger/debug (format "Updating user: %s Role: %s" update-user update-role))
         (with-authorized-roles ["admin"]
           (logger/debug (user-update (:identity hosts) update-user update-role))
-          (redirect "/user-management.html")))
+          (redirect-url "/user-management.html")))
   (GET "/library.html" [series-name]
        (with-authorized-roles ["admin","media","user"]
          (fn [{{:keys [role]} :session}]
@@ -306,7 +313,7 @@
                     (add-tags    (:tags hosts) user (second diffs) catalog-ids))
                   (when (first diffs)
                     (delete-tags (:tags hosts) user (first diffs) catalog_id))
-                  (redirect (str "/update-series.html?series-name=" name)))
+                  (redirect-url (str "/update-series.html?series-name=" name)))
                 (let [omdb (first (:records
                                    (get-series-by-imdb-id (:omdb hosts)
                                                           imdbid)))]
@@ -355,7 +362,7 @@
                                  (except/get-test-results exception-host %))
                                all-tests)]
               (pubsub/run-tests [test_key arguments])
-              (redirect "/exception.html")))))
+              (redirect-url "/exception.html")))))
   (POST "/update.html"
         [catalog-id series episode_name episode season
          summary imdbid thumbnail files mode tags]
@@ -392,7 +399,7 @@
                     (add-tags    (:tags hosts) user (second diffs) catalog-ids))
                   (when (first diffs)
                     (delete-tags (:tags hosts) user (first diffs) catalog-id))
-                  (redirect (str "/update.html?catalog-id=" catalog-id)))
+                  (redirect-url (str "/update.html?catalog-id=" catalog-id)))
                 (let [omdb-record (first (:records
                                           (get-meta-by-imdb-id
                                            (:omdb hosts)

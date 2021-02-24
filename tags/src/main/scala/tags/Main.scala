@@ -1,15 +1,15 @@
 package tags
 
 import java.util.concurrent.TimeUnit
-
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.stream.ActorMaterializer
-import neotypes.GraphDatabase
+import neotypes.{Async, Driver, GraphDatabase}
 import org.neo4j.driver.v1.{AuthTokens, Config}
 import service.MyRejectionHandler.myRejectionHandler
 import service.TagsService
 
+import scala.annotation.tailrec
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContextExecutor, Future}
 import scala.io.StdIn
@@ -31,15 +31,16 @@ object Main {
 
     val password = System.getenv().getOrDefault("NEO4J_PASSWORD", "neo4j")
 
-    val driver = Try(GraphDatabase.driver[Future](url,
+    @tailrec
+    def driver: Driver[Future] = Try(GraphDatabase.driver[Future](url,
       AuthTokens.basic(user,
         password),
       Config.builder().withoutEncryption().build())) match {
       case Success(s) => s
       case Failure(t) => t.printStackTrace()
-        println("Could not create driver, crashing!")
-        System.exit(255)
-        throw t
+        println("Could not create driver, retry in 5 seconds!")
+        Thread.sleep(5 * 1000)
+        driver
     }
 
     val tagsService = new TagsService(driver)
